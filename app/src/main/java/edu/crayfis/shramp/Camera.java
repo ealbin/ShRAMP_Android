@@ -1,5 +1,6 @@
 package edu.crayfis.shramp;
 
+import android.content.Context;
 import android.graphics.ImageFormat;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
@@ -28,10 +29,9 @@ public class Camera {
     private final static String     TAG = "Camera";
     private final static String DIVIDER = "---------------------------------------------";
 
-
     // int to denote front vs back camera
-    public final static int FRONT_CAMERA = CameraCharacteristics.LENS_FACING_FRONT;
     public final static int  BACK_CAMERA = CameraCharacteristics.LENS_FACING_BACK;
+    public final static int FRONT_CAMERA = CameraCharacteristics.LENS_FACING_FRONT;
 
     // output image format
     public final static String IMAGE_TYPE = "RAW12";
@@ -40,16 +40,106 @@ public class Camera {
     // output image size -- set in configureCamera()
     public Size Image_size;
 
-    public CameraCharacteristics    Camera_attributes;
-    public CameraDevice             Camera_device;
-    public CaptureRequest           Capture_request;
+    // essential objects for operating camera
+    public MainActivity             Main_activity;
+    public CameraThreads            Camera_threads;
+    public CameraManager            Camera_manager;
+    public String                   Back_camera_id;
+    public String                   Front_camera_id;
+
+    // essential objects for configuring camera
+    public CameraCharacteristics    Camera_attributes;  // "characteristics" is too long
     public CaptureRequest.Builder   Capture_builder;
-    public CameraCaptureSession     Capture_session;
     public StreamConfigurationMap   Stream_config;
+
 
     //**********************************************************************************************
     // Class Methods
     //--------------
+
+    /**
+     * TODO:  Entry point, edit this
+     */
+    Camera() {
+        // TODO
+
+        final String LOCAL_TAG = TAG.concat(".Camera()");
+        Log.e(LOCAL_TAG, DIVIDER);
+
+        Camera_manager = (CameraManager) Main_activity.getSystemService(Context.CAMERA_SERVICE);
+        getCameraIDs();
+
+        if (!cameraExists(Back_camera_id)) {
+            // TODO back camera doesn't exist, exit
+            Log.e(LOCAL_TAG, "Camera didn't exist, exiting");
+            finish();
+            Log.e(LOCAL_TAG, "END");
+            return;
+        }
+        Camera_attributes = Camera_manager.getCameraCharacteristics(Back_camera_id);
+        Stream_config = Camera_attributes.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
+
+        if (outdatedHardware()) {
+            // TODO hardware is too old, exit
+            Log.e(LOCAL_TAG, "Camera hardware is outdated, exiting");
+            finish();
+            Log.e(LOCAL_TAG, "END");
+            return;
+        }
+
+        Log.e(LOCAL_TAG, "Camera ready to be configured");
+        configureCamera();
+
+        Log.e(LOCAL_TAG, "Camera ready to be activated");
+        Camera_threads = new CameraThreads();
+        Camera_manager.openCamera(Back_camera_id,
+                Camera_threads.Camera_state, Camera_threads.Camera_handler);
+
+    }
+
+    /**
+     * Figure out camera IDs for front and back if they exist
+     */
+    protected void getCameraIDs() {
+        final String LOCAL_TAG = TAG.concat(".getCameraIDs()");
+        Log.e(LOCAL_TAG, DIVIDER);
+
+        for (String camera_id : Camera_manager.getCameraIdList()) {
+            Camera_attributes = Camera_manager.getCameraCharacteristics(camera_id);
+
+            if (Camera_attributes.get(CameraCharacteristics.LENS_FACING) == BACK_CAMERA) {
+                Back_camera_id = camera_id;
+                Log.e(LOCAL_TAG, "Back camera found, ID = " + Back_camera_id);
+            }
+            else if (Camera_attributes.get(CameraCharacteristics.LENS_FACING) == FRONT_CAMERA) {
+                Front_camera_id = camera_id;
+                Log.e(LOCAL_TAG, "Front camera found, ID = " + Front_camera_id);
+            }
+            else {
+                Log.e(LOCAL_TAG, "Unknown camera found, ID = " + camera_id);
+            }
+        }
+        Log.e(LOCAL_TAG, "RETURN");
+    }
+
+    /**
+     * Checks if camera ID's for front or back exist and have been initialized
+     * @param camera_id camera ID to check
+     * @return true if initialized (found), false if does not exist
+     */
+    protected boolean cameraExists(String camera_id) {
+        final String LOCAL_TAG = TAG.concat(".cameraExists()");
+        Log.e(LOCAL_TAG, DIVIDER);
+
+        if (camera_id == null) {
+            Log.e(LOCAL_TAG, "Requested camera does not exist");
+            Log.e(LOCAL_TAG, "RETURN");
+            return false;
+        }
+        Log.e(LOCAL_TAG, "Camera confirmed to exist");
+        Log.e(LOCAL_TAG, "RETURN");
+        return true;
+    }
 
     /**
      * Checks that camera hardware is up to snuff
@@ -91,7 +181,7 @@ public class Camera {
         Log.e(LOCAL_TAG, "RETURN");
         return true;
     }
-    
+
     /**
      * Configure camera for data taking
      */
@@ -131,6 +221,7 @@ public class Camera {
 
     /**
      * Configures camera controls to manual
+     * (called from configureCamera)
      */
     private void configureControl() {
         final String LOCAL_TAG = TAG.concat(".configureControl()");
@@ -147,6 +238,7 @@ public class Camera {
 
     /**
      * Configures camera corrections and processing options to off, disabled, or linear
+     * (called from configureCamera)
      */
     private void configureCorrections() {
         final String LOCAL_TAG = TAG.concat(".configureCorrections()");
@@ -221,6 +313,7 @@ public class Camera {
 
     /**
      * Configures camera mechanical lens optics for darkest aperture conditions
+     * (called from configureCamera)
      */
     private void configureLens() {
         final String LOCAL_TAG = TAG.concat(".configureLens()");
@@ -264,6 +357,7 @@ public class Camera {
 
     /**
      * Configures (disables) statistical metadata abilities of the camera
+     * (called from configureCamera)
      */
     private void configureStatistics() {
         final String LOCAL_TAG = TAG.concat(".configureStatistics()");
@@ -294,6 +388,7 @@ public class Camera {
     /**
      * Configures exposure and frame duration times to minimum (Image_size must be initialized
      * prior to calling this method)
+     * (called from configureCamera)
      */
     private void configureTiming() {
         final String LOCAL_TAG = TAG.concat(".configureTiming()");

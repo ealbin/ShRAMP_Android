@@ -360,146 +360,18 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
 
 
     // ---------- CAMERA STUFF ------------------
-
-    // int to denote front vs back camera
-    final int FRONT_CAMERA = CameraCharacteristics.LENS_FACING_FRONT;
-    final int BACK_CAMERA  = CameraCharacteristics.LENS_FACING_BACK;
-
-    public String camera_id;
-    public CameraManager camera_manager;
-    public HandlerThread background_thread;
-    public Handler background_handler;
-    public CameraDevice.StateCallback state_callback;
-    public CameraDevice camera_device;
-    public CaptureRequest capture_request;
-    public CaptureRequest.Builder capture_request_builder;
-    public CameraCaptureSession camera_capture_session;
-    public ImageReader image_reader;
-    public Size[] image_dimensions;
-    public int image_format;
     public String filename = Environment.getExternalStorageDirectory()+"/ShRAMP_PIC.jpg";
     public final File file = new File(filename);
 
-
-    public void setUpCamera() {
-        final String LOCAL_TAG = TAG.concat(".setUpCamera()");
-        Log.e(LOCAL_TAG, "trying to set up camera...");
-
-        camera_manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
-        try {
-            // find camera_id for the back camera
-            for (String camera_id : camera_manager.getCameraIdList()) {
-
-                CameraCharacteristics cameraCharacteristics =
-                        camera_manager.getCameraCharacteristics(camera_id);
-
-                // select the back camera
-                if (cameraCharacteristics.get(CameraCharacteristics.LENS_FACING) ==
-                        BACK_CAMERA) {
-                    Log.e(LOCAL_TAG, "found back camera, ID = " + camera_id);
-                    this.camera_id = camera_id;
-                }
-            }
-        } catch (CameraAccessException e) {
-            Log.e(LOCAL_TAG, "EXCEPTION!  FAIL!");
-        }
-
-        Log.e(LOCAL_TAG, "Instantiating stateCallback");
-        state_callback = new CameraDevice.StateCallback() {
-            final String LOCAL_TAG = TAG.concat(".CameraDevice.StateCallback");
-
-            @Override
-            public void onOpened(CameraDevice cameraDevice) {
-                Log.e(LOCAL_TAG, "onOpened()");
-                MainActivity.this.camera_device = cameraDevice;
-                Log.e(LOCAL_TAG, "Leaving onOpened() for createStillSession()");
-                Log.e(LOCAL_TAG, DIVIDER);
-                createStillSession();
-            }
-
-            @Override
-            public void onDisconnected(CameraDevice cameraDevice) {
-                Log.e(LOCAL_TAG, "onDisconnected");
-                cameraDevice.close();
-                MainActivity.this.camera_device = null;
-            }
-
-            @Override
-            public void onError(CameraDevice cameraDevice, int error) {
-                Log.e(LOCAL_TAG, "onError");
-                cameraDevice.close();
-                MainActivity.this.camera_device = null;
-            }
-        };
-
-        Log.e(LOCAL_TAG, "Leaving setUpCamera() for openBackgroundThread()");
-        Log.e(LOCAL_TAG, DIVIDER);
-        openBackgroundThread();
-    }
-
-    public void openBackgroundThread() {
-        final String LOCAL_TAG = TAG.concat(".openBackgroundThread()");
-        Log.e(LOCAL_TAG, "Setting up handlers");
-        background_thread = new HandlerThread("camera_background_thread");
-        background_thread.start();
-        background_handler = new Handler(background_thread.getLooper());
-        Log.e(LOCAL_TAG, "Leaving openBackgroundThread() for openCamera()");
-        Log.e(LOCAL_TAG, DIVIDER);
-        openCamera();
-    }
-
-    public void stopBackgroundThread() {
-        final String LOCAL_TAG = TAG.concat(".openBackgroundThread()");
-        Log.e(LOCAL_TAG, "Stopping handlers");
-        background_thread.quitSafely();
-        try {
-            background_thread.join();
-            background_thread = null;
-            background_handler = null;
-        } catch (InterruptedException e) {
-            Log.e(LOCAL_TAG, "ERROR");
-        }
-    }
-    public void openCamera() {
-        final String LOCAL_TAG = TAG.concat(".openCamera()");
-        Log.e(LOCAL_TAG, "Trying to open camera");
-
-        try {
-            Log.e(LOCAL_TAG, "Leaving openCamera() for state_callback.onOpened() if all goes well");
-            Log.e(LOCAL_TAG, DIVIDER);
-
-            image_format = ImageFormat.JPEG;
-            CameraCharacteristics characteristics = camera_manager.getCameraCharacteristics(camera_id);
-            StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
-            image_dimensions = map.getOutputSizes(image_format);
-            //image_dimensions = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(ImageFormat.RAW_SENSOR);
-            Log.e(LOCAL_TAG, "width, height = " + Integer.toString(image_dimensions[0].getWidth()) + ", " + Integer.toString(image_dimensions[0].getHeight()));
-            camera_manager.openCamera(camera_id, state_callback, background_handler);
-
-        } catch (CameraAccessException e) {
-            Log.e(LOCAL_TAG, "EXCEPTION!  FAIL!");
-        }
-        Log.e(LOCAL_TAG, "Leaving openCamera() after try-catch block");
-    }
 
     public void createStillSession() {
         final String LOCAL_TAG = TAG.concat(".createStillSession()");
         Log.e(LOCAL_TAG, "Trying to capture still");
 
-        try {
             image_reader = ImageReader.newInstance(image_dimensions[0].getWidth(), image_dimensions[0].getHeight(), image_format, 1);
-            capture_request_builder = camera_device.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
             capture_request_builder.addTarget(image_reader.getSurface());
-            capture_request_builder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
-            //Range<Integer> fps_range = new Range(1,2);
-            //capture_request_builder.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, fps_range);
-            capture_request_builder.set(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION, 100);
-            capture_request_builder.set(CaptureRequest.JPEG_QUALITY, (byte) 100);
-
             List<Surface> output_surfaces = new ArrayList<Surface>(1);
             output_surfaces.add(image_reader.getSurface());
-
-            Log.e(LOCAL_TAG, "implementing interfaces");
             ImageReader.OnImageAvailableListener reader_listener =
                     new ImageReader.OnImageAvailableListener() {
                 final String LOCAL_TAG = TAG.concat(".createStillSession.ImageReader.OnImageAvailableListener()");
@@ -551,25 +423,8 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
                     }
                 }
             };
-            Log.e(LOCAL_TAG, "reader_listener has been implemented");
 
             image_reader.setOnImageAvailableListener(reader_listener, background_handler);
-
-            Log.e(LOCAL_TAG, "implementing capture_listener");
-            final CameraCaptureSession.CaptureCallback capture_listener = new CameraCaptureSession.CaptureCallback() {
-                final String LOCAL_TAG = TAG.concat(".createStillImage.CameraCaptureSession.CaptureCallback");
-
-                @Override
-                public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
-                    Log.e(LOCAL_TAG, "onCaptureCompleted()");
-                    super.onCaptureCompleted(session, request, result);
-                    //Toast.makeText(MainActivity.this, "Saved:" + file, Toast.LENGTH_SHORT).show();
-                }
-            };
-            Log.e(LOCAL_TAG, "capture_listener has been implemented");
-
-            Log.e(LOCAL_TAG, "creating capture session");
-            Log.e(LOCAL_TAG, DIVIDER);
 
             camera_device.createCaptureSession(output_surfaces, new CameraCaptureSession.StateCallback() {
                 final String LOCAL_TAG = TAG.concat(".createStillImage.CameraCaptureSession");
@@ -589,16 +444,6 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
                     Log.e(LOCAL_TAG, "onConfigureFailed");
                 }
             }, background_handler);
-
-
-            Log.e(LOCAL_TAG, "pengas");
-            //camera_capture_session = new CameraCaptureSession();
-            //CameraActivity.this.cameraCaptureSession.setRepeatingRequest(captureRequest,
-            //        null, backgroundHandler);
-        } catch (CameraAccessException e) {
-            Log.e(LOCAL_TAG, "errored out");
-            e.printStackTrace();
-        }
     }
 
 
