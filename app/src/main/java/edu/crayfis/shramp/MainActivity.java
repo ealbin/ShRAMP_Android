@@ -18,7 +18,6 @@ import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -36,13 +35,12 @@ import java.util.List;
 
 
 public class MainActivity extends AppCompatActivity implements AsyncResponse {
-
     //**********************************************************************************************
     // Class Variables
     //----------------
 
     // debug Logcat strings
-    private final static String TAG = "MainActivity";
+    private final static String     TAG = "MainActivity";
     private final static String DIVIDER = "---------------------------------------------";
 
     // Permissions Required
@@ -58,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
     // SSH is an AsyncTask, holding this reference allows main to
     // see the result when it finishes.
     // It's linked to this main activity in onCreate below.
-    SSH ssh_reference = new SSH();
+    SSH SSH_reference = new SSH();
 
 
     //**********************************************************************************************
@@ -81,7 +79,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         Log.e(LOCAL_TAG, "Welcome to the app!");
 
         // set ssh listener to this class for information exchange
-        ssh_reference.mainactivity = this;
+        SSH_reference.mainactivity = this;
 
         // Main screen
         setContentView(R.layout.activity_main);
@@ -117,126 +115,127 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         final String LOCAL_TAG = TAG.concat(".getBuildString()");
         Log.e(LOCAL_TAG, DIVIDER);
 
+        String api = Integer.toString(build_code);
         String build_string;
         switch (build_code) {
             case Build.VERSION_CODES.BASE :
-                build_string = "v1.0 \"Base\" (October 2008)";
+                build_string = "v1.0 API " + api + " \"Base\" (October 2008)";
                 break;
 
             case Build.VERSION_CODES.BASE_1_1 :
-                build_string = "v1.1 \"Base 1.1\" (February 2009)";
+                build_string = "v1.1 API " + api + " \"Base 1.1\" (February 2009)";
                 break;
 
             case Build.VERSION_CODES.CUPCAKE :
-                build_string = "v1.5 \"Cupcake\" (May 2009)";
+                build_string = "v1.5 API " + api + " \"Cupcake\" (May 2009)";
                 break;
 
             case Build.VERSION_CODES.DONUT :
-                build_string = "v1.6 \"Donut\" (September 2009)";
+                build_string = "v1.6 API " + api + " \"Donut\" (September 2009)";
                 break;
 
             case Build.VERSION_CODES.ECLAIR :
-                build_string = "v2.0 \"Eclair\" (November 2009)";
+                build_string = "v2.0 API " + api + " \"Eclair\" (November 2009)";
                 break;
 
             case Build.VERSION_CODES.ECLAIR_0_1 :
-                build_string = "v2.0.1 \"Eclair 0.1\" (December 2009)";
+                build_string = "v2.0.1 API " + api + " \"Eclair 0.1\" (December 2009)";
                 break;
 
             case Build.VERSION_CODES.ECLAIR_MR1 :
-                build_string = "v2.1 \"Eclair MR1\" (January 2010)";
+                build_string = "v2.1 API " + api + " \"Eclair MR1\" (January 2010)";
                 break;
 
             case Build.VERSION_CODES.FROYO :
-                build_string = "v2.2 \"Froyo\" (June 2010)";
+                build_string = "v2.2 API " + api + " \"Froyo\" (June 2010)";
                 break;
 
             case Build.VERSION_CODES.GINGERBREAD :
-                build_string = "v2.3 \"Gingerbread\" (November 2010)";
+                build_string = "v2.3 API " + api + " \"Gingerbread\" (November 2010)";
                 break;
 
             case Build.VERSION_CODES.GINGERBREAD_MR1 :
-                build_string = "v2.3.3 \"Gingerbread MR1\" (February 2011)";
+                build_string = "v2.3.3 API " + api + " \"Gingerbread MR1\" (February 2011)";
                 break;
 
             case Build.VERSION_CODES.HONEYCOMB :
-                build_string = "v3.0 \"Honeycomb\" (February 2011)";
+                build_string = "v3.0 API " + api + " \"Honeycomb\" (February 2011)";
                 break;
 
             case Build.VERSION_CODES.HONEYCOMB_MR1 :
-                build_string = "v3.1 \"Honeycomb MR1\" (May 2011)";
+                build_string = "v3.1 API " + api + " \"Honeycomb MR1\" (May 2011)";
                 break;
 
             case Build.VERSION_CODES.HONEYCOMB_MR2 :
-                build_string = "v3.2 \"Honeycomb MR2\" (June 2011)";
+                build_string = "v3.2 API " + api + " \"Honeycomb MR2\" (June 2011)";
                 break;
 
             case Build.VERSION_CODES.ICE_CREAM_SANDWICH :
-                build_string = "v4.0 \"Ice Cream Sandwich\" (October 2011)";
+                build_string = "v4.0 API " + api + " \"Ice Cream Sandwich\" (October 2011)";
                 break;
 
             case Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1 :
-                build_string = "v4.0.3 \"Ice Cream Sandwich MR1\" (December 2011)";
+                build_string = "v4.0.3 API " + api + " \"Ice Cream Sandwich MR1\" (December 2011)";
                 break;
 
             case Build.VERSION_CODES.JELLY_BEAN :
-                build_string = "v4.1 \"Jelly Bean\" (June 2012)";
+                build_string = "v4.1 API " + api + " \"Jelly Bean\" (June 2012)";
                 break;
 
             case Build.VERSION_CODES.JELLY_BEAN_MR1 :
-                build_string = "v4.2 \"Jelly Bean MR1\" (November 2012)";
+                build_string = "v4.2 API " + api + " \"Jelly Bean MR1\" (November 2012)";
                 break;
 
             case Build.VERSION_CODES.JELLY_BEAN_MR2 :
-                build_string = "v4.3 \"Jelly Bean MR2\" (July 2013)";
+                build_string = "v4.3 API " + api + " \"Jelly Bean MR2\" (July 2013)";
                 break;
 
             case Build.VERSION_CODES.KITKAT :
-                build_string = "v4.4 \"KitKat\" (October 2013)";
+                build_string = "v4.4 API " + api + " \"KitKat\" (October 2013)";
                 break;
 
             case Build.VERSION_CODES.KITKAT_WATCH :
-                build_string = "v4.4W \"KitKat\" (June 2014)";
+                build_string = "v4.4W API " + api + " \"KitKat\" (June 2014)";
                 break;
 
             case Build.VERSION_CODES.LOLLIPOP :
-                build_string = "v5.0 \"Lollipop\" (November 2014)";
+                build_string = "v5.0 API " + api + " \"Lollipop\" (November 2014)";
                 break;
 
             case Build.VERSION_CODES.LOLLIPOP_MR1 :
-                build_string = "v5.1 \"Lollipop MR1\" (March 2015)";
+                build_string = "v5.1 API " + api + " \"Lollipop MR1\" (March 2015)";
                 break;
 
             case Build.VERSION_CODES.M :
-                build_string = "v6.0 \"Marshmellow\" (October 2015)";
+                build_string = "v6.0 API " + api + " \"Marshmellow\" (October 2015)";
                 break;
 
             case Build.VERSION_CODES.N :
-                build_string = "v7.0 \"Nougat\" (August 2016)";
+                build_string = "v7.0 API " + api + " \"Nougat\" (August 2016)";
                 break;
 
             case Build.VERSION_CODES.N_MR1 :
-                build_string = "v7.1 \"Nougat MR1\" (October 2016)";
+                build_string = "v7.1 API " + api + " \"Nougat MR1\" (October 2016)";
                 break;
 
             case Build.VERSION_CODES.O :
-                build_string = "v8.0 \"Oreo\" (August 2017)";
+                build_string = "v8.0 API " + api + " \"Oreo\" (August 2017)";
                 break;
 
             case Build.VERSION_CODES.O_MR1 :
-                build_string = "v8.1 \"Oreo MR1\" (December 2017)";
+                build_string = "v8.1 API " + api + " \"Oreo MR1\" (December 2017)";
                 break;
 
             case Build.VERSION_CODES.P :
-                build_string = "v9.0 \"Pie\" (August 2018)";
+                build_string = "v9.0 API " + api + " \"Pie\" (August 2018)";
                 break;
 
             default :
                 if (build_code > Build.VERSION_CODES.P) {
-                    build_string = "version is post v9.0: " + Integer.toString(build_code);
+                    build_string = "version is post v9.0: API " + api;
                 }
                 else {
-                    build_string = "unknown version code: " + Integer.toString(build_code);
+                    build_string = "unknown version code: API " + api;
                 }
                 break;
         }
@@ -290,7 +289,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         Log.e(LOCAL_TAG, "RETURN");
         return true;
     }
-    
+
     /**
      * After user responds to permission request, this routine is called.
      * If permissions are granted, continue with the app, otherwise die.
@@ -611,7 +610,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         textOut.append("Uploading to craydata.ps.uci.edu..  \n");
 
         if (haveSSHKey()) {
-            ssh_reference.execute(filename);
+            SSH_reference.execute(filename);
         }
         else {
             Log.e(LOCAL_TAG, "crap");
