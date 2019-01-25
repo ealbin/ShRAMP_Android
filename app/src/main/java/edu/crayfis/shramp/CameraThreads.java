@@ -6,6 +6,7 @@ import android.hardware.camera2.CaptureFailure;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
+import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Process;
@@ -33,6 +34,7 @@ public class CameraThreads {
     public HandlerThread Camera_thread;
     public final static String THREAD_NAME = "Camera_Thread";
 
+    public Camera Camera;
 
     //**********************************************************************************************
     // Class Methods
@@ -41,9 +43,11 @@ public class CameraThreads {
     /**
      * TODO:  Entry point, edit this
      */
-    CameraThreads() {
+    CameraThreads(Camera camera) {
         final String LOCAL_TAG = TAG.concat(".CameraThreads()");
         Log.e(LOCAL_TAG, DIVIDER);
+
+        Camera = camera;
 
         Log.e(LOCAL_TAG, "Instantiating callbacks");
 
@@ -55,6 +59,13 @@ public class CameraThreads {
                 Log.e(LOCAL_TAG, "onOpened()");
 
                 Camera_device = camera_device;
+                if (Camera_device == null) {
+                    Log.e(LOCAL_TAG, "FUCK");
+                }
+                else {
+                    Log.e(LOCAL_TAG, "Camera_device should be good");
+                }
+                Camera.configureCamera();
                 //createStillSession();
             }
 
@@ -151,17 +162,23 @@ public class CameraThreads {
         Camera_thread = new HandlerThread(THREAD_NAME, Process.THREAD_PRIORITY_MORE_FAVORABLE);
         Camera_thread.start();
         Camera_handler = new Handler(Camera_thread.getLooper());
-
-
     }
 
     public void shutdown() {
+        final String LOCAL_TAG = TAG.concat(".shutdown()");
+        Log.e(LOCAL_TAG, DIVIDER);
+
         Camera_device.close();
         Camera_device = null;
 
         Camera_thread.quitSafely();
-        Camera_thread.join(10000);  // wait 10 sec for thread to die
-        Camera_thread = null;
+        try {
+            Camera_thread.join(10000);  // wait 10 sec for thread to die
+        }
+        catch (Exception e ) {
+            Log.e(LOCAL_TAG, "EXCEPTION: " + e.getLocalizedMessage());
+        }
+            Camera_thread = null;
 
         Camera_handler = null;
     }

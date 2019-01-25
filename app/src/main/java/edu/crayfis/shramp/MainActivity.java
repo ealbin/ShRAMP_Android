@@ -56,8 +56,9 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
     // SSH is an AsyncTask, holding this reference allows main to
     // see the result when it finishes.
     // It's linked to this main activity in onCreate below.
-    SSH SSH_reference = new SSH();
+    public SSH SSH_reference = new SSH();
 
+    public Camera Camera_reference;
 
     //**********************************************************************************************
     // Class Methods
@@ -104,6 +105,26 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         }
 
         Log.e(LOCAL_TAG, "END");
+    }
+
+    /**
+     * Check for minimum Android version requirement.
+     * @return true if too old, false if modern
+     */
+    protected boolean outdatedAndroidVersion() {
+        final String LOCAL_TAG = TAG.concat(".outdatedAndroidVersion()");
+        Log.e(LOCAL_TAG, DIVIDER);
+
+        int build_code = Build.VERSION.SDK_INT;
+        String build_string = getBuildString(build_code);
+        if (build_code < MIN_SDK) {
+            Log.e(LOCAL_TAG,"Build version is too old: " + build_string);
+            Log.e(LOCAL_TAG,"RETURN");
+            return true;
+        }
+        Log.e(LOCAL_TAG, "Build version checks out: " + build_string);
+        Log.e(LOCAL_TAG, "RETURN");
+        return false;
     }
 
     /**
@@ -246,26 +267,6 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
     }
 
     /**
-     * Check for minimum Android version requirement.
-     * @return true if too old, false if modern
-     */
-    protected boolean outdatedAndroidVersion() {
-        final String LOCAL_TAG = TAG.concat(".outdatedAndroidVersion()");
-        Log.e(LOCAL_TAG, DIVIDER);
-
-        int build_code = Build.VERSION.SDK_INT;
-        String build_string = getBuildString(build_code);
-        if (build_code < MIN_SDK) {
-            Log.e(LOCAL_TAG,"Build version is too old: " + build_string);
-            Log.e(LOCAL_TAG,"RETURN");
-            return true;
-        }
-        Log.e(LOCAL_TAG, "Build version checks out: " + build_string);
-        Log.e(LOCAL_TAG, "RETURN");
-        return false;
-    }
-
-    /**
      * Check for app permissions being granted.
      * @return true if all permissions granted, false if not.
      */
@@ -335,7 +336,10 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
         textOut.append("----------------------------------------------------------\n\n");
         textOut.append("Capturing a camera frame..  \n");
 
-        setUpCamera();
+        Log.e(LOCAL_TAG, "Creating camera");
+        Camera_reference = new Camera(this);
+
+        //setUpCamera();
 
         //startActivity( new Intent(this, Camera.class) );
 
@@ -363,7 +367,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
     public String filename = Environment.getExternalStorageDirectory()+"/ShRAMP_PIC.jpg";
     public final File file = new File(filename);
 
-
+/*
     public void createStillSession() {
         final String LOCAL_TAG = TAG.concat(".createStillSession()");
         Log.e(LOCAL_TAG, "Trying to capture still");
@@ -446,7 +450,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
             }, background_handler);
     }
 
-
+*/
     public void upload() {
         final String LOCAL_TAG = TAG.concat(".upload()");
         Log.e(LOCAL_TAG, "yay!  uploading at last");

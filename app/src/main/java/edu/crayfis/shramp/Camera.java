@@ -19,6 +19,8 @@ import android.util.Log;
 import android.util.Range;
 import android.util.Size;
 
+import java.util.Set;
+
 
 public class Camera {
     //**********************************************************************************************
@@ -34,8 +36,8 @@ public class Camera {
     public final static int FRONT_CAMERA = CameraCharacteristics.LENS_FACING_FRONT;
 
     // output image format
-    public final static String IMAGE_TYPE = "RAW12";
-    public final static int IMAGE_FORMAT = ImageFormat.RAW12;
+    public final static String IMAGE_TYPE = "RAW_SENSOR";
+    public final static int IMAGE_FORMAT = ImageFormat.RAW_SENSOR;
 
     // output image size -- set in configureCamera()
     public Size Image_size;
@@ -50,6 +52,7 @@ public class Camera {
     // essential objects for configuring camera
     public CameraCharacteristics    Camera_attributes;  // "characteristics" is too long
     public CaptureRequest.Builder   Capture_builder;
+    public CameraDevice             Camera_device;
     public StreamConfigurationMap   Stream_config;
 
 
@@ -60,11 +63,13 @@ public class Camera {
     /**
      * TODO:  Entry point, edit this
      */
-    Camera() {
+    Camera(MainActivity main_activity) {
         // TODO
 
         final String LOCAL_TAG = TAG.concat(".Camera()");
         Log.e(LOCAL_TAG, DIVIDER);
+
+        Main_activity = main_activity;
 
         Camera_manager = (CameraManager) Main_activity.getSystemService(Context.CAMERA_SERVICE);
         getCameraIDs();
@@ -72,29 +77,34 @@ public class Camera {
         if (!cameraExists(Back_camera_id)) {
             // TODO back camera doesn't exist, exit
             Log.e(LOCAL_TAG, "Camera didn't exist, exiting");
-            finish();
+            Main_activity.finish();
             Log.e(LOCAL_TAG, "END");
             return;
         }
-        Camera_attributes = Camera_manager.getCameraCharacteristics(Back_camera_id);
+
+        try {
+            Camera_attributes = Camera_manager.getCameraCharacteristics(Back_camera_id);
+        } catch (Exception e) {
+            Log.e(LOCAL_TAG, "EXCEPTION: " + e.getLocalizedMessage());
+        }
         Stream_config = Camera_attributes.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
 
         if (outdatedHardware()) {
             // TODO hardware is too old, exit
             Log.e(LOCAL_TAG, "Camera hardware is outdated, exiting");
-            finish();
+            Main_activity.finish();
             Log.e(LOCAL_TAG, "END");
             return;
         }
 
-        Log.e(LOCAL_TAG, "Camera ready to be configured");
-        configureCamera();
-
-        Log.e(LOCAL_TAG, "Camera ready to be activated");
-        Camera_threads = new CameraThreads();
-        Camera_manager.openCamera(Back_camera_id,
-                Camera_threads.Camera_state, Camera_threads.Camera_handler);
-
+        Log.e(LOCAL_TAG, "Camera ready to be initialized");
+        Camera_threads = new CameraThreads(this);
+        try {
+            Camera_manager.openCamera(Back_camera_id,
+                    Camera_threads.Camera_state, Camera_threads.Camera_handler);
+        } catch (Exception e) {
+            Log.e(LOCAL_TAG, "EXCEPTION: " + e.getLocalizedMessage());
+        }
     }
 
     /**
@@ -104,21 +114,34 @@ public class Camera {
         final String LOCAL_TAG = TAG.concat(".getCameraIDs()");
         Log.e(LOCAL_TAG, DIVIDER);
 
-        for (String camera_id : Camera_manager.getCameraIdList()) {
-            Camera_attributes = Camera_manager.getCameraCharacteristics(camera_id);
+        String[] camera_id_list;
+        try {
+            camera_id_list = Camera_manager.getCameraIdList();
+            for (String camera_id : camera_id_list) {
+                try {
+                    Camera_attributes = Camera_manager.getCameraCharacteristics(camera_id);
+                }
+                catch (Exception e) {
+                    Log.e(LOCAL_TAG, "EXCEPTION: " + e.getLocalizedMessage());
+                }
 
-            if (Camera_attributes.get(CameraCharacteristics.LENS_FACING) == BACK_CAMERA) {
-                Back_camera_id = camera_id;
-                Log.e(LOCAL_TAG, "Back camera found, ID = " + Back_camera_id);
-            }
-            else if (Camera_attributes.get(CameraCharacteristics.LENS_FACING) == FRONT_CAMERA) {
-                Front_camera_id = camera_id;
-                Log.e(LOCAL_TAG, "Front camera found, ID = " + Front_camera_id);
-            }
-            else {
-                Log.e(LOCAL_TAG, "Unknown camera found, ID = " + camera_id);
+                if (Camera_attributes.get(CameraCharacteristics.LENS_FACING) == BACK_CAMERA) {
+                    Back_camera_id = camera_id;
+                    Log.e(LOCAL_TAG, "Back camera found, ID = " + Back_camera_id);
+                }
+                else if (Camera_attributes.get(CameraCharacteristics.LENS_FACING) == FRONT_CAMERA) {
+                    Front_camera_id = camera_id;
+                    Log.e(LOCAL_TAG, "Front camera found, ID = " + Front_camera_id);
+                }
+                else {
+                    Log.e(LOCAL_TAG, "Unknown camera found, ID = " + camera_id);
+                }
             }
         }
+        catch (Exception e) {
+            Log.e(LOCAL_TAG, "EXCEPTION: " + e.getLocalizedMessage());
+        }
+
         Log.e(LOCAL_TAG, "RETURN");
     }
 
@@ -189,10 +212,25 @@ public class Camera {
         final String LOCAL_TAG = TAG.concat(".configureCamera()");
         Log.e(LOCAL_TAG, DIVIDER);
 
+        Camera_device = Camera_threads.Camera_device;
+        try {
+            Capture_builder = Camera_device.createCaptureRequest(CameraDevice.TEMPLATE_MANUAL);
+        }
+        catch (Exception e) {
+            Log.e(LOCAL_TAG, "EXCEPTION: " + e.getLocalizedMessage());
+        }
+        if (Capture_builder == null) {
+            Log.e(LOCAL_TAG, "POOP");
+        }
+
+        if (!Stream_config.isOutputSupportedFor(IMAGE_FORMAT)) {
+            Log.e(LOCAL_TAG, "output format is not supported :-(");
+        }
         // Find maximum output size (area)
         Size[] output_sizes = Stream_config.getOutputSizes(IMAGE_FORMAT);
         Image_size = output_sizes[0];
         for (Size size : output_sizes) {
+            Log.e(LOCAL_TAG, "Supported Size: " + size.toString());
             long area     =       size.getWidth() *       size.getHeight();
             long area_max = Image_size.getWidth() * Image_size.getHeight();
             if (area > area_max) {
@@ -201,6 +239,10 @@ public class Camera {
         }
         Log.e(LOCAL_TAG, "Image format: " + IMAGE_TYPE);
         Log.e(LOCAL_TAG, "Maximum image size: " + Image_size.toString());
+
+        if (Capture_builder == null) {
+            Log.e(LOCAL_TAG, "crap capture builder is null");
+        }
 
         // Disable the flash
         Capture_builder.set(CaptureRequest.FLASH_MODE, CameraMetadata.FLASH_MODE_OFF);
@@ -217,6 +259,12 @@ public class Camera {
         configureLens();
         configureStatistics();
         configureTiming();
+
+
+        Log.e(LOCAL_TAG, "That's it for now, shutting down");
+        Camera_threads.shutdown();
+        Log.e(LOCAL_TAG, "RETURN");
+
     }
 
     /**
@@ -260,9 +308,9 @@ public class Camera {
                 CameraMetadata.COLOR_CORRECTION_MODE_TRANSFORM_MATRIX);
         Capture_builder.set(CaptureRequest.COLOR_CORRECTION_TRANSFORM,
                 new ColorSpaceTransform(new int[] {
-                        1, 0, 0,
-                        0, 1, 0,
-                        0, 0, 1
+                        1, 1,  0, 1,  0, 1,    // numerator1, denominator1, num2, den2, num3, den3
+                        0, 1,  1, 1,  0, 1,    // numerator4, denominator4, num5, den5, num6, den6
+                        0, 1,  0, 1,  1, 1     // numerator7, denominator7, num8, den8, num9, den9
                 }));
         Log.e(LOCAL_TAG, "Color gains/transformations unity/linear");
 
@@ -410,3 +458,50 @@ public class Camera {
     }
 
 }
+
+        /*
+        int[] supported = Stream_config.getOutputFormats();
+        for (int format : supported) {
+            switch (format) {
+                case ImageFormat.DEPTH16 :
+                    Log.e(LOCAL_TAG, "Depth16 supported"); break;
+                case ImageFormat.DEPTH_POINT_CLOUD :
+                    Log.e(LOCAL_TAG, "Depth point cloud supported"); break;
+                case ImageFormat.FLEX_RGB_888 :
+                    Log.e(LOCAL_TAG, "Flex RGB 888 supported"); break;
+                case ImageFormat.JPEG :
+                    Log.e(LOCAL_TAG, "JPEG supported"); break;
+                case ImageFormat.NV16 :
+                    Log.e(LOCAL_TAG, "NV 16 supported"); break;
+                case ImageFormat.NV21 :
+                    Log.e(LOCAL_TAG, "NV 21 supported"); break;
+                case ImageFormat.PRIVATE :
+                    Log.e(LOCAL_TAG, "Private supported"); break;
+                case ImageFormat.RAW10 :
+                    Log.e(LOCAL_TAG, "Raw 10 supported"); break;
+                case ImageFormat.RAW12 :
+                    Log.e(LOCAL_TAG, "Raw 12 supported"); break;
+                case ImageFormat.RAW_PRIVATE :
+                    Log.e(LOCAL_TAG, "Raw private supported"); break;
+                case ImageFormat.RAW_SENSOR :
+                    Log.e(LOCAL_TAG, "Raw sensor supported"); break;
+                case ImageFormat.RGB_565 :
+                    Log.e(LOCAL_TAG, "RGB 586 supported"); break;
+                case ImageFormat.UNKNOWN :
+                    Log.e(LOCAL_TAG, "Unknown supported"); break;
+                case ImageFormat.YUV_420_888 :
+                    Log.e(LOCAL_TAG, "YUV 420 888 supported"); break;
+                case ImageFormat.YUV_422_888 :
+                    Log.e(LOCAL_TAG, "YUV 422 888 supported"); break;
+                case ImageFormat.YUV_444_888 :
+                    Log.e(LOCAL_TAG, "YUV 444 888 supported"); break;
+                case ImageFormat.YUY2 :
+                    Log.e(LOCAL_TAG, "YUY2 supported"); break;
+                case ImageFormat.YV12 :
+                    Log.e(LOCAL_TAG, "YV12 supported"); break;
+                default :
+                    Log.e(LOCAL_TAG, "Something else supported: " + Integer.toString(format));
+                    break;
+            }
+        }
+        */
