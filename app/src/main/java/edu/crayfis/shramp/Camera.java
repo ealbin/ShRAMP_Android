@@ -105,6 +105,8 @@ public class Camera {
         } catch (Exception e) {
             Log.e(LOCAL_TAG, "EXCEPTION: " + e.getLocalizedMessage());
         }
+
+        Log.e(LOCAL_TAG, "RETURN");
     }
 
     /**
@@ -382,6 +384,9 @@ public class Camera {
         // Use maximal (darkest) lens filtering
         float[] lens_filters = Camera_attributes.get(
                 CameraCharacteristics.LENS_INFO_AVAILABLE_FILTER_DENSITIES);
+        for (float filter : lens_filters) {
+            Log.e(LOCAL_TAG, "Lens filter option [EV] = " + Float.toString(filter));
+        }
         float lens_filter_max = lens_filters[ lens_filters.length - 1 ];
         Capture_builder.set(CaptureRequest.LENS_FILTER_DENSITY, lens_filter_max);
         Log.e(LOCAL_TAG, "Filter density set to maximum [EV] = " +

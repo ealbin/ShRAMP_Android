@@ -359,6 +359,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse {
             toast.show();
         }
         */
+        Log.e(LOCAL_TAG, "RETURN");
         // TODO: dies if no access
     }
 

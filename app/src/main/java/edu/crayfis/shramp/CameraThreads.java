@@ -162,6 +162,8 @@ public class CameraThreads {
         Camera_thread = new HandlerThread(THREAD_NAME, Process.THREAD_PRIORITY_MORE_FAVORABLE);
         Camera_thread.start();
         Camera_handler = new Handler(Camera_thread.getLooper());
+
+        Log.e(LOCAL_TAG, "RETURN");
     }
 
     public void shutdown() {
