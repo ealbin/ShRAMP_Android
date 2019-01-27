@@ -22,7 +22,7 @@ import java.util.Date;
 public class SSH extends AsyncTask<String, Void, String> {
     final String TAG = "SSH";
 
-    // This is a link back to the MainActivity set in onCreate.
+    // This is a link back to the MaineShRAMP set in onCreate.
     public AsyncResponse mainactivity = null;
 
     /**
