@@ -40,16 +40,21 @@ public class Camera extends CameraSetup {
     // Class Methods
     //--------------
 
+    /**
+     * Create Camera object for controlling a physical camera device
+     * @param main_activity reference to MaineShRAMP
+     * @param quit_action reference to method to run if fatal error is encountered
+     */
     Camera(@NonNull MaineShRAMP main_activity, @NonNull Runnable quit_action) {
         super(main_activity, quit_action);
 
-        final String LOCAL_TAG = TAG.concat(".Camera()");
+        final String LOCAL_TAG = TAG.concat(".Camera(MaineShRAMP, Runnable)");
         Log.e(LOCAL_TAG, DIVIDER);
 
         Log.e(LOCAL_TAG, "Instantiating callbacks");
         instantiateCallbacks();
 
-        Log.e(LOCAL_TAG, "Instantiating threads");
+        Log.e(LOCAL_TAG, "Instantiating handlers");
         mHandler_thread = new HandlerThread(THREAD_NAME, Process.THREAD_PRIORITY_MORE_FAVORABLE);
         mHandler_thread.start();
         mHandler = new Handler(mHandler_thread.getLooper());
@@ -57,6 +62,9 @@ public class Camera extends CameraSetup {
         Log.e(LOCAL_TAG, "RETURN");
     }
 
+    /**
+     * Instantiate camera callback functions
+     */
     private void instantiateCallbacks() {
         final String LOCAL_TAG = TAG.concat(".instantiateCallbacks()");
         Log.e(LOCAL_TAG, DIVIDER);
@@ -64,20 +72,28 @@ public class Camera extends CameraSetup {
         instantiateDeviceState();
         instantiateSessionState();
         instantiateSessionCapture();
+        Log.e(LOCAL_TAG, "RETURN");
     }
 
+    /**
+     * Instantiate CameraDevice.StateCallback
+     * Define camera actions for onOpened, onDisconnected and onError
+     * Camera.super.mDevice is set in onOpened
+     * Camera.super.configureCamera() is called in onOpened
+     */
     private void instantiateDeviceState() {
         final String LOCAL_TAG = TAG.concat(".instantiateDeviceState()");
 
         mDevice_state_callback = new CameraDevice.StateCallback() {
             @Override
             public void onOpened(@NonNull CameraDevice camera_device) {
-                Log.e(LOCAL_TAG, "onOpened()");
+                Log.e(LOCAL_TAG, "onOpened(CameraDevice)");
 
                 Camera.super.mDevice = camera_device;
 
                 Log.e(LOCAL_TAG, "Configuring camera");
                 Camera.super.configureCamera();
+
                 Log.e(LOCAL_TAG, "Shutting down for now");
                 shutdown();
                 //createStillSession();
@@ -86,37 +102,48 @@ public class Camera extends CameraSetup {
 
             @Override
             public void onDisconnected(@NonNull CameraDevice camera_device) {
-                Log.e(LOCAL_TAG, "onDisconnected");
-
+                Log.e(LOCAL_TAG, "onDisconnected(CameraDevice)");
                 shutdown();
+                Log.e(LOCAL_TAG, "RETURN");
             }
 
             @Override
             public void onError(@NonNull CameraDevice camera_device, int error) {
-                Log.e(LOCAL_TAG, "onError");
-
+                Log.e(LOCAL_TAG, "onError(CameraDevice, int)");
                 // TODO process error
                 shutdown();
+                Log.e(LOCAL_TAG, "RETURN");
             }
         };
     }
 
+    /**
+     * Instantiate CameraCaptureSession.StateCallback
+     * Define session actions for onConfigured and onConfiguredFailed
+     */
     private void instantiateSessionState() {
         final String LOCAL_TAG = TAG.concat(".instantiateSessionState()");
 
         mSession_state_callback = new CameraCaptureSession.StateCallback() {
             @Override
             public void onConfigured(@NonNull CameraCaptureSession session) {
-                Log.e(LOCAL_TAG, "Session configured");
+                Log.e(LOCAL_TAG, "onConfigured(CameraCaptureSession)");
+                Log.e(LOCAL_TAG, "RETURN");
             }
 
             @Override
             public void onConfigureFailed(@NonNull CameraCaptureSession session) {
-                Log.e(LOCAL_TAG, "Session configuration **FAILED**");
+                Log.e(LOCAL_TAG, "onConfigureFailed(CameraCaptureSession)");
+                Log.e(LOCAL_TAG, "RETURN");
             }
         };
     }
 
+    /**
+     * Instantiate CameraCaptureSession.CaptureCallback
+     * Define session actions for onCaptureStarted, onCaptureProgressed, onCaptureCompleted,
+     * onCaptureFailed, onCaptureSequenceCompleted, onCaptureSequenceAborted and onCaptureBufferLost
+     */
     private void instantiateSessionCapture() {
         final String LOCAL_TAG = TAG.concat(".instantiateSessionCapture()");
 
@@ -126,7 +153,8 @@ public class Camera extends CameraSetup {
                                          @NonNull CaptureRequest request,
                                          long timestamp, long frameNumber) {
                 super.onCaptureStarted(session, request, timestamp, frameNumber);
-                Log.e(LOCAL_TAG, "Capture started");
+                Log.e(LOCAL_TAG, "onCaptureStarted(CameraCaptureSession, ...)");
+                Log.e(LOCAL_TAG, "RETURN");
             }
 
             @Override
@@ -134,7 +162,8 @@ public class Camera extends CameraSetup {
                                             @NonNull CaptureRequest request,
                                             @NonNull CaptureResult partialResult) {
                 super.onCaptureProgressed(session, request, partialResult);
-                Log.e(LOCAL_TAG, "Capture progressing");
+                Log.e(LOCAL_TAG, "onCaptureProgressed(CameraCaptureSession, ...)");
+                Log.e(LOCAL_TAG,"RETURN");
             }
 
             @Override
@@ -142,7 +171,8 @@ public class Camera extends CameraSetup {
                                            @NonNull CaptureRequest request,
                                            @NonNull TotalCaptureResult result) {
                 super.onCaptureCompleted(session, request, result);
-                Log.e(LOCAL_TAG, "Capture completed");
+                Log.e(LOCAL_TAG, "onCaptureCompleted(CameraCaptureSession, ...)");
+                Log.e(LOCAL_TAG, "RETURN");
             }
 
             @Override
@@ -150,21 +180,24 @@ public class Camera extends CameraSetup {
                                         @NonNull CaptureRequest request,
                                         @NonNull CaptureFailure failure) {
                 super.onCaptureFailed(session, request, failure);
-                Log.e(LOCAL_TAG, "Capture **FAILED**");
+                Log.e(LOCAL_TAG, "onCaptureFailed(CameraCaptureSession, ...)");
+                Log.e(LOCAL_TAG, "RETURN");
             }
 
             @Override
             public void onCaptureSequenceCompleted(@NonNull CameraCaptureSession session,
                                                    int sequenceId, long frameNumber) {
                 super.onCaptureSequenceCompleted(session, sequenceId, frameNumber);
-                Log.e(LOCAL_TAG, "Capture sequence completed");
+                Log.e(LOCAL_TAG, "onCaptureSequenceCompleted(CameraCaptureSession, ...)");
+                Log.e(LOCAL_TAG, "RETURN");
             }
 
             @Override
             public void onCaptureSequenceAborted(@NonNull CameraCaptureSession session,
                                                  int sequenceId) {
                 super.onCaptureSequenceAborted(session, sequenceId);
-                Log.e(LOCAL_TAG, "Capture sequence aborted");
+                Log.e(LOCAL_TAG, "onCaptureSequenceAborted(CameraCaptureSession, ...)");
+                Log.e(LOCAL_TAG, "RETURN");
             }
 
             @Override
@@ -172,19 +205,24 @@ public class Camera extends CameraSetup {
                                             @NonNull CaptureRequest request,
                                             @NonNull Surface target, long frameNumber) {
                 super.onCaptureBufferLost(session, request, target, frameNumber);
-                Log.e(LOCAL_TAG, "Capture buffer lost");
+                Log.e(LOCAL_TAG, "onCaptureBufferLost(CameraCaptureSession, ...)");
+                Log.e(LOCAL_TAG, "RETURN");
             }
         };
     }
 
-
-    public void shutdown() {
+    /**
+     * Safely shut down physical camera device and free handlers
+     */
+    private void shutdown() {
         final String LOCAL_TAG = TAG.concat(".shutdown()");
         Log.e(LOCAL_TAG, DIVIDER);
 
+        Log.e(LOCAL_TAG, "Closing camera");
         Camera.super.mDevice.close();
         Camera.super.mDevice= null;
 
+        Log.e(LOCAL_TAG, "Quitting handler");
         mHandler_thread.quitSafely();
         try {
             mHandler_thread.join(10000);  // wait 10 sec for thread to die
@@ -195,5 +233,6 @@ public class Camera extends CameraSetup {
         mHandler_thread = null;
 
         mHandler= null;
+        Log.e(LOCAL_TAG, "RETURN");
     }
 }

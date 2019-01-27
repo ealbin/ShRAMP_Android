@@ -60,7 +60,9 @@ public class CameraSetup {
     //--------------
 
     /**
-     * TODO:  Entry point, edit this
+     * Create CameraSetup object for configuring the physical device to operation parameters
+     * @param main_activity reference to MaineShRAMP
+     * @param quit_action reference to method to run if fatal error is encountered
      */
     CameraSetup(@NonNull MaineShRAMP main_activity, @NonNull Runnable quit_action) {
         final String LOCAL_TAG = TAG.concat(".CameraSetup()");
@@ -71,46 +73,49 @@ public class CameraSetup {
 
         mManager = (CameraManager) mMaine_shramp.getSystemService(Context.CAMERA_SERVICE);
         if (mManager == null) {
-            // TODO ERROR OUT
-        }
-
-        getCameraIDs();
-
-        if (!cameraExists(mBack_camera_id)) {
-            // TODO back camera doesn't exist, exit
-            Log.e(LOCAL_TAG, "CameraSetup didn't exist, exiting");
-            mQuit_action.run();
+            Log.e(LOCAL_TAG, "Camera service unreachable");
+            ChatterBox chatterbox = new ChatterBox(mMaine_shramp);
+            String title = "Uh oh";
+            String message = "Something odd has occurred. \n"
+                            + "The camera service is not available. \n"
+                            + "Sorry, but there is no chance of survival now. \n"
+                            + ".... rose......bud...blaugghhhhhhhh";
+            String button = "Accept defeat";
+            chatterbox.displayBasicAlert(title, message, button, mQuit_action);
             Log.e(LOCAL_TAG, "RETURN");
             return;
         }
+
+        getCameraIDs();
 
         try {
             mCharacteristics = mManager.getCameraCharacteristics(mBack_camera_id);
         } catch (Exception e) {
             Log.e(LOCAL_TAG, "EXCEPTION: " + e.getLocalizedMessage());
+            ChatterBox chatterbox = new ChatterBox(mMaine_shramp);
+            String title = "Runtime Exception!";
+            String message = "CameraSetup.CameraSetup()\n"
+                            + e.getLocalizedMessage();
+            String button = "Accept defeat";
+            chatterbox.displayBasicAlert(title, message, button, mQuit_action);
+            Log.e(LOCAL_TAG, "RETURN");
+            return;
         }
         mStream_config = mCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
 
         if (outdatedHardware()) {
-            // TODO hardware is too old, exit
             Log.e(LOCAL_TAG, "CameraSetup hardware is outdated, exiting");
-            mQuit_action.run();
+            ChatterBox chatterbox = new ChatterBox(mMaine_shramp);
+            String title = "Womp womp";
+            String message = "Camera hardware level 3 required.\n"
+                            + "Sorry, but you don't cut the mustard.";
+            String button = "Accept defeat";
+            chatterbox.displayBasicAlert(title, message, button, mQuit_action);
             Log.e(LOCAL_TAG, "RETURN");
             return;
         }
 
-        /*
-        Log.e(LOCAL_TAG, "CameraSetup ready to be initialized");
-        Camera_threads = new Camera(this);
-        try {
-            Camera_manager.openCamera(Back_camera_id,
-                    Camera_threads.Camera_state, Camera_threads.Camera_handler);
-        } catch (Exception e) {
-            Log.e(LOCAL_TAG, "EXCEPTION: " + e.getLocalizedMessage());
-        }
-
         Log.e(LOCAL_TAG, "RETURN");
-        */
     }
 
     /**
@@ -124,18 +129,19 @@ public class CameraSetup {
         try {
             camera_id_list = mManager.getCameraIdList();
             for (String camera_id : camera_id_list) {
-                try {
-                    mCharacteristics = mManager.getCameraCharacteristics(camera_id);
-                }
-                catch (Exception e) {
-                    Log.e(LOCAL_TAG, "EXCEPTION: " + e.getLocalizedMessage());
+                mCharacteristics = mManager.getCameraCharacteristics(camera_id);
+
+                Integer lens_facing = mCharacteristics.get(CameraCharacteristics.LENS_FACING);
+                if (lens_facing == null) {
+                    Log.e(LOCAL_TAG, "CameraCharacteristics.LENS_FACING is null, skipping");
+                    continue;
                 }
 
-                if (mCharacteristics.get(CameraCharacteristics.LENS_FACING) == BACK_CAMERA) {
+                if (lens_facing == BACK_CAMERA) {
                     mBack_camera_id = camera_id;
                     Log.e(LOCAL_TAG, "Back camera found, ID = " + mBack_camera_id);
                 }
-                else if (mCharacteristics.get(CameraCharacteristics.LENS_FACING) == FRONT_CAMERA) {
+                else if (lens_facing == FRONT_CAMERA) {
                     mFront_camera_id = camera_id;
                     Log.e(LOCAL_TAG, "Front camera found, ID = " + mFront_camera_id);
                 }
@@ -143,31 +149,34 @@ public class CameraSetup {
                     Log.e(LOCAL_TAG, "Unknown camera found, ID = " + camera_id);
                 }
             }
+
+            if (mBack_camera_id == null) {
+                Log.e(LOCAL_TAG, "Back camera cannot be found");
+                ChatterBox chatterbox = new ChatterBox(mMaine_shramp);
+                String title = "Uh oh";
+                String message = "Something odd has occurred. \n"
+                        + "Cannot connect to the back camera.. \n"
+                        + "Sorry, but there is no chance of survival now. \n"
+                        + ".... rose......bud...blaugghhhhhhhh";
+                String button = "Accept defeat";
+                chatterbox.displayBasicAlert(title, message, button, mQuit_action);
+                Log.e(LOCAL_TAG, "RETURN");
+                return;
+            }
         }
         catch (Exception e) {
             Log.e(LOCAL_TAG, "EXCEPTION: " + e.getLocalizedMessage());
-        }
-
-        Log.e(LOCAL_TAG, "RETURN");
-    }
-
-    /**
-     * Checks if camera ID's for front or back exist and have been initialized
-     * @param camera_id camera ID to check
-     * @return true if initialized (found), false if does not exist
-     */
-    protected boolean cameraExists(String camera_id) {
-        final String LOCAL_TAG = TAG.concat(".cameraExists()");
-        Log.e(LOCAL_TAG, DIVIDER);
-
-        if (camera_id == null) {
-            Log.e(LOCAL_TAG, "Requested camera does not exist");
+            ChatterBox chatterbox = new ChatterBox(mMaine_shramp);
+            String title = "Runtime Exception!";
+            String message = "CameraSetup.getCameraIDs()\n"
+                    + e.getLocalizedMessage();
+            String button = "Accept defeat";
+            chatterbox.displayBasicAlert(title, message, button, mQuit_action);
             Log.e(LOCAL_TAG, "RETURN");
-            return false;
+            return;
         }
-        Log.e(LOCAL_TAG, "CameraSetup confirmed to exist");
+
         Log.e(LOCAL_TAG, "RETURN");
-        return true;
     }
 
     /**
@@ -178,7 +187,23 @@ public class CameraSetup {
         final String LOCAL_TAG = TAG.concat(".outdatedHardware()");
         Log.e(LOCAL_TAG, DIVIDER);
 
-        int hardware_level = mCharacteristics.get(CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL);
+        Integer hardware_level = mCharacteristics.get(
+                CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL);
+
+        if (hardware_level == null) {
+            Log.e(LOCAL_TAG, "Hardware level unobtainable");
+            ChatterBox chatterbox = new ChatterBox(mMaine_shramp);
+            String title = "Uh oh";
+            String message = "Something odd has occurred. \n"
+                    + "The camera hardware level is not available. \n"
+                    + "Sorry, but there is no chance of survival now. \n"
+                    + ".... rose......bud...blaugghhhhhhhh";
+            String button = "Accept defeat";
+            chatterbox.displayBasicAlert(title, message, button, mQuit_action);
+            Log.e(LOCAL_TAG, "RETURN");
+            return true;
+        }
+
         if (hardware_level == CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_3) {
             Log.e(LOCAL_TAG, "Level 3 CameraSetup Hardware");
             Log.e(LOCAL_TAG, "RETURN");
@@ -212,7 +237,7 @@ public class CameraSetup {
     }
 
     /**
-     * Configure camera for data taking
+     * Configure camera for data taking -- called from subclass Camera
      */
     protected void configureCamera() {
         final String LOCAL_TAG = TAG.concat(".configureCamera()");
@@ -223,20 +248,35 @@ public class CameraSetup {
         }
         catch (Exception e) {
             Log.e(LOCAL_TAG, "EXCEPTION: " + e.getLocalizedMessage());
-        }
-        if (mCapture_builder == null) {
-            Log.e(LOCAL_TAG, "POOP");
+            ChatterBox chatterbox = new ChatterBox(mMaine_shramp);
+            String title = "Runtime Exception!";
+            String message = "CameraSetup.configureCamera()\n"
+                            + e.getLocalizedMessage();
+            String button = "Accept defeat";
+            chatterbox.displayBasicAlert(title, message, button, mQuit_action);
+            Log.e(LOCAL_TAG, "RETURN");
+            return;
         }
 
         if (!mStream_config.isOutputSupportedFor(IMAGE_FORMAT)) {
             Log.e(LOCAL_TAG, "output format is not supported :-(");
+            ChatterBox chatterbox = new ChatterBox(mMaine_shramp);
+            String title = "Womp womp";
+            String message = "The desired output image format is \n"
+                    + "not supported :-( \n"
+                    + "Sorry, but there is no chance of survival now. \n"
+                    + ".... rose......bud...blaugghhhhhhhh";
+            String button = "Accept defeat";
+            chatterbox.displayBasicAlert(title, message, button, mQuit_action);
+            Log.e(LOCAL_TAG, "RETURN");
+            return;
         }
         // Find maximum output size (area)
         Size[] output_sizes = mStream_config.getOutputSizes(IMAGE_FORMAT);
         mImage_size = output_sizes[0];
         for (Size size : output_sizes) {
             Log.e(LOCAL_TAG, "Supported Size: " + size.toString());
-            long area     =       size.getWidth() *       size.getHeight();
+            long area     =        size.getWidth() * size.getHeight();
             long area_max = mImage_size.getWidth() * mImage_size.getHeight();
             if (area > area_max) {
                 mImage_size = size;
@@ -245,20 +285,22 @@ public class CameraSetup {
         Log.e(LOCAL_TAG, "Image format: " + IMAGE_TYPE);
         Log.e(LOCAL_TAG, "Maximum image size: " + mImage_size.toString());
 
-        if (mCapture_builder == null) {
-            Log.e(LOCAL_TAG, "crap capture builder is null");
-        }
-
         // Disable the flash
         mCapture_builder.set(CaptureRequest.FLASH_MODE, CameraMetadata.FLASH_MODE_OFF);
         Log.e(LOCAL_TAG, "Disabled flash");
 
         // Set to maximum analog sensitivity (no digital gain)
-        int max_sensitivity = mCharacteristics.get(
+        Integer max_sensitivity = mCharacteristics.get(
                 CameraCharacteristics.SENSOR_MAX_ANALOG_SENSITIVITY);
-        mCapture_builder.set(CaptureRequest.SENSOR_SENSITIVITY, max_sensitivity);
-        Log.e(LOCAL_TAG, "Max analog sensitivity = " + Integer.toString(max_sensitivity));
+        if (max_sensitivity == null ) {
+            Log.e(LOCAL_TAG, "***Max analog sensitivity is unknown***");
+        }
+        else {
+            mCapture_builder.set(CaptureRequest.SENSOR_SENSITIVITY, max_sensitivity);
+            Log.e(LOCAL_TAG, "Max analog sensitivity = " + Integer.toString(max_sensitivity));
+        }
 
+        Log.e(LOCAL_TAG, "Configuring other aspects");
         configureControl();
         configureCorrections();
         configureLens();
@@ -266,7 +308,6 @@ public class CameraSetup {
         configureTiming();
 
         Log.e(LOCAL_TAG, "RETURN");
-
     }
 
     /**
@@ -352,6 +393,7 @@ public class CameraSetup {
         Log.e(LOCAL_TAG, "Gamma/Contrast curve gain set to linear");
 
         // Not necissary if using RAW images:
+        //------------------------------------
         // Disable post-raw sensitivity boost = raw-sensitivity * this-value / 100 (API 24)
         //Capture_builder.set(CaptureRequest.CONTROL_POST_RAW_SENSITIVITY_BOOST, 100);
         // Disable post-raw distortion correction (API 28)
@@ -369,36 +411,51 @@ public class CameraSetup {
         final String LOCAL_TAG = TAG.concat(".configureLens()");
         Log.e(LOCAL_TAG, DIVIDER);
 
-        // Set focus distance to inifinity
+        // Set focus distance to infinity
         mCapture_builder.set(CaptureRequest.LENS_FOCUS_DISTANCE, 0.0f);
         Log.e(LOCAL_TAG, "Focus set to infinity");
 
         // Use minimal (darkest) lens aperture
         float[] lens_apertures = mCharacteristics.get(
                 CameraCharacteristics.LENS_INFO_AVAILABLE_APERTURES);
-        float lens_aperture_min = lens_apertures[0];
-        mCapture_builder.set(CaptureRequest.LENS_APERTURE, lens_aperture_min);
-        Log.e(LOCAL_TAG, "Aperture (f-number) set to minimum = " +
-                Float.toString(lens_aperture_min));
+        if (lens_apertures == null) {
+            Log.e(LOCAL_TAG, "***Lens apertures unavailable***");
+        }
+        else {
+            float lens_aperture_min = lens_apertures[0];
+            mCapture_builder.set(CaptureRequest.LENS_APERTURE, lens_aperture_min);
+            Log.e(LOCAL_TAG, "Aperture (f-number) set to minimum = " +
+                    Float.toString(lens_aperture_min));
+        }
 
         // Use maximal (darkest) lens filtering
         float[] lens_filters = mCharacteristics.get(
                 CameraCharacteristics.LENS_INFO_AVAILABLE_FILTER_DENSITIES);
-        for (float filter : lens_filters) {
-            Log.e(LOCAL_TAG, "Lens filter option [EV] = " + Float.toString(filter));
+        if (lens_filters == null) {
+            Log.e(LOCAL_TAG, "***Lens filters unavailable***");
         }
-        float lens_filter_max = lens_filters[ lens_filters.length - 1 ];
-        mCapture_builder.set(CaptureRequest.LENS_FILTER_DENSITY, lens_filter_max);
-        Log.e(LOCAL_TAG, "Filter density set to maximum [EV] = " +
-                Float.toString(lens_filter_max));
+        else {
+            for (float filter : lens_filters) {
+                Log.e(LOCAL_TAG, "Lens filter option [EV] = " + Float.toString(filter));
+            }
+            float lens_filter_max = lens_filters[ lens_filters.length - 1 ];
+            mCapture_builder.set(CaptureRequest.LENS_FILTER_DENSITY, lens_filter_max);
+            Log.e(LOCAL_TAG, "Filter density set to maximum [EV] = " +
+                    Float.toString(lens_filter_max));
+        }
 
         // Use maximal focal length
         float[] lens_focal_lengths = mCharacteristics.get(
                 CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS);
-        float lens_focal_max = lens_focal_lengths[ lens_focal_lengths.length - 1 ];
-        mCapture_builder.set(CaptureRequest.LENS_FOCAL_LENGTH, lens_focal_max);
-        Log.e(LOCAL_TAG, "Focal length set to maximum [mm] = " +
-                Float.toString(lens_focal_max));
+        if (lens_focal_lengths == null) {
+            Log.e(LOCAL_TAG, "***Lens focal lengths unavailable***");
+        }
+        else {
+            float lens_focal_max = lens_focal_lengths[ lens_focal_lengths.length - 1 ];
+            mCapture_builder.set(CaptureRequest.LENS_FOCAL_LENGTH, lens_focal_max);
+            Log.e(LOCAL_TAG, "Focal length set to maximum [mm] = " +
+                    Float.toString(lens_focal_max));
+        }
 
         // Disable mechanical lens stabilization
         mCapture_builder.set(CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE,
@@ -450,9 +507,14 @@ public class CameraSetup {
         // Set exposure time to minimum
         Range<Long> exposure_range = mCharacteristics.get(
                 CameraCharacteristics.SENSOR_INFO_EXPOSURE_TIME_RANGE);
-        Long exposure_min = exposure_range.getLower();
-        mCapture_builder.set(CaptureRequest.SENSOR_EXPOSURE_TIME, exposure_min);
-        Log.e(LOCAL_TAG, "Minimum exposure time [ns] = " + Long.toString(exposure_min));
+        if (exposure_range == null) {
+            Log.e(LOCAL_TAG, "***Exposure range unknown***");
+        }
+        else {
+            Long exposure_min = exposure_range.getLower();
+            mCapture_builder.set(CaptureRequest.SENSOR_EXPOSURE_TIME, exposure_min);
+            Log.e(LOCAL_TAG, "Minimum exposure time [ns] = " + Long.toString(exposure_min));
+        }
 
         // Set frame fastest frame duration
         long frame_min = mStream_config.getOutputMinFrameDuration(IMAGE_FORMAT, mImage_size);
@@ -462,10 +524,15 @@ public class CameraSetup {
         Log.e(LOCAL_TAG, "RETURN");
     }
 
-}
+    /**
+     * Never used except for debug purposes.
+     * Print supported image formats to the Log.
+     */
+    private void debugGetFormats() {
+        final String LOCAL_TAG = TAG.concat(".debugGetFormats()");
+        Log.e(LOCAL_TAG, DIVIDER);
 
-        /*
-        int[] supported = Stream_config.getOutputFormats();
+        int[] supported = mStream_config.getOutputFormats();
         for (int format : supported) {
             switch (format) {
                 case ImageFormat.DEPTH16 :
@@ -509,4 +576,7 @@ public class CameraSetup {
                     break;
             }
         }
-        */
+        Log.e(LOCAL_TAG, "RETURN");
+    }
+
+}
