@@ -21,7 +21,7 @@ import android.util.Size;
 
 
 @TargetApi(Build.VERSION_CODES.LOLLIPOP) // 21
-public class CameraSetup {
+public abstract class CameraSetup {
     //**********************************************************************************************
     // Class Variables
     //----------------

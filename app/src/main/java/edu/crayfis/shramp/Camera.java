@@ -36,6 +36,11 @@ public class Camera extends CameraSetup {
     protected Handler       mHandler;
     protected HandlerThread mHandler_thread;
 
+    // capture
+    protected CaptureRequest mCapture_request;
+    protected CameraCaptureSession mCapture_session;
+    protected CaptureProcessing mCapture_processing;
+
     //**********************************************************************************************
     // Class Methods
     //--------------
@@ -59,6 +64,13 @@ public class Camera extends CameraSetup {
         mHandler_thread.start();
         mHandler = new Handler(mHandler_thread.getLooper());
 
+        Log.e(LOCAL_TAG, "Opening camera");
+        try {
+            mManager.openCamera(mBack_camera_id, mDevice_state_callback, mHandler);
+        }
+        catch (Exception e) {
+            Log.e(LOCAL_TAG, "EXCEPTION: " + e.getLocalizedMessage());
+        }
         Log.e(LOCAL_TAG, "RETURN");
     }
 
@@ -78,8 +90,8 @@ public class Camera extends CameraSetup {
     /**
      * Instantiate CameraDevice.StateCallback
      * Define camera actions for onOpened, onDisconnected and onError
-     * Camera.super.mDevice is set in onOpened
-     * Camera.super.configureCamera() is called in onOpened
+     * mDevice is set in onOpened
+     * configureCamera() is called in onOpened
      */
     private void instantiateDeviceState() {
         final String LOCAL_TAG = TAG.concat(".instantiateDeviceState()");
@@ -89,10 +101,14 @@ public class Camera extends CameraSetup {
             public void onOpened(@NonNull CameraDevice camera_device) {
                 Log.e(LOCAL_TAG, "onOpened(CameraDevice)");
 
-                Camera.super.mDevice = camera_device;
+                mDevice = camera_device;
 
                 Log.e(LOCAL_TAG, "Configuring camera");
-                Camera.super.configureCamera();
+                configureCamera();
+
+                Log.e(LOCAL_TAG, "Setting up capture processing");
+                mCapture_processing = new CaptureProcessing(mMaine_shramp, mImage_size);
+                mCapture_builder.addTarget(mCapture_processing.mSurface);
 
                 Log.e(LOCAL_TAG, "Shutting down for now");
                 shutdown();
@@ -128,6 +144,14 @@ public class Camera extends CameraSetup {
             @Override
             public void onConfigured(@NonNull CameraCaptureSession session) {
                 Log.e(LOCAL_TAG, "onConfigured(CameraCaptureSession)");
+                mCapture_request = mCapture_builder.build();
+                mCapture_session = session;
+                try {
+                    mCapture_session.setRepeatingRequest(mCapture_request, null, mHandler);
+                }
+                catch (Exception e) {
+                    Log.e(LOCAL_TAG, "EXCEPTION: " + e.getLocalizedMessage());
+                }
                 Log.e(LOCAL_TAG, "RETURN");
             }
 
@@ -219,8 +243,8 @@ public class Camera extends CameraSetup {
         Log.e(LOCAL_TAG, DIVIDER);
 
         Log.e(LOCAL_TAG, "Closing camera");
-        Camera.super.mDevice.close();
-        Camera.super.mDevice= null;
+        mDevice.close();
+        mDevice= null;
 
         Log.e(LOCAL_TAG, "Quitting handler");
         mHandler_thread.quitSafely();

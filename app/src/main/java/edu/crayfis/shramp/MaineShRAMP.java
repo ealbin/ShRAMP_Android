@@ -7,6 +7,7 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.SurfaceView;
 import android.widget.TextView;
 
 import java.io.File;
@@ -113,12 +114,14 @@ public class MaineShRAMP extends AppCompatActivity implements AsyncResponse {
 
         TextView textOut = (TextView) findViewById(R.id.textOut);
         textOut.append("Welcome to ShRAMP!\n");
-        textOut.append("(Shower Reconstructing Array of Mobile Phones)\n");
+        textOut.append("(Shower Reconstructing Application for Mobile Phones)\n");
         textOut.append("----------------------------------------------------------\n\n");
         textOut.append("Capturing a camera frame..  \n");
 
         Log.e(LOCAL_TAG, "Creating camera");
         mCamera = new Camera(this, mQuit_action);
+
+        //SurfaceView surface_view = findViewById(R.layout.activity_main.);
 
         //startActivity( new Intent(this, CameraSetup.class) );
 

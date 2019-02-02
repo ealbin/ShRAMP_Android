@@ -51,6 +51,7 @@ public class CheckPermissions {
         // if API 22 or below, user would have granted permissions on start
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             Log.e(LOCAL_TAG, "API 22 or below, permissions granted on start");
+            mPermission_granted_action.run();
             Log.e(LOCAL_TAG, "RETURN");
             return;
         }
