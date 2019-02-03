@@ -12,8 +12,11 @@ import android.hardware.camera2.CaptureFailure;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
+import android.hardware.camera2.params.ColorSpaceTransform;
 import android.hardware.camera2.params.OutputConfiguration;
+import android.hardware.camera2.params.RggbChannelVector;
 import android.hardware.camera2.params.StreamConfigurationMap;
+import android.hardware.camera2.params.TonemapCurve;
 import android.os.Build;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -25,6 +28,8 @@ import android.view.Surface;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.crayfis.shramp.Camera;
+
 @TargetApi(21) // Lollipop
 public class ShrampCameraCaptureSession {
 
@@ -32,113 +37,286 @@ public class ShrampCameraCaptureSession {
     private CameraCharacteristics   mCameraCharacteristics;
     private StreamConfigurationMap  mStreamConfigurationMap;
 
+    private CaptureConfiguration    mCaptureConfiguration;
+    private CameraConfiguration     mCameraConfiguration;
+
     private List<Integer>           mCameraAbilities;
     private CaptureRequest.Builder  mCaptureRequestBuilder;
 
-    private StreamFormat            mStreamFormat;
-    private CameraConfiguration     mCameraConfiguration;
 
-    private class StreamFormat {
-        private int  mOutputFormat;
-        private int  mBitsPerPixel;
-        private Size mOutputSize;
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    private class CaptureConfiguration {
+        private List<Integer> mmCameraAbilities;
+        private int           mmOutputFormat;
+        private int           mmBitsPerPixel;
+        private Size          mmOutputSize;
+        private boolean       mmUsingManualTemplate;
+        private boolean       mmUsingRawImageFormat;
 
-        StreamFormat(int outputFormat, int bitsPerPixel, Size outputSize) {
-            mOutputFormat = outputFormat;
-            mBitsPerPixel = bitsPerPixel;
-            mOutputSize   = outputSize;
+        CaptureConfiguration() {
+            loadCameraAbilities();
+            loadStreamFormat();
         }
 
+        private void loadCameraAbilities() {
+            mmCameraAbilities = new ArrayList<>();
+
+            assert mCameraCharacteristics != null;
+            int[] abilities = mCameraCharacteristics.get(
+                    CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES);
+
+            assert abilities != null;
+            for (int ability : abilities) {
+                mmCameraAbilities.add(ability);
+            }
+        }
+        public List<Integer> getCameraAbilities() {
+            return mmCameraAbilities;
+        }
+
+        private void loadStreamFormat() {
+            assert mStreamConfigurationMap != null;
+            assert mmCameraAbilities       != null;
+
+            int outputFormat;
+            if (mmCameraAbilities.contains(CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_RAW)) {
+                outputFormat = ImageFormat.RAW_SENSOR;
+                mmUsingRawImageFormat = true;
+            }
+            else {
+                outputFormat = ImageFormat.YUV_420_888;
+                mmUsingRawImageFormat = false;
+            }
+            int bitsPerPixel = ImageFormat.getBitsPerPixel(outputFormat);
+
+            Size[] outputSizes = mStreamConfigurationMap.getOutputSizes(outputFormat);
+            Size   outputSize = null;
+            for (Size size : outputSizes) {
+                if (outputSize == null) {
+                    outputSize = size;
+                    continue;
+                }
+                long outputArea = outputSize.getWidth() * outputSize.getHeight();
+                long sizeArea   =       size.getWidth() *       size.getHeight();
+                if (sizeArea > outputArea) {
+                    outputSize = size;
+                }
+            }
+            mmOutputFormat = outputFormat;
+            mmBitsPerPixel = bitsPerPixel;
+            mmOutputSize   = outputSize;
+        }
+        public boolean isOutputFormatRaw() {
+            return mmUsingRawImageFormat;
+        }
         public int getOutputFormat() {
-            return mOutputFormat;
+            return mmOutputFormat;
         }
-
         public int getBitsPerPixel() {
-            return mBitsPerPixel;
+            return mmBitsPerPixel;
+        }
+        public Size getOutputSize() {
+            return mmOutputSize;
         }
 
-        public Size getOutputSize() {
-            return mOutputSize;
+        public CaptureRequest.Builder getCaptureRequestBuilder() {
+
+            int captureTemplate;
+            if (mmCameraAbilities.contains(CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_MANUAL_SENSOR)) {
+                captureTemplate = CameraDevice.TEMPLATE_MANUAL;
+                mmUsingManualTemplate = true;
+            } else {
+                // preview is guarented on all camera devices
+                captureTemplate = CameraDevice.TEMPLATE_PREVIEW;
+                mmUsingManualTemplate = false;
+            }
+            try {
+                return mCameraDevice.createCaptureRequest(captureTemplate);
+            } catch (CameraAccessException e) {
+                // TODO EXCEPTION
+            }
+            return null;
+        }
+        public boolean usingManualCaptureRequestTemplate() {
+            return mmUsingManualTemplate;
         }
 
         // may return 0 if this function is not implemented, otherwise in nanoseconds
         public long getOutputMinFrameDuration() {
-            return mStreamConfigurationMap.getOutputMinFrameDuration(mOutputFormat, mOutputSize);
+            return mStreamConfigurationMap.getOutputMinFrameDuration(mmOutputFormat, mmOutputSize);
         }
 
         // additional time between frames in nanoseconds, 0 always for YUV_420_888
         public long getOutputStallDuration() {
-            return mStreamConfigurationMap.getOutputStallDuration(mOutputFormat, mOutputSize);
+            return mStreamConfigurationMap.getOutputStallDuration(mmOutputFormat, mmOutputSize);
         }
+
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
     private class CameraConfiguration {
-        private boolean mFlashOn;
-        private boolean mControlModeAuto;
+        private boolean mmFlashOn;
+        private boolean mmControlModeAuto;
+        private boolean mmCaptureIntentPreview;
 
-        private boolean mControlAeModeOn;
-        private boolean mControlAeLockOn;
-        private boolean mControlAeAntibandingOn;
-        private boolean mControlAeCompensationSet;
-        private boolean mAeTargetFpsRangeSet;
+        private boolean mmControlAwbModeOn;
+        private boolean mmControlAwbLockOn;
 
-        private boolean mCaptureIntentPreview;
+        private boolean mmControlAfModeOn;
 
-        private boolean mBlackLevelLocked;
-        private boolean mColorCorrectionAberrationOn;
+        private boolean mmControlAeModeOn;
+        private boolean mmControlAeLockOn;
+        private boolean mmControlAeAntibandingOn;
+        private boolean mmControlAeCompensationSet;
+        private boolean mmAeTargetFpsRangeSet;
 
+        private boolean mmBlackLevelLocked;
+        private boolean mmColorCorrectionAberrationOn;
+        private boolean mmColorCorrectionModeTransformOn;
+        private boolean mmUsingPostRawBoost;
+        private boolean mmEdgeModeOn;
+        private boolean mmHotPixelModeOn;
+        private boolean mmNoiseReductionOn;
+        private boolean mmShadingModeOn;
+        private boolean mmUsingContrastCurve;
+
+        private boolean mmOpticalStabilizationModeOn;
 
         CameraConfiguration() {
+            assert mCameraAbilities       != null;
+            assert mCaptureRequestBuilder != null;
+            // reference:  https://developer.android.com/reference/android/hardware/camera2/CaptureRequest
+
             configureFlash();
             configureControlMode();
-            // do AWB and FB before AE
-            configureAE();
             configureCaptureIntent();
+
+            // AWB and AF should be set before AE:
+            // reference:  https://developer.android.com/reference/android/hardware/camera2/CaptureRequest#CONTROL_AWB_MODE
+            // reference:  https://developer.android.com/reference/android/hardware/camera2/CameraMetadata#CONTROL_AE_MODE_OFF
+            configureAWB();
+            configureAF();
+            configureAE();
+
             configureCorrections();
+            configureOptics();
+            configureStatistics();
 
-
-            // temp - make warnings go away
-            boolean moo;
-            moo = isFlashOn();
-            moo = moo && isControlModeAuto();
-            moo = moo && isControlAeModeOn();
-            moo = moo && isControlAeLockOn();
-            moo = moo && isControlAeAntibandingOn();
-            moo = moo && isControlAeCompensationSet();
-            moo = moo && isAeTargetFpsRangeSet();
-
-            moo = moo && isCaptureIntentPreview();
-            moo = moo && isBlackLevelLocked();
-            moo = moo && isColorCorrectionAberrationModeOn();
-            if (moo) {
-                moo = false;
-            }
+            // irrelevant settings:
+            // CONTROL_AWB_REGIONS
+            //
+            // CONTROL_AF_REGIONS
+            // CONTROL_AF_TRIGGER
+            //
+            // CONTROL_AE_REGIONS
+            // CONTROL_AE_PRECAPTURE_TRIGGER
+            //
+            // CONTROL_ENABLE_ZSL
+            // CONTROL_SCENE_MODE
+            //
+            // JPEG_GPS_LOCATION
+            // JPEG_ORIENTATION
+            // JPEG_QUALITY
+            // JPEG_THUMBNAIL_QUALITY
+            //
+            // SCALAR_CROP_REGION
         }
+
+        //==========================================================================================
 
         private void configureFlash() {
             Boolean flashInfoAvailable = mCameraCharacteristics.get(
                     CameraCharacteristics.FLASH_INFO_AVAILABLE);
 
             if (flashInfoAvailable == null) {
-                mFlashOn = false;
+                mmFlashOn = false;
                 return;
             }
 
             if (flashInfoAvailable) {
                 mCaptureRequestBuilder.set(CaptureRequest.FLASH_MODE, CameraMetadata.FLASH_MODE_OFF);
             }
-            mFlashOn = false;
+            mmFlashOn = false;
         }
+
         public boolean isFlashOn() {
-            return mFlashOn;
+            return mmFlashOn;
         }
+
+        //==========================================================================================
 
         private void configureControlMode() {
 
+            mmControlModeAuto = true;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                int[] modes = mCameraCharacteristics.get(
+                int[] conModes = mCameraCharacteristics.get(
                         CameraCharacteristics.CONTROL_AVAILABLE_MODES);
+
+                if (conModes != null && conModes.length > 0) {
+
+                    List<Integer> controlModes = new ArrayList<>();
+                    for (int mode : conModes) {
+                        controlModes.add(mode);
+                    }
+
+                    int controlMode;
+                    if (controlModes.contains(CameraMetadata.CONTROL_MODE_OFF)) {
+                        controlMode = CameraMetadata.CONTROL_MODE_OFF;
+                        mmControlModeAuto = false;
+                    } else {
+                        controlMode = CameraMetadata.CONTROL_MODE_AUTO;
+                    }
+
+                    mCaptureRequestBuilder.set(
+                            CaptureRequest.CONTROL_MODE,
+                            controlMode);
+                }
+            } else {
+                mCaptureRequestBuilder.set(
+                        CaptureRequest.CONTROL_MODE,
+                        CameraMetadata.CONTROL_MODE_OFF);
+                mmControlModeAuto = false;
+            }
+        }
+
+        public boolean isControlModeAuto() {
+            return mmControlModeAuto;
+        }
+
+        //==========================================================================================
+
+        private void configureCaptureIntent() {
+
+            if (mCameraAbilities.contains(CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_MANUAL_SENSOR)) {
+                mCaptureRequestBuilder.set(
+                        CaptureRequest.CONTROL_CAPTURE_INTENT,
+                        CameraMetadata.CONTROL_CAPTURE_INTENT_MANUAL);
+                mmCaptureIntentPreview = false;
+                return;
+            }
+
+            mCaptureRequestBuilder.set(
+                    CaptureRequest.CONTROL_CAPTURE_INTENT,
+                    CameraMetadata.CONTROL_CAPTURE_INTENT_PREVIEW);
+            mmCaptureIntentPreview = true;
+        }
+
+        public boolean isCaptureIntentPreview() {
+            return mmCaptureIntentPreview;
+        }
+
+        //==========================================================================================
+
+        private void configureAWB() {
+
+            // CONTROL_AWB_MODE
+
+            mmControlAwbModeOn = false;
+            if (isControlModeAuto()) {
+                int[] modes = mCameraCharacteristics.get(
+                        CameraCharacteristics.CONTROL_AWB_AVAILABLE_MODES);
                 assert modes != null;
 
                 List<Integer> controlModes = new ArrayList<>();
@@ -146,26 +324,82 @@ public class ShrampCameraCaptureSession {
                     controlModes.add(mode);
                 }
 
-                if (controlModes.contains(CameraMetadata.CONTROL_MODE_OFF)) {
-                    mCaptureRequestBuilder.set(
-                            CaptureRequest.CONTROL_MODE,
-                            CameraMetadata.CONTROL_MODE_OFF);
-                    mControlModeAuto = false;
-                    return;
+                int awbMode;
+                if (controlModes.contains(CameraMetadata.CONTROL_AWB_MODE_OFF)) {
+                    awbMode = CameraMetadata.CONTROL_AWB_MODE_OFF;
+                } else {
+                    awbMode = CameraMetadata.CONTROL_AWB_MODE_AUTO;
+                    mmControlAwbModeOn = true;
                 }
+
+                mCaptureRequestBuilder.set(
+                        CaptureRequest.CONTROL_AWB_MODE,
+                        awbMode);
             }
 
-            mCaptureRequestBuilder.set(
-                    CaptureRequest.CONTROL_MODE,
-                    CameraMetadata.CONTROL_MODE_AUTO);
-            mControlModeAuto = true;
+            //--------------------------------------------------------------------------------------
+
+            // CONTROL_AWB_LOCK
+
+            if (isControlModeAuto() && isControlAwbModeOn()) {
+                mCaptureRequestBuilder.set(
+                        CaptureRequest.CONTROL_AWB_LOCK,
+                        true);
+                mmControlAwbLockOn = true;
+            } else {
+                mmControlAwbLockOn = false;
+            }
         }
-        public boolean isControlModeAuto() {
-            return mControlModeAuto;
+
+        public boolean isControlAwbModeOn() {
+            return mmControlAwbModeOn;
         }
+
+        public boolean imControlAwbLockOn() {
+            return mmControlAwbLockOn;
+        }
+
+        //==========================================================================================
+
+        private void configureAF() {
+
+            // CONTROL_AF_MODE
+
+            mmControlAfModeOn = false;
+            if (isControlModeAuto()) {
+                int[] modes = mCameraCharacteristics.get(
+                        CameraCharacteristics.CONTROL_AF_AVAILABLE_MODES);
+                assert modes != null;
+
+                List<Integer> controlModes = new ArrayList<>();
+                for (int mode : modes) {
+                    controlModes.add(mode);
+                }
+
+                int afMode;
+                if (controlModes.contains(CameraMetadata.CONTROL_AF_MODE_OFF)) {
+                    afMode = CameraMetadata.CONTROL_AF_MODE_OFF;
+                } else {
+                    afMode = CameraMetadata.CONTROL_AF_MODE_AUTO;
+                    mmControlAfModeOn = true;
+                }
+                mCaptureRequestBuilder.set(
+                        CaptureRequest.CONTROL_AF_MODE,
+                        afMode);
+            }
+        }
+
+        public boolean isControlAfModeOn() {
+            return mmControlAfModeOn;
+        }
+
+        //==========================================================================================
 
         private void configureAE() {
 
+            // CONTROL_AE_MODE
+
+            mmControlAeModeOn = false;
             if (isControlModeAuto()) {
                 int[] modes = mCameraCharacteristics.get(
                         CameraCharacteristics.CONTROL_AE_AVAILABLE_MODES);
@@ -176,37 +410,37 @@ public class ShrampCameraCaptureSession {
                     controlModes.add(mode);
                 }
 
+                int aeMode;
                 if (controlModes.contains(CameraMetadata.CONTROL_AE_MODE_OFF)) {
-                    mCaptureRequestBuilder.set(
-                            CaptureRequest.CONTROL_AE_MODE,
-                            CameraMetadata.CONTROL_AE_MODE_OFF);
-                    mControlAeModeOn = false;
+                    aeMode = CameraMetadata.CONTROL_AE_MODE_OFF;
+                } else {
+                    aeMode = CameraMetadata.CONTROL_AE_MODE_ON;
+                    mmControlAeModeOn = true;
                 }
-                else {
-                    mCaptureRequestBuilder.set(
-                            CaptureRequest.CONTROL_AE_MODE,
-                            CameraMetadata.CONTROL_AE_MODE_ON);
-                    mControlAeModeOn = true;
-                }
-            }
-            else {
-                mControlAeModeOn = false;
+
+                mCaptureRequestBuilder.set(
+                        CaptureRequest.CONTROL_AE_MODE,
+                        aeMode);
             }
 
             //--------------------------------------------------------------------------------------
+
+            // CONTROL_AE_LOCK
 
             if (isControlModeAuto() && isControlAeModeOn()) {
                 mCaptureRequestBuilder.set(
                         CaptureRequest.CONTROL_AE_LOCK,
                         true);
-                mControlAeLockOn = true;
-            }
-            else {
-                mControlAeLockOn = false;
+                mmControlAeLockOn = true;
+            } else {
+                mmControlAeLockOn = false;
             }
 
             //--------------------------------------------------------------------------------------
 
+            // CONTROL_AE_ANTIBANDING_MODE
+
+            mmControlAeAntibandingOn = false;
             if (isControlModeAuto() && isControlAeModeOn()) {
                 int[] modes = mCameraCharacteristics.get(
                         CameraCharacteristics.CONTROL_AE_AVAILABLE_ANTIBANDING_MODES);
@@ -217,44 +451,45 @@ public class ShrampCameraCaptureSession {
                     controlModes.add(mode);
                 }
 
+                int antiMode;
                 if (controlModes.contains(CameraMetadata.CONTROL_AE_ANTIBANDING_MODE_OFF)) {
-                    mCaptureRequestBuilder.set(
-                            CaptureRequest.CONTROL_AE_ANTIBANDING_MODE,
-                            CameraMetadata.CONTROL_AE_ANTIBANDING_MODE_OFF);
-                    mControlAeAntibandingOn = false;
+                    antiMode = CameraMetadata.CONTROL_AE_ANTIBANDING_MODE_OFF;
+                } else if (controlModes.contains(CameraMetadata.CONTROL_AE_ANTIBANDING_MODE_60HZ)) {
+                    antiMode = CameraMetadata.CONTROL_AE_ANTIBANDING_MODE_60HZ;
+                    mmControlAeAntibandingOn = true;
+                } else {
+                    antiMode = CameraMetadata.CONTROL_AE_ANTIBANDING_MODE_AUTO;
+                    mmControlAeAntibandingOn = true;
                 }
-                else if (controlModes.contains(CameraMetadata.CONTROL_AE_ANTIBANDING_MODE_60HZ)) {
-                    mCaptureRequestBuilder.set(
-                            CaptureRequest.CONTROL_AE_ANTIBANDING_MODE,
-                            CameraMetadata.CONTROL_AE_ANTIBANDING_MODE_60HZ);
-                    mControlAeAntibandingOn = true;
-                }
-                else {
-                    mCaptureRequestBuilder.set(
-                            CaptureRequest.CONTROL_AE_ANTIBANDING_MODE,
-                            CameraMetadata.CONTROL_AE_ANTIBANDING_MODE_AUTO);
-                    mControlAeAntibandingOn = true;
-                }
+
+                mCaptureRequestBuilder.set(
+                        CaptureRequest.CONTROL_AE_ANTIBANDING_MODE,
+                        antiMode);
             }
 
             //--------------------------------------------------------------------------------------
 
-            mControlAeCompensationSet = false;
+            // CONTROL_AE_EXPOSURE_COMPENSATION
+
+            mmControlAeCompensationSet = false;
             if (isControlAeModeOn()) {
                 Range<Integer> compensationRange = mCameraCharacteristics.get(
                         CameraCharacteristics.CONTROL_AE_COMPENSATION_RANGE);
                 assert compensationRange != null;
 
-                if (!compensationRange.equals(new Range<> (0,0))) {
+                if (!compensationRange.equals(new Range<>(0, 0))) {
                     mCaptureRequestBuilder.set(
                             CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION,
                             compensationRange.getLower());
-                    mControlAeCompensationSet = true;
+                    mmControlAeCompensationSet = true;
                 }
             }
 
             //--------------------------------------------------------------------------------------
 
+            // CONTROL_AE_TARGET_FPS
+
+            mmAeTargetFpsRangeSet = false;
             if (isControlModeAuto() || isControlAeModeOn()) {
                 Range<Integer>[] fpsRanges = mCameraCharacteristics.get(
                         CameraCharacteristics.CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES);
@@ -266,9 +501,9 @@ public class ShrampCameraCaptureSession {
                         fastestRange = range;
                         continue;
                     }
-                    long   range_product =        range.getLower() *        range.getLower();
+                    long range_product = range.getLower() * range.getLower();
                     long current_product = fastestRange.getLower() * fastestRange.getUpper();
-                    if (range_product > current_product) {
+                    if (range_product > current_product && range.getUpper() >= fastestRange.getUpper()) {
                         fastestRange = range;
                     }
                 }
@@ -276,167 +511,488 @@ public class ShrampCameraCaptureSession {
                 mCaptureRequestBuilder.set(
                         CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE,
                         fastestRange);
-                mAeTargetFpsRangeSet = true;
+                mmAeTargetFpsRangeSet = true;
             }
-            else {
-                mAeTargetFpsRangeSet = false;
-            }
-
-            //--------------------------------------------------------------------------------------
-
-
         }
+
         public boolean isControlAeModeOn() {
-            return mControlAeModeOn;
+            return mmControlAeModeOn;
         }
+
         public boolean isControlAeLockOn() {
-            return mControlAeLockOn;
+            return mmControlAeLockOn;
         }
+
         public boolean isControlAeAntibandingOn() {
-            return mControlAeAntibandingOn;
+            return mmControlAeAntibandingOn;
         }
+
         public boolean isControlAeCompensationSet() {
-            return mControlAeCompensationSet;
+            return mmControlAeCompensationSet;
         }
+
         public boolean isAeTargetFpsRangeSet() {
-            return mAeTargetFpsRangeSet;
+            return mmAeTargetFpsRangeSet;
         }
 
-        private void configureCaptureIntent() {
-            if (mCameraAbilities.contains(CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_MANUAL_SENSOR)) {
-                mCaptureRequestBuilder.set(
-                        CaptureRequest.CONTROL_CAPTURE_INTENT,
-                        CameraMetadata.CONTROL_CAPTURE_INTENT_MANUAL);
-                mCaptureIntentPreview = false;
-                return;
-            }
-
-            mCaptureRequestBuilder.set(
-                    CaptureRequest.CONTROL_CAPTURE_INTENT,
-                    CameraMetadata.CONTROL_CAPTURE_INTENT_PREVIEW);
-            mCaptureIntentPreview = true;
-        }
-        public boolean isCaptureIntentPreview() {
-            return mCaptureIntentPreview;
-        }
+        //==========================================================================================
 
         private void configureCorrections() {
+
+            // BLACK_LEVEL_LOCK
+
             mCaptureRequestBuilder.set(
                     CaptureRequest.BLACK_LEVEL_LOCK,
                     true);
-            mBlackLevelLocked = true;
+            mmBlackLevelLocked = true;
 
             //--------------------------------------------------------------------------------------
 
-            int[] modes = mCameraCharacteristics.get(
+            // COLOR_CORRECTION_ABERRATION_MODE
+
+            mmColorCorrectionAberrationOn = false;
+            int[] abModes = mCameraCharacteristics.get(
                     CameraCharacteristics.COLOR_CORRECTION_AVAILABLE_ABERRATION_MODES);
-            assert modes != null;
 
-            List<Integer> aberrationModes = new ArrayList<>();
-            for (int mode : modes) {
-                aberrationModes.add(mode);
-            }
+            if (abModes != null && abModes.length > 0) {
+                List<Integer> aberrationModes = new ArrayList<>();
+                for (int mode : abModes) {
+                    aberrationModes.add(mode);
+                }
 
-            if (aberrationModes.contains(CameraMetadata.COLOR_CORRECTION_ABERRATION_MODE_OFF)) {
+                int abMode;
+                if (aberrationModes.contains(CameraMetadata.COLOR_CORRECTION_ABERRATION_MODE_OFF)) {
+                    abMode = CameraMetadata.COLOR_CORRECTION_ABERRATION_MODE_OFF;
+                } else {
+                    abMode = CameraMetadata.COLOR_CORRECTION_ABERRATION_MODE_FAST;
+                    mmColorCorrectionAberrationOn = true;
+                }
+
                 mCaptureRequestBuilder.set(
                         CaptureRequest.COLOR_CORRECTION_ABERRATION_MODE,
-                        CameraMetadata.COLOR_CORRECTION_ABERRATION_MODE_OFF);
-                mColorCorrectionAberrationOn = false;
-            }
-            else {
-                mCaptureRequestBuilder.set(
-                        CaptureRequest.COLOR_CORRECTION_ABERRATION_MODE,
-                        CameraMetadata.COLOR_CORRECTION_ABERRATION_MODE_FAST);
-                mColorCorrectionAberrationOn = true;
+                        abMode);
             }
 
             //--------------------------------------------------------------------------------------
 
-            //color_correction_mode
+            // COLOR_CORRECTION_MODE
 
+            if (isControlAwbModeOn()) {
+                mCaptureRequestBuilder.set(
+                        CaptureRequest.COLOR_CORRECTION_MODE,
+                        CameraMetadata.COLOR_CORRECTION_MODE_FAST);
+                mmColorCorrectionModeTransformOn = false;
+            } else {
+                mCaptureRequestBuilder.set(
+                        CaptureRequest.COLOR_CORRECTION_MODE,
+                        CameraMetadata.COLOR_CORRECTION_MODE_TRANSFORM_MATRIX);
+                mmColorCorrectionModeTransformOn = true;
+            }
 
+            //--------------------------------------------------------------------------------------
 
+            // COLOR_CORRECTION_TRANSFORM
+
+            if (isColorCorrectionModeTransformOn()) {
+                mCaptureRequestBuilder.set(CaptureRequest.COLOR_CORRECTION_TRANSFORM,
+                        new ColorSpaceTransform(new int[]{
+                                1, 1, 0, 1, 0, 1,    // 1/1 , 0/1 , 0/1 = 1 0 0
+                                0, 1, 1, 1, 0, 1,    // 0/1 , 1/1 , 0/1 = 0 1 0
+                                0, 1, 0, 1, 1, 1     // 0/1 , 0/1 , 1/1 = 0 0 1
+                        }));
+            }
+
+            //--------------------------------------------------------------------------------------
+
+            // COLOR_CORRECTION_GAINS
+
+            if (isColorCorrectionModeTransformOn()) {
+                mCaptureRequestBuilder.set(CaptureRequest.COLOR_CORRECTION_GAINS,
+                        new RggbChannelVector(1, 1, 1, 1));
+            }
+
+            //--------------------------------------------------------------------------------------
+
+            // COLOR_EFFECT_MODE
+
+            mCaptureRequestBuilder.set(CaptureRequest.CONTROL_EFFECT_MODE,
+                    CameraMetadata.CONTROL_EFFECT_MODE_OFF);
+
+            //--------------------------------------------------------------------------------------
+
+            // CONTROL_POST_RAW_SENSITIVITY_BOOST
+
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) { // API 24
+                mmUsingPostRawBoost = false;
+            } else if (isControlModeAuto() && isControlAeModeOn()) {
+                mmUsingPostRawBoost = true;
+            } else {
+                if (mCaptureConfiguration.isOutputFormatRaw()) {
+                    mmUsingPostRawBoost = false;
+                } else {
+                    Range<Integer> boostRange = mCameraCharacteristics.get(
+                            CameraCharacteristics.CONTROL_POST_RAW_SENSITIVITY_BOOST_RANGE);
+                    if (boostRange != null) {
+                        mCaptureRequestBuilder.set(
+                                CaptureRequest.CONTROL_POST_RAW_SENSITIVITY_BOOST,
+                                100);
+                    }
+                    mmUsingPostRawBoost = false;
+                }
+            }
+
+            //--------------------------------------------------------------------------------------
+
+            // CONTROL_VIDEO_STABILIZATION_MODE
+
+            mCaptureRequestBuilder.set(CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE,
+                    CameraMetadata.CONTROL_VIDEO_STABILIZATION_MODE_OFF);
+
+            //--------------------------------------------------------------------------------------
+
+            // DISTORTION_CORRECTION_MODE
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {  // API 28
+                mCaptureRequestBuilder.set(
+                        CaptureRequest.DISTORTION_CORRECTION_MODE,
+                        CameraMetadata.DISTORTION_CORRECTION_MODE_OFF);
+            }
+
+            //--------------------------------------------------------------------------------------
+
+            // EDGE_MODE
+
+            mmEdgeModeOn = false;
+            int[] edModes = mCameraCharacteristics.get(
+                    CameraCharacteristics.EDGE_AVAILABLE_EDGE_MODES);
+
+            if (edModes != null && edModes.length > 0) {
+                List<Integer> edgeModes = new ArrayList<>();
+                for (int mode : edModes) {
+                    edgeModes.add(mode);
+                }
+
+                int edgeMode;
+                if (edgeModes.contains(CameraMetadata.EDGE_MODE_OFF)) {
+                    edgeMode = CameraMetadata.EDGE_MODE_OFF;
+                } else {
+                    edgeMode = CameraMetadata.EDGE_MODE_FAST;
+                    mmEdgeModeOn = true;
+                }
+
+                mCaptureRequestBuilder.set(
+                        CaptureRequest.EDGE_MODE,
+                        edgeMode);
+            }
+
+            //--------------------------------------------------------------------------------------
+
+            // HOT_PIXEL_MODE
+
+            mmHotPixelModeOn = false;
+            int[] hModes = mCameraCharacteristics.get(
+                    CameraCharacteristics.HOT_PIXEL_AVAILABLE_HOT_PIXEL_MODES);
+
+            if (hModes != null && hModes.length > 0) {
+                List<Integer> hotModes = new ArrayList<>();
+                for (int mode : hModes) {
+                    hotModes.add(mode);
+                }
+
+                int hotMode;
+                if (hotModes.contains(CameraMetadata.HOT_PIXEL_MODE_OFF)) {
+                    hotMode = CameraMetadata.HOT_PIXEL_MODE_OFF;
+                } else {
+                    hotMode = CameraMetadata.HOT_PIXEL_MODE_FAST;
+                    mmHotPixelModeOn = true;
+                }
+
+                mCaptureRequestBuilder.set(
+                        CaptureRequest.HOT_PIXEL_MODE,
+                        hotMode);
+            }
+
+            //--------------------------------------------------------------------------------------
+
+            // NOISE_REDUCTION_MODE
+
+            mmNoiseReductionOn = false;
+            int[] nModes = mCameraCharacteristics.get(
+                    CameraCharacteristics.NOISE_REDUCTION_AVAILABLE_NOISE_REDUCTION_MODES);
+
+            if (nModes != null && nModes.length > 0) {
+                List<Integer> noiseModes = new ArrayList<>();
+                for (int mode : nModes) {
+                    noiseModes.add(mode);
+                }
+
+                int noiseMode;
+                if (noiseModes.contains(CameraMetadata.NOISE_REDUCTION_MODE_OFF)) {
+                    noiseMode = CameraMetadata.NOISE_REDUCTION_MODE_OFF;
+                } else {
+                    noiseMode = CameraMetadata.NOISE_REDUCTION_MODE_FAST;
+                    mmNoiseReductionOn = true;
+                }
+
+                mCaptureRequestBuilder.set(
+                        CaptureRequest.NOISE_REDUCTION_MODE,
+                        noiseMode);
+            }
+
+            //--------------------------------------------------------------------------------------
+
+            // REPROCESS_EFFECTIVE_EXPOSURE_FACTOR
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) { // API 23
+                if (mCameraAbilities.contains(
+                        CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_YUV_REPROCESSING)) {
+                    mCaptureRequestBuilder.set(
+                            CaptureRequest.REPROCESS_EFFECTIVE_EXPOSURE_FACTOR,
+                            1.f);
+                }
+            }
+
+            //--------------------------------------------------------------------------------------
+
+            // SHADING_MODE
+
+            mmShadingModeOn = false;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) { // API 23
+                int[] sModes = mCameraCharacteristics.get(
+                        CameraCharacteristics.SHADING_AVAILABLE_MODES);
+
+                if (sModes != null && sModes.length > 0) {
+                    List<Integer> shadingModes = new ArrayList<>();
+                    for (int mode : sModes) {
+                        shadingModes.add(mode);
+                    }
+
+                    int shadingMode;
+                    if (shadingModes.contains(CameraMetadata.SHADING_MODE_OFF)) {
+                        shadingMode = CameraMetadata.SHADING_MODE_OFF;
+                    } else {
+                        shadingMode = CameraMetadata.SHADING_MODE_FAST;
+                        mmShadingModeOn = true;
+                    }
+
+                    mCaptureRequestBuilder.set(
+                            CaptureRequest.SHADING_MODE,
+                            shadingMode);
+                }
+            }
+
+            //--------------------------------------------------------------------------------------
+
+            // TONEMAP_MODE
+
+            mmUsingContrastCurve = false;
+            int[] tModes = mCameraCharacteristics.get(
+                    CameraCharacteristics.TONEMAP_AVAILABLE_TONE_MAP_MODES);
+
+            if (tModes != null && tModes.length > 0) {
+                List<Integer> toneModes = new ArrayList<>();
+                for (int mode : tModes) {
+                    toneModes.add(mode);
+                }
+
+                int toneMode;
+                if (toneModes.contains(CameraMetadata.TONEMAP_MODE_CONTRAST_CURVE)) {
+                    toneMode = CameraMetadata.TONEMAP_MODE_CONTRAST_CURVE;
+                    mmUsingContrastCurve = true;
+                } else {
+                    toneMode = CameraMetadata.TONEMAP_MODE_FAST;
+                }
+
+                mCaptureRequestBuilder.set(
+                        CaptureRequest.TONEMAP_MODE,
+                        toneMode);
+            }
+
+            //--------------------------------------------------------------------------------------
+
+            // TONEMAP_CURVE
+
+            if (usingConstrastCurve()) {
+                float[] linear_response = {0, 0, 1, 1};
+                mCaptureRequestBuilder.set(CaptureRequest.TONEMAP_CURVE,
+                        new TonemapCurve(linear_response, linear_response, linear_response));
+            }
         }
+
         public boolean isBlackLevelLocked() {
-            return mBlackLevelLocked;
+            return mmBlackLevelLocked;
         }
+
         public boolean isColorCorrectionAberrationModeOn() {
-            return mColorCorrectionAberrationOn;
+            return mmColorCorrectionAberrationOn;
         }
+
+        public boolean isColorCorrectionModeTransformOn() {
+            return mmColorCorrectionModeTransformOn;
+        }
+
+        public boolean isUsingPostRawBoost() {
+            return mmUsingPostRawBoost;
+        }
+
+        public boolean isEdgeModeOn() {
+            return mmEdgeModeOn;
+        }
+
+        public boolean isHotPixelModeOn() {
+            return mmHotPixelModeOn;
+        }
+
+        public boolean isNoiseReductionOn() {
+            return mmNoiseReductionOn;
+        }
+
+        public boolean usingConstrastCurve() {
+            return mmUsingContrastCurve;
+        }
+
+        //==========================================================================================
+
+        private void configureOptics() {
+
+            // LENS_APERTURE
+
+            float[] lApertures = mCameraCharacteristics.get(
+                    CameraCharacteristics.LENS_INFO_AVAILABLE_APERTURES);
+
+            if (lApertures != null && lApertures.length > 0 && !isControlAeModeOn()) {
+                Float minAperture = null;
+                for (float aperture : lApertures) {
+                    if (minAperture == null) {
+                        minAperture = aperture;
+                        continue;
+                    }
+
+                    if (aperture < minAperture) {
+                        minAperture = aperture;
+                    }
+                }
+
+                mCaptureRequestBuilder.set(
+                        CaptureRequest.LENS_APERTURE,
+                        minAperture);
+            }
+
+            //--------------------------------------------------------------------------------------
+
+            // LENS_FILTER_DENSITY
+
+            float[] lDensities = mCameraCharacteristics.get(
+                    CameraCharacteristics.LENS_INFO_AVAILABLE_FILTER_DENSITIES);
+
+            if (lDensities != null && lDensities.length > 0) {
+                Float maxDensity = null;
+                for (float density : lDensities) {
+                    if (maxDensity == null) {
+                        maxDensity = density;
+                        continue;
+                    }
+
+                    if (density > maxDensity) {
+                        maxDensity = density;
+                    }
+                }
+
+                mCaptureRequestBuilder.set(
+                        CaptureRequest.LENS_FILTER_DENSITY,
+                        maxDensity);
+            }
+
+            //--------------------------------------------------------------------------------------
+
+            // LENS_FOCAL_LENGTH
+
+            float[] fLengths = mCameraCharacteristics.get(
+                    CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS);
+
+            if (fLengths != null && fLengths.length > 0) {
+                Float maxFocalLength = null;
+                for (float length : fLengths) {
+                    if (maxFocalLength == null) {
+                        maxFocalLength = length;
+                        continue;
+                    }
+
+                    if (length > maxFocalLength) {
+                        maxFocalLength = length;
+                    }
+                }
+
+                mCaptureRequestBuilder.set(
+                        CaptureRequest.LENS_FOCAL_LENGTH,
+                        maxFocalLength);
+            }
+
+            //--------------------------------------------------------------------------------------
+
+            // LENS_FOCUS_DISTANCE
+
+            mCaptureRequestBuilder.set(
+                    CaptureRequest.LENS_FOCUS_DISTANCE,
+                    0.f);
+
+            //--------------------------------------------------------------------------------------
+
+            // LENS_OPTICAL_STABILIZATION_MODE
+
+            mmOpticalStabilizationModeOn = false;
+            int[] sModes = mCameraCharacteristics.get(
+                    CameraCharacteristics.LENS_INFO_AVAILABLE_OPTICAL_STABILIZATION);
+
+            if (sModes != null && sModes.length > 0) {
+                List<Integer> stabilizationModes = new ArrayList<>();
+                for (int mode : sModes) {
+                    stabilizationModes.add(mode);
+                }
+
+                int stabilizationMode;
+                if (stabilizationModes.contains(CameraMetadata.LENS_OPTICAL_STABILIZATION_MODE_OFF)) {
+                    stabilizationMode = CameraMetadata.LENS_OPTICAL_STABILIZATION_MODE_OFF;
+                }
+                else {
+                    stabilizationMode = CameraMetadata.LENS_OPTICAL_STABILIZATION_MODE_ON;
+                    mmOpticalStabilizationModeOn = true;
+                }
+
+                mCaptureRequestBuilder.set(
+                        CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE,
+                        stabilizationMode);
+            }
+        }
+        public boolean isOpticalStabilizationModeOne() {
+            return mmOpticalStabilizationModeOn;
+        }
+
+        //==========================================================================================
+
+        private void configureStatistics() {
+
+        }
+
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////
     ShrampCameraCaptureSession(@NonNull CameraDevice device,
                                @NonNull CameraCharacteristics characteristics) {
         mCameraDevice           = device;
         mCameraCharacteristics  = characteristics;
+
         mStreamConfigurationMap = mCameraCharacteristics.get(
                 CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
 
-        getCameraAbilities();
-        configureStreamFormat();
-        configureCaptureRequestBuilder();
+        mCaptureConfiguration   = new CaptureConfiguration();
+        mCameraAbilities        = mCaptureConfiguration.getCameraAbilities();
 
-        mCameraConfiguration = new CameraConfiguration();
+        mCaptureRequestBuilder  = mCaptureConfiguration.getCaptureRequestBuilder();
+        mCameraConfiguration    = new CameraConfiguration();
     }
 
-    private void getCameraAbilities() {
-        mCameraAbilities = new ArrayList<Integer>();
 
-        assert mCameraCharacteristics != null;
-        int[] abilities = mCameraCharacteristics.get(
-                CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES);
-
-        assert abilities != null;
-        for (int ability : abilities) {
-            mCameraAbilities.add(ability);
-        }
-    }
-
-    private void configureStreamFormat() {
-        assert mCameraAbilities        != null;
-        assert mStreamConfigurationMap != null;
-
-        int outputFormat;
-        if (mCameraAbilities.contains(CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_RAW)) {
-            outputFormat = ImageFormat.RAW_SENSOR;
-        }
-        else {
-            outputFormat = ImageFormat.YUV_420_888;
-        }
-        int bitsPerPixel = ImageFormat.getBitsPerPixel(outputFormat);
-
-        Size[] outputSizes = mStreamConfigurationMap.getOutputSizes(outputFormat);
-        Size   outputSize = null;
-        for (Size size : outputSizes) {
-            if (outputSize == null) {
-                outputSize = size;
-                continue;
-            }
-            long outputArea = outputSize.getWidth() * outputSize.getHeight();
-            long sizeArea   =       size.getWidth() *       size.getHeight();
-            if (sizeArea > outputArea) {
-                outputSize = size;
-            }
-        }
-
-        mStreamFormat = new StreamFormat(outputFormat, bitsPerPixel, outputSize);
-    }
-
-    private void configureCaptureRequestBuilder() {
-
-        int captureTemplate;
-        if (mCameraAbilities.contains(CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_MANUAL_SENSOR)) {
-            captureTemplate = CameraDevice.TEMPLATE_MANUAL;
-        } else {
-            // preview is guarented on all camera devices
-            captureTemplate = CameraDevice.TEMPLATE_PREVIEW;
-        }
-        try {
-            mCaptureRequestBuilder = mCameraDevice.createCaptureRequest(captureTemplate);
-        } catch (CameraAccessException e) {
-            // TODO EXCEPTION
-        }
-    }
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -700,101 +1256,4 @@ public class ShrampCameraCaptureSession {
     public CameraCaptureSession.StateCallback getStateCallback() {
         return mStateCallback;
     }
-
 }
-
-    /*
-    private enum CameraAbility {
-                // specified in CameraMetdata
-                BACKWARD_COMPATIBLE,            // API 21
-                BURST_CAPTURE,                  // API 22
-                CONSTRAINED_HIGH_SPEED_VIEDO,   // API 23
-                DEPTH_OUTPUT,                   // API 23
-                LOGICAL_MULTICAMERA,            // API 28
-                MANUAL_POST_PROCESSING,         // API 21
-                MANUAL_SENSOR,                  // API 21
-                MONOCHROME,                     // API 28
-                MOTION_TRACKING,                // API 28
-                PRIVATE_REPROCESSING,           // API 23
-                RAW,                            // API 21
-                READ_SENSOR_SETTINGS,           // API 22
-                YUV_REPROCESSING,               // API 23
-                }
-    */
-    //private TreeMap<CameraAbility, Boolean> mCameraHasAbility;
-    /*
-    private void getCameraAbilities() {
-        mCameraHasAbility = new TreeMap<CameraAbility, Boolean>();
-
-        assert mCameraCharacteristics != null;
-        int[] abilities = mCameraCharacteristics.get(
-                CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES);
-        assert abilities != null;
-
-        for (int ability : abilities) {
-            switch (ability) {
-                case (CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_BACKWARD_COMPATIBLE) : {
-                    mCameraHasAbility.put(CameraAbility.BACKWARD_COMPATIBLE, true);
-                    break;
-                }
-                case (CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_BURST_CAPTURE) : {
-                    mCameraHasAbility.put(CameraAbility.BURST_CAPTURE, true);
-                    break;
-                }
-                case (CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_CONSTRAINED_HIGH_SPEED_VIDEO) : {
-                    mCameraHasAbility.put(CameraAbility.CONSTRAINED_HIGH_SPEED_VIEDO, true);
-                    break;
-                }
-                case (CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_DEPTH_OUTPUT) : {
-                    mCameraHasAbility.put(CameraAbility.DEPTH_OUTPUT, true);
-                    break;
-                }
-                case (CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_LOGICAL_MULTI_CAMERA) : {
-                    mCameraHasAbility.put(CameraAbility.LOGICAL_MULTICAMERA, true);
-                    break;
-                }
-                case (CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_MANUAL_POST_PROCESSING) : {
-                    mCameraHasAbility.put(CameraAbility.MANUAL_POST_PROCESSING, true);
-                    break;
-                }
-                case (CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_MANUAL_SENSOR) : {
-                    mCameraHasAbility.put(CameraAbility.MANUAL_SENSOR, true);
-                    break;
-                }
-                case (CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_MONOCHROME) : {
-                    mCameraHasAbility.put(CameraAbility.MONOCHROME, true);
-                    break;
-                }
-                case (CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_MOTION_TRACKING) : {
-                    mCameraHasAbility.put(CameraAbility.MOTION_TRACKING, true);
-                    break;
-                }
-                case (CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_PRIVATE_REPROCESSING) : {
-                    mCameraHasAbility.put(CameraAbility.PRIVATE_REPROCESSING, true);
-                    break;
-                }
-                case (CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_RAW) : {
-                    mCameraHasAbility.put(CameraAbility.RAW, true);
-                    break;
-                }
-                case (CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_READ_SENSOR_SETTINGS) : {
-                    mCameraHasAbility.put(CameraAbility.READ_SENSOR_SETTINGS, true);
-                    break;
-                }
-                case (CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_YUV_REPROCESSING) : {
-                    mCameraHasAbility.put(CameraAbility.YUV_REPROCESSING, true);
-                    break;
-                }
-                default : {
-                    // TODO ERROR
-                }
-            }
-        }
-
-        for (CameraAbility ability : CameraAbility.values()) {
-            if (!mCameraHasAbility.containsKey(ability)) {
-                mCameraHasAbility.put(ability, false);
-            }
-        }
-    }
-    */
