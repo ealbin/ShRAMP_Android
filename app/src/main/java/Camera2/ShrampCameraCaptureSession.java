@@ -71,9 +71,7 @@ public class ShrampCameraCaptureSession {
                 mmCameraAbilities.add(ability);
             }
         }
-        public List<Integer> getCameraAbilities() {
-            return mmCameraAbilities;
-        }
+        public List<Integer> getCameraAbilities() { return mmCameraAbilities; }
 
         private void loadStreamFormat() {
             assert mStreamConfigurationMap != null;
@@ -107,18 +105,10 @@ public class ShrampCameraCaptureSession {
             mmBitsPerPixel = bitsPerPixel;
             mmOutputSize   = outputSize;
         }
-        public boolean isOutputFormatRaw() {
-            return mmUsingRawImageFormat;
-        }
-        public int getOutputFormat() {
-            return mmOutputFormat;
-        }
-        public int getBitsPerPixel() {
-            return mmBitsPerPixel;
-        }
-        public Size getOutputSize() {
-            return mmOutputSize;
-        }
+        public boolean isOutputFormatRaw() { return mmUsingRawImageFormat; }
+        public int getOutputFormat() { return mmOutputFormat; }
+        public int getBitsPerPixel() { return mmBitsPerPixel; }
+        public Size getOutputSize() { return mmOutputSize; }
 
         public CaptureRequest.Builder getCaptureRequestBuilder() {
 
@@ -138,9 +128,7 @@ public class ShrampCameraCaptureSession {
             }
             return null;
         }
-        public boolean usingManualCaptureRequestTemplate() {
-            return mmUsingManualTemplate;
-        }
+        public boolean usingManualCaptureRequestTemplate() { return mmUsingManualTemplate; }
 
         // may return 0 if this function is not implemented, otherwise in nanoseconds
         public long getOutputMinFrameDuration() {
@@ -184,8 +172,18 @@ public class ShrampCameraCaptureSession {
 
         private boolean mmOpticalStabilizationModeOn;
 
+        private boolean mmFaceDetectModeOn;
+        private boolean mmHotPixelMapModeOn;
+        private boolean mmLensShadingMapModeOn;
+        private boolean mmOisDataModeOn;
+
+        private boolean mmMaxAnalogSensitivity;
+        private boolean mmMinExposureTimeOn;
+        private boolean mmMinFrameDurationOn;
+
         CameraConfiguration() {
             assert mCameraAbilities       != null;
+            assert mCaptureConfiguration  != null;
             assert mCaptureRequestBuilder != null;
             // reference:  https://developer.android.com/reference/android/hardware/camera2/CaptureRequest
 
@@ -203,25 +201,25 @@ public class ShrampCameraCaptureSession {
             configureCorrections();
             configureOptics();
             configureStatistics();
+            configureSensor();
 
             // irrelevant settings:
+            //---------------------
             // CONTROL_AWB_REGIONS
             //
             // CONTROL_AF_REGIONS
             // CONTROL_AF_TRIGGER
-            //
             // CONTROL_AE_REGIONS
             // CONTROL_AE_PRECAPTURE_TRIGGER
-            //
             // CONTROL_ENABLE_ZSL
             // CONTROL_SCENE_MODE
-            //
             // JPEG_GPS_LOCATION
             // JPEG_ORIENTATION
             // JPEG_QUALITY
             // JPEG_THUMBNAIL_QUALITY
-            //
             // SCALAR_CROP_REGION
+            // SENSOR_TEST_PATTERN_MODE
+            // SENSOR_TEST_PATTERN_DATA
         }
 
         //==========================================================================================
@@ -240,10 +238,7 @@ public class ShrampCameraCaptureSession {
             }
             mmFlashOn = false;
         }
-
-        public boolean isFlashOn() {
-            return mmFlashOn;
-        }
+        public boolean isFlashOn() { return mmFlashOn; }
 
         //==========================================================================================
 
@@ -280,10 +275,7 @@ public class ShrampCameraCaptureSession {
                 mmControlModeAuto = false;
             }
         }
-
-        public boolean isControlModeAuto() {
-            return mmControlModeAuto;
-        }
+        public boolean isControlModeAuto() { return mmControlModeAuto; }
 
         //==========================================================================================
 
@@ -302,10 +294,7 @@ public class ShrampCameraCaptureSession {
                     CameraMetadata.CONTROL_CAPTURE_INTENT_PREVIEW);
             mmCaptureIntentPreview = true;
         }
-
-        public boolean isCaptureIntentPreview() {
-            return mmCaptureIntentPreview;
-        }
+        public boolean isCaptureIntentPreview() { return mmCaptureIntentPreview; }
 
         //==========================================================================================
 
@@ -350,14 +339,8 @@ public class ShrampCameraCaptureSession {
                 mmControlAwbLockOn = false;
             }
         }
-
-        public boolean isControlAwbModeOn() {
-            return mmControlAwbModeOn;
-        }
-
-        public boolean imControlAwbLockOn() {
-            return mmControlAwbLockOn;
-        }
+        public boolean isControlAwbModeOn() { return mmControlAwbModeOn; }
+        public boolean imControlAwbLockOn() { return mmControlAwbLockOn; }
 
         //==========================================================================================
 
@@ -388,10 +371,7 @@ public class ShrampCameraCaptureSession {
                         afMode);
             }
         }
-
-        public boolean isControlAfModeOn() {
-            return mmControlAfModeOn;
-        }
+        public boolean isControlAfModeOn() { return mmControlAfModeOn; }
 
         //==========================================================================================
 
@@ -514,26 +494,11 @@ public class ShrampCameraCaptureSession {
                 mmAeTargetFpsRangeSet = true;
             }
         }
-
-        public boolean isControlAeModeOn() {
-            return mmControlAeModeOn;
-        }
-
-        public boolean isControlAeLockOn() {
-            return mmControlAeLockOn;
-        }
-
-        public boolean isControlAeAntibandingOn() {
-            return mmControlAeAntibandingOn;
-        }
-
-        public boolean isControlAeCompensationSet() {
-            return mmControlAeCompensationSet;
-        }
-
-        public boolean isAeTargetFpsRangeSet() {
-            return mmAeTargetFpsRangeSet;
-        }
+        public boolean isControlAeModeOn() { return mmControlAeModeOn; }
+        public boolean isControlAeLockOn() { return mmControlAeLockOn; }
+        public boolean isControlAeAntibandingOn() { return mmControlAeAntibandingOn; }
+        public boolean isControlAeCompensationSet() { return mmControlAeCompensationSet; }
+        public boolean isAeTargetFpsRangeSet() { return mmAeTargetFpsRangeSet; }
 
         //==========================================================================================
 
@@ -818,38 +783,14 @@ public class ShrampCameraCaptureSession {
                         new TonemapCurve(linear_response, linear_response, linear_response));
             }
         }
-
-        public boolean isBlackLevelLocked() {
-            return mmBlackLevelLocked;
-        }
-
-        public boolean isColorCorrectionAberrationModeOn() {
-            return mmColorCorrectionAberrationOn;
-        }
-
-        public boolean isColorCorrectionModeTransformOn() {
-            return mmColorCorrectionModeTransformOn;
-        }
-
-        public boolean isUsingPostRawBoost() {
-            return mmUsingPostRawBoost;
-        }
-
-        public boolean isEdgeModeOn() {
-            return mmEdgeModeOn;
-        }
-
-        public boolean isHotPixelModeOn() {
-            return mmHotPixelModeOn;
-        }
-
-        public boolean isNoiseReductionOn() {
-            return mmNoiseReductionOn;
-        }
-
-        public boolean usingConstrastCurve() {
-            return mmUsingContrastCurve;
-        }
+        public boolean isBlackLevelLocked() { return mmBlackLevelLocked; }
+        public boolean isColorCorrectionAberrationModeOn() { return mmColorCorrectionAberrationOn; }
+        public boolean isColorCorrectionModeTransformOn() { return mmColorCorrectionModeTransformOn; }
+        public boolean isUsingPostRawBoost() { return mmUsingPostRawBoost; }
+        public boolean isEdgeModeOn() { return mmEdgeModeOn; }
+        public boolean isHotPixelModeOn() { return mmHotPixelModeOn; }
+        public boolean isNoiseReductionOn() { return mmNoiseReductionOn; }
+        public boolean usingConstrastCurve() { return mmUsingContrastCurve; }
 
         //==========================================================================================
 
@@ -964,15 +905,152 @@ public class ShrampCameraCaptureSession {
                         stabilizationMode);
             }
         }
-        public boolean isOpticalStabilizationModeOne() {
-            return mmOpticalStabilizationModeOn;
-        }
+        public boolean isOpticalStabilizationModeOne() { return mmOpticalStabilizationModeOn; }
 
         //==========================================================================================
 
         private void configureStatistics() {
 
+            // STATISTICS_FACE_DETECT_MODE
+
+            mmFaceDetectModeOn = false;
+            mCaptureRequestBuilder.set(
+                    CaptureRequest.STATISTICS_FACE_DETECT_MODE,
+                    CameraMetadata.STATISTICS_FACE_DETECT_MODE_OFF);
+
+            //--------------------------------------------------------------------------------------
+
+            // STATISTICS_INFO_AVAILABLE_HOT_PIXEL_MAP_MODES
+
+            boolean[] pModes = mCameraCharacteristics.get(
+                    CameraCharacteristics.STATISTICS_INFO_AVAILABLE_HOT_PIXEL_MAP_MODES);
+
+            mmHotPixelMapModeOn = false;
+            if (pModes != null && pModes.length > 0) {
+                mmHotPixelMapModeOn = true;
+                for (boolean modeOn : pModes) {
+                    if (!modeOn) {
+                        mmHotPixelMapModeOn = false;
+                        break;
+                    }
+                }
+
+                mCaptureRequestBuilder.set(
+                        CaptureRequest.STATISTICS_HOT_PIXEL_MAP_MODE,
+                        mmHotPixelMapModeOn);
+            }
+
+            //--------------------------------------------------------------------------------------
+
+            // STATISTICS_INFO_AVAILABLE_LENS_SHADING_MAP_MODES
+
+            mmLensShadingMapModeOn = false;
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) { // API 23
+                int[] sModes = mCameraCharacteristics.get(
+                        CameraCharacteristics.STATISTICS_INFO_AVAILABLE_LENS_SHADING_MAP_MODES);
+
+                if (sModes != null && sModes.length > 0) {
+                    List<Integer> shadingModes = new ArrayList<>();
+                    for (int mode : sModes) {
+                        shadingModes.add(mode);
+                    }
+
+                    int modeCode;
+                    if (shadingModes.contains(CameraMetadata.STATISTICS_LENS_SHADING_MAP_MODE_OFF)) {
+                        modeCode = CameraMetadata.STATISTICS_LENS_SHADING_MAP_MODE_OFF;
+                        mmLensShadingMapModeOn = false;
+                    }
+                    else {
+                        modeCode = CameraMetadata.STATISTICS_LENS_SHADING_MAP_MODE_ON;
+                        mmLensShadingMapModeOn = true;
+                    }
+
+                    mCaptureRequestBuilder.set(
+                            CaptureRequest.STATISTICS_LENS_SHADING_MAP_MODE,
+                            modeCode);
+                }
+            }
+
+            //--------------------------------------------------------------------------------------
+
+            // STATISTICS_OIS_DATA_MODE
+
+            mmOisDataModeOn = false;
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) { // API 28
+
+                int[] oModes = mCameraCharacteristics.get(
+                        CameraCharacteristics.STATISTICS_INFO_AVAILABLE_OIS_DATA_MODES);
+
+                if (oModes != null && oModes.length > 0) {
+                    mCaptureRequestBuilder.set(
+                            CaptureRequest.STATISTICS_OIS_DATA_MODE,
+                            CameraMetadata.STATISTICS_OIS_DATA_MODE_OFF);
+                }
+            }
         }
+        public boolean isFaceDetectModeOn() { return mmFaceDetectModeOn; }
+        public boolean isHotPixelMapModeOn() { return mmHotPixelMapModeOn; }
+        public boolean isLensShadingMapModeOn() { return mmLensShadingMapModeOn; }
+        public boolean isOisDataModeOn() { return mmOisDataModeOn; }
+
+        //==========================================================================================
+
+        private void configureSensor() {
+
+            // SENSOR_SENSITIVITY
+
+            mmMaxAnalogSensitivity = false;
+            if (!isControlModeAuto() || !isControlAeModeOn()) {
+                Integer maxSensitivty = mCameraCharacteristics.get(
+                        CameraCharacteristics.SENSOR_MAX_ANALOG_SENSITIVITY);
+
+                if (maxSensitivty != null) {
+                    mmMaxAnalogSensitivity = true;
+                    mCaptureRequestBuilder.set(
+                            CaptureRequest.SENSOR_SENSITIVITY,
+                            maxSensitivty);
+                }
+            }
+
+            //--------------------------------------------------------------------------------------
+
+            // SENSOR_EXPOSURE_TIME
+
+            mmMinExposureTimeOn = false;
+            if (!isControlModeAuto() || !isControlAeModeOn()) {
+                Range<Long> expTimes = mCameraCharacteristics.get(
+                        CameraCharacteristics.SENSOR_INFO_EXPOSURE_TIME_RANGE);
+
+                if (expTimes != null) {
+                    mmMinExposureTimeOn = true;
+                    mCaptureRequestBuilder.set(
+                            CaptureRequest.SENSOR_EXPOSURE_TIME,
+                            expTimes.getLower());
+                }
+            }
+
+            //--------------------------------------------------------------------------------------
+
+            // SENSOR_FRAME_DURATION
+
+            mmMinFrameDurationOn = false;
+            if (!isControlModeAuto() || !isControlAeModeOn()) {
+                mmMinFrameDurationOn = true;
+                mCaptureRequestBuilder.set(
+                        CaptureRequest.SENSOR_FRAME_DURATION,
+                        mCaptureConfiguration.getOutputMinFrameDuration());
+            }
+
+            //--------------------------------------------------------------------------------------
+
+            // SENSOR_
+
+        }
+        public boolean usingMaxAnalogSensitivity() { return mmMaxAnalogSensitivity; }
+        public boolean usingMinExposureTime() { return mmMinExposureTimeOn; }
+        public boolean usingMinFrameDuration() { return mmMinFrameDurationOn; }
 
     }
 
