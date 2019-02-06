@@ -1,5 +1,10 @@
 package Logging;
 
+/**
+ * Options for outputting the log:
+ *  DISABLED:   no output
+ *  LOG_E:      prints to android.util.Log.e
+ */
 public enum OutStream {
-    LOG_E
+    DISABLED, LOG_E
 }

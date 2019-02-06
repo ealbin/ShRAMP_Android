@@ -7,10 +7,12 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.SurfaceView;
 import android.widget.TextView;
 
 import java.io.File;
+
+import Camera2.MaineShrampCamera;
+import Trash.Camera;
 
 @TargetApi(Build.VERSION_CODES.LOLLIPOP) // 21
 public class MaineShRAMP extends AppCompatActivity implements AsyncResponse {
@@ -31,6 +33,8 @@ public class MaineShRAMP extends AppCompatActivity implements AsyncResponse {
     public static CheckAPI         mCheck_api;
     public static CheckPermissions mCheck_permissions;
 
+
+    private  MaineShrampCamera mShrampCam;
 
     public Runnable mQuit_action = new Runnable() {
         @Override
@@ -118,8 +122,10 @@ public class MaineShRAMP extends AppCompatActivity implements AsyncResponse {
         textOut.append("----------------------------------------------------------\n\n");
         textOut.append("Capturing a camera frame..  \n");
 
-        Log.e(LOCAL_TAG, "Creating camera");
-        mCamera = new Camera(this, mQuit_action);
+        Log.e(LOCAL_TAG, "Creating camera via new MainShrampCamera()");
+        mShrampCam = new MaineShrampCamera(this);
+
+//        mCamera = new Camera(this, mQuit_action);
 
         //SurfaceView surface_view = findViewById(R.layout.activity_main.);
 

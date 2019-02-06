@@ -1,4 +1,4 @@
-package edu.crayfis.shramp;
+package Trash;
 
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -18,6 +18,9 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import android.util.Range;
 import android.util.Size;
+
+import edu.crayfis.shramp.ChatterBox;
+import edu.crayfis.shramp.MaineShRAMP;
 
 
 @TargetApi(Build.VERSION_CODES.LOLLIPOP) // 21
@@ -74,14 +77,14 @@ public abstract class CameraSetup {
         mManager = (CameraManager) mMaine_shramp.getSystemService(Context.CAMERA_SERVICE);
         if (mManager == null) {
             Log.e(LOCAL_TAG, "Camera service unreachable");
-            ChatterBox chatterbox = new ChatterBox(mMaine_shramp);
+//            ChatterBox chatterbox = new ChatterBox(mMaine_shramp);
             String title = "Uh oh";
             String message = "Something odd has occurred. \n"
                             + "The camera service is not available. \n"
                             + "Sorry, but there is no chance of survival now. \n"
                             + ".... rose......bud...blaugghhhhhhhh";
             String button = "Accept defeat";
-            chatterbox.displayBasicAlert(title, message, button, mQuit_action);
+//            chatterbox.displayBasicAlert(title, message, button, mQuit_action);
             Log.e(LOCAL_TAG, "RETURN");
             return;
         }
@@ -92,12 +95,12 @@ public abstract class CameraSetup {
             mCharacteristics = mManager.getCameraCharacteristics(mBack_camera_id);
         } catch (Exception e) {
             Log.e(LOCAL_TAG, "EXCEPTION: " + e.getLocalizedMessage());
-            ChatterBox chatterbox = new ChatterBox(mMaine_shramp);
+//            ChatterBox chatterbox = new ChatterBox(mMaine_shramp);
             String title = "Runtime Exception!";
             String message = "CameraSetup.CameraSetup()\n"
                             + e.getLocalizedMessage();
             String button = "Accept defeat";
-            chatterbox.displayBasicAlert(title, message, button, mQuit_action);
+//            chatterbox.displayBasicAlert(title, message, button, mQuit_action);
             Log.e(LOCAL_TAG, "RETURN");
             return;
         }
@@ -105,12 +108,12 @@ public abstract class CameraSetup {
 
         if (outdatedHardware()) {
             Log.e(LOCAL_TAG, "CameraSetup hardware is outdated, exiting");
-            ChatterBox chatterbox = new ChatterBox(mMaine_shramp);
+//            ChatterBox chatterbox = new ChatterBox(mMaine_shramp);
             String title = "Womp womp";
             String message = "Camera hardware level 3 required.\n"
                             + "Sorry, but you don't cut the mustard.";
             String button = "Accept defeat";
-            chatterbox.displayBasicAlert(title, message, button, mQuit_action);
+//            chatterbox.displayBasicAlert(title, message, button, mQuit_action);
             Log.e(LOCAL_TAG, "RETURN");
             return;
         }
@@ -152,26 +155,26 @@ public abstract class CameraSetup {
 
             if (mBack_camera_id == null) {
                 Log.e(LOCAL_TAG, "Back camera cannot be found");
-                ChatterBox chatterbox = new ChatterBox(mMaine_shramp);
+//                ChatterBox chatterbox = new ChatterBox(mMaine_shramp);
                 String title = "Uh oh";
                 String message = "Something odd has occurred. \n"
                         + "Cannot connect to the back camera.. \n"
                         + "Sorry, but there is no chance of survival now. \n"
                         + ".... rose......bud...blaugghhhhhhhh";
                 String button = "Accept defeat";
-                chatterbox.displayBasicAlert(title, message, button, mQuit_action);
+//                chatterbox.displayBasicAlert(title, message, button, mQuit_action);
                 Log.e(LOCAL_TAG, "RETURN");
                 return;
             }
         }
         catch (Exception e) {
             Log.e(LOCAL_TAG, "EXCEPTION: " + e.getLocalizedMessage());
-            ChatterBox chatterbox = new ChatterBox(mMaine_shramp);
+//            ChatterBox chatterbox = new ChatterBox(mMaine_shramp);
             String title = "Runtime Exception!";
             String message = "CameraSetup.getCameraIDs()\n"
                     + e.getLocalizedMessage();
             String button = "Accept defeat";
-            chatterbox.displayBasicAlert(title, message, button, mQuit_action);
+//            chatterbox.displayBasicAlert(title, message, button, mQuit_action);
             Log.e(LOCAL_TAG, "RETURN");
             return;
         }
@@ -192,14 +195,14 @@ public abstract class CameraSetup {
 
         if (hardware_level == null) {
             Log.e(LOCAL_TAG, "Hardware level unobtainable");
-            ChatterBox chatterbox = new ChatterBox(mMaine_shramp);
+//            ChatterBox chatterbox = new ChatterBox(mMaine_shramp);
             String title = "Uh oh";
             String message = "Something odd has occurred. \n"
                     + "The camera hardware level is not available. \n"
                     + "Sorry, but there is no chance of survival now. \n"
                     + ".... rose......bud...blaugghhhhhhhh";
             String button = "Accept defeat";
-            chatterbox.displayBasicAlert(title, message, button, mQuit_action);
+//            chatterbox.displayBasicAlert(title, message, button, mQuit_action);
             Log.e(LOCAL_TAG, "RETURN");
             return true;
         }
@@ -248,26 +251,26 @@ public abstract class CameraSetup {
         }
         catch (Exception e) {
             Log.e(LOCAL_TAG, "EXCEPTION: " + e.getLocalizedMessage());
-            ChatterBox chatterbox = new ChatterBox(mMaine_shramp);
+//            ChatterBox chatterbox = new ChatterBox(mMaine_shramp);
             String title = "Runtime Exception!";
             String message = "CameraSetup.configureCamera()\n"
                             + e.getLocalizedMessage();
             String button = "Accept defeat";
-            chatterbox.displayBasicAlert(title, message, button, mQuit_action);
+//            chatterbox.displayBasicAlert(title, message, button, mQuit_action);
             Log.e(LOCAL_TAG, "RETURN");
             return;
         }
 
         if (!mStream_config.isOutputSupportedFor(IMAGE_FORMAT)) {
             Log.e(LOCAL_TAG, "output format is not supported :-(");
-            ChatterBox chatterbox = new ChatterBox(mMaine_shramp);
+//            ChatterBox chatterbox = new ChatterBox(mMaine_shramp);
             String title = "Womp womp";
             String message = "The desired output image format is \n"
                     + "not supported :-( \n"
                     + "Sorry, but there is no chance of survival now. \n"
                     + ".... rose......bud...blaugghhhhhhhh";
             String button = "Accept defeat";
-            chatterbox.displayBasicAlert(title, message, button, mQuit_action);
+//            chatterbox.displayBasicAlert(title, message, button, mQuit_action);
             Log.e(LOCAL_TAG, "RETURN");
             return;
         }

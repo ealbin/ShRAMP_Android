@@ -1,4 +1,4 @@
-package edu.crayfis.shramp;
+package Trash;
 
 import android.annotation.TargetApi;
 import android.hardware.camera2.CameraCaptureSession;
@@ -14,6 +14,9 @@ import android.os.Process;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.Surface;
+
+import edu.crayfis.shramp.CaptureProcessing;
+import edu.crayfis.shramp.MaineShRAMP;
 
 @TargetApi(Build.VERSION_CODES.LOLLIPOP) // 21
 public class Camera extends CameraSetup {
@@ -66,7 +69,7 @@ public class Camera extends CameraSetup {
 
         Log.e(LOCAL_TAG, "Opening camera");
         try {
-            mManager.openCamera(mBack_camera_id, mDevice_state_callback, mHandler);
+//            mManager.openCamera(mBack_camera_id, mDevice_state_callback, mHandler);
         }
         catch (Exception e) {
             Log.e(LOCAL_TAG, "EXCEPTION: " + e.getLocalizedMessage());
@@ -107,7 +110,7 @@ public class Camera extends CameraSetup {
                 configureCamera();
 
                 Log.e(LOCAL_TAG, "Setting up capture processing");
-                mCapture_processing = new CaptureProcessing(mMaine_shramp, mImage_size);
+//                mCapture_processing = new CaptureProcessing(mMaine_shramp, mImage_size);
                 mCapture_builder.addTarget(mCapture_processing.mSurface);
 
                 Log.e(LOCAL_TAG, "Shutting down for now");
