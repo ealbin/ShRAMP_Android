@@ -1,4 +1,4 @@
-package Logging;
+package edu.crayfis.shramp.logging;
 
 /**
  * Options for outputting the log:

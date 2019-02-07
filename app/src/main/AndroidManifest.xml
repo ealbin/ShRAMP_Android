@@ -10,11 +10,11 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:required="true" />
 
-    <uses-feature android:name="android.hardware.camera2.capability.manual_sensor"
+    <uses-feature android:name="android.hardware.edu.crayfis.shramp.camera2.capability.manual_sensor"
         android:required="true" />
-    <uses-feature android:name="android.hardware.camera2.capability.raw"
+    <uses-feature android:name="android.hardware.edu.crayfis.shramp.camera2.capability.raw"
         android:required="true" />
-    <uses-feature android:name="android.hardware.camera2.level_3"
+    <uses-feature android:name="android.hardware.edu.crayfis.shramp.camera2.level_3"
         android:required="true" />
 
     <application

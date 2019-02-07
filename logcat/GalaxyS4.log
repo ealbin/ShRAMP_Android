@@ -1,0 +1,351 @@
+02-06 20:10:04.579 E/Zygote: MountEmulatedStorage()
+02-06 20:10:04.579 E/Zygote: v2
+02-06 20:10:04.579 E/SELinux: [DEBUG] get_category: variable seinfo: default sensitivity: NULL, cateogry: NULL
+02-06 20:10:05.289 E/MaineShRAMP.onCreate(): ---------------------------------------------
+02-06 20:10:05.289 E/MaineShRAMP.onCreate(): Welcome to Shower Reconstructing Array of Mobile Phones
+02-06 20:10:05.289 E/MaineShRAMP.onCreate(): or "ShRAMP" for short
+02-06 20:10:05.680 E/CheckAPICheckAPI(MaineShRAMP): ---------------------------------------------
+02-06 20:10:05.680 E/CheckAPI.outdatedAndroidVersion(): ---------------------------------------------
+02-06 20:10:05.680 E/CheckAPI.getBuildString(): ---------------------------------------------
+02-06 20:10:05.680 E/CheckAPI.getBuildString(int): ---------------------------------------------
+02-06 20:10:05.680 E/CheckAPI.getBuildString(int): Build: v5.0 API 21 "Lollipop" (November 2014)
+02-06 20:10:05.680 E/CheckAPI.getBuildString(int): RETURN
+02-06 20:10:05.680 E/CheckAPI.getBuildString(): Build: v5.0 API 21 "Lollipop" (November 2014)
+02-06 20:10:05.680 E/CheckAPI.getBuildString(): RETURN
+02-06 20:10:05.680 E/CheckAPI.outdatedAndroidVersion(): Build version checks out: v5.0 API 21 "Lollipop" (November 2014)
+02-06 20:10:05.680 E/CheckAPI.outdatedAndroidVersion(): RETURN
+02-06 20:10:05.680 E/CheckAPICheckAPI(MaineShRAMP): API is sufficient
+02-06 20:10:05.680 E/CheckAPICheckAPI(MaineShRAMP): RETURN
+02-06 20:10:05.680 E/CheckPermissionsCheckPermissions(MaineShRAMP, Runnable): ---------------------------------------------
+02-06 20:10:05.680 E/CheckPermissionsCheckPermissions(MaineShRAMP, Runnable): API 22 or below, permissions granted on start
+02-06 20:10:05.680 E/MaineShRAMP.startApp(): ---------------------------------------------
+02-06 20:10:05.690 E/MaineShRAMP.startApp(): Creating camera via new MainShrampCamera()
+02-06 20:10:05.700 E/main (5) MaineShRAMP.java : 126 : startApp(): Loading ShrampCameraManager
+02-06 20:10:05.700 E/main (5) MaineShrampCamera.java : 17 : <init>(): Creating CameraManager
+02-06 20:10:05.730 E/main (5) MaineShrampCamera.java : 17 : <init>(): Discovering cameras
+02-06 20:10:06.220 E/main (5) MaineShrampCamera.java : 17 : <init>(): Found back camera, ID: 0
+02-06 20:10:06.220 E/main (5) MaineShrampCamera.java : 17 : <init>(): Found front camera, ID: 1
+02-06 20:10:06.220 E/main (5) MaineShrampCamera.java : 17 : <init>(): return ShrampCameraManager;
+02-06 20:10:06.220 E/main (5) MaineShRAMP.java : 126 : startApp(): Opening front camera
+02-06 20:10:06.220 E/main (5) MaineShrampCamera.java : 22 : <init>(): Creating CameraDevice
+02-06 20:10:06.230 E/main (5) ShrampCameraDevice.java : 55 : <init>(): Initializing callback and starting background thread
+02-06 20:10:06.230 E/main (5) ShrampCameraDevice.java : 73 : <init>(): Starting thread: shramp_front_cam
+02-06 20:10:06.230 E/main (5) ShrampCameraDevice.java : 73 : <init>(): Thread: shramp_front_cam started; return;
+02-06 20:10:06.230 E/main (5) ShrampCameraDevice.java : 55 : <init>(): return;
+02-06 20:10:06.230 E/main (5) ShrampCameraManager.java : 191 : openFrontCamera(): Opening camera now
+02-06 20:10:06.371 E/main (5) ShrampCameraManager.java : 191 : openFrontCamera(): return;
+02-06 20:10:06.371 E/main (5) MaineShrampCamera.java : 22 : <init>(): return;
+02-06 20:10:06.371 E/main (5) MaineShRAMP.java : 126 : startApp(): Closing front camera
+02-06 20:10:06.371 E/main (5) MaineShrampCamera.java : 25 : <init>(): Close front camera
+02-06 20:10:06.371 E/main (5) ShrampCameraManager.java : 277 : closeFrontCamera(): Closing camera now
+02-06 20:10:06.371 E/main (5) ShrampCameraManager.java : 314 : closeCamera(): Calling statecallback close
+02-06 20:10:06.371 E/shramp_front_cam (5) CameraDeviceImpl.java : 118 : run(): Camera opened, configuring for capture
+02-06 20:10:06.381 E/shramp_front_cam (5) ShrampCameraDevice.java : 179 : onOpened(): Loading camera abilities
+02-06 20:10:06.391 E/shramp_front_cam (5) ShrampCameraSetup.java : 86 : <init>(): Loading camera abilities
+02-06 20:10:06.391 E/shramp_front_cam (5) ShrampCameraSetup.java : 181 : <init>(): return;
+02-06 20:10:06.391 E/shramp_front_cam (5) ShrampCameraSetup.java : 86 : <init>(): Loading stream format
+02-06 20:10:06.391 E/shramp_front_cam (5) ShrampCameraSetup.java : 184 : <init>(): return;
+02-06 20:10:06.391 E/shramp_front_cam (5) ShrampCameraSetup.java : 86 : <init>(): return;
+02-06 20:10:06.391 E/shramp_front_cam (5) ShrampCameraSetup.java : 88 : <init>(): return CaptureRequest.Builder;
+02-06 20:10:06.401 E/shramp_front_cam (5) ShrampCameraDevice.java : 179 : onOpened(): Configuring camera
+02-06 20:10:06.431 E/shramp_front_cam (5) ShrampCameraSetup.java : 92 : <init>(): Configuring flash
+02-06 20:10:06.431 E/shramp_front_cam (5) CameraConfiguration.java : 115 : <init>(): FLASH_MODE
+02-06 20:10:06.431 E/shramp_front_cam (5) CameraConfiguration.java : 115 : <init>(): return;
+02-06 20:10:06.431 E/shramp_front_cam (5) ShrampCameraSetup.java : 92 : <init>(): Configuring control mode
+02-06 20:10:06.431 E/shramp_front_cam (5) CameraConfiguration.java : 118 : <init>(): CONTROL_MODE
+02-06 20:10:06.431 E/shramp_front_cam (5) CameraConfiguration.java : 118 : <init>(): return;
+02-06 20:10:06.431 E/shramp_front_cam (5) ShrampCameraSetup.java : 92 : <init>(): Configuring capture intent
+02-06 20:10:06.431 E/shramp_front_cam (5) CameraConfiguration.java : 121 : <init>(): CONTROL_CAPTURE_INTENT
+02-06 20:10:06.431 E/shramp_front_cam (5) CameraConfiguration.java : 121 : <init>(): return;
+02-06 20:10:06.431 E/shramp_front_cam (5) ShrampCameraSetup.java : 92 : <init>(): Configuring auto-white balance
+02-06 20:10:06.431 E/shramp_front_cam (5) CameraConfiguration.java : 128 : <init>(): CONTROL_AWB_MODE
+02-06 20:10:06.431 E/shramp_front_cam (5) CameraConfiguration.java : 128 : <init>(): CONTROL_AWB_LOCK
+02-06 20:10:06.431 E/shramp_front_cam (5) CameraConfiguration.java : 128 : <init>(): return;
+02-06 20:10:06.431 E/shramp_front_cam (5) ShrampCameraSetup.java : 92 : <init>(): Configuring auto-focus
+02-06 20:10:06.431 E/shramp_front_cam (5) CameraConfiguration.java : 131 : <init>(): CONTROL_AF_MODE
+02-06 20:10:06.431 E/shramp_front_cam (5) CameraConfiguration.java : 131 : <init>(): return;
+02-06 20:10:06.431 E/shramp_front_cam (5) ShrampCameraSetup.java : 92 : <init>(): Configuring auto-exposure
+02-06 20:10:06.431 E/shramp_front_cam (5) CameraConfiguration.java : 134 : <init>(): CONTROL_AE_MODE
+02-06 20:10:06.441 E/shramp_front_cam (5) CameraConfiguration.java : 134 : <init>(): CONTROL_AE_LOCK
+02-06 20:10:06.441 E/shramp_front_cam (5) CameraConfiguration.java : 134 : <init>(): CONTROL_AE_ANTIBANDING_MODE
+02-06 20:10:06.441 E/shramp_front_cam (5) CameraConfiguration.java : 134 : <init>(): CONTROL_AE_EXPOSURE_COMPENSATION
+02-06 20:10:06.441 E/shramp_front_cam (5) CameraConfiguration.java : 134 : <init>(): CONTROL_AE_TARGET_FPS
+02-06 20:10:06.441 E/shramp_front_cam (5) CameraConfiguration.java : 134 : <init>(): return;
+02-06 20:10:06.441 E/shramp_front_cam (5) ShrampCameraSetup.java : 92 : <init>(): Configuring corrections
+02-06 20:10:06.441 E/shramp_front_cam (5) CameraConfiguration.java : 137 : <init>(): BLACK_LEVEL_LOCK
+02-06 20:10:06.441 E/shramp_front_cam (5) CameraConfiguration.java : 137 : <init>(): COLOR_CORRECTION_ABERRATION_MODE
+02-06 20:10:06.441 E/shramp_front_cam (5) CameraConfiguration.java : 137 : <init>(): COLOR_CORRECTION_MODE
+02-06 20:10:06.441 E/shramp_front_cam (5) CameraConfiguration.java : 137 : <init>(): COLOR_CORRECTION_TRANSFORM
+02-06 20:10:06.441 E/shramp_front_cam (5) CameraConfiguration.java : 137 : <init>(): COLOR_CORRECTION_GAINS
+02-06 20:10:06.441 E/shramp_front_cam (5) CameraConfiguration.java : 137 : <init>(): COLOR_EFFECT_MODE
+02-06 20:10:06.441 E/shramp_front_cam (5) CameraConfiguration.java : 137 : <init>(): CONTROL_POST_RAW_SENSITIVITY_BOOST
+02-06 20:10:06.441 E/shramp_front_cam (5) CameraConfiguration.java : 137 : <init>(): CONTROL_VIDEO_SABILIZATION_MODE
+02-06 20:10:06.441 E/shramp_front_cam (5) CameraConfiguration.java : 137 : <init>(): DISTORTION_CORRECTION_MODE
+02-06 20:10:06.441 E/shramp_front_cam (5) CameraConfiguration.java : 137 : <init>(): EDGE_MODE
+02-06 20:10:06.441 E/shramp_front_cam (5) CameraConfiguration.java : 137 : <init>(): HOT_PIXEL_MODE
+02-06 20:10:06.441 E/shramp_front_cam (5) CameraConfiguration.java : 137 : <init>(): NOISE_REDUCTION_MODE
+02-06 20:10:06.441 E/shramp_front_cam (5) CameraConfiguration.java : 137 : <init>(): REPROCESS_EFFECTIVE_EXPOSURE_FACTOR
+02-06 20:10:06.441 E/shramp_front_cam (5) CameraConfiguration.java : 137 : <init>(): SHADING_MODE
+02-06 20:10:06.441 E/shramp_front_cam (5) CameraConfiguration.java : 137 : <init>(): TONEMAP_MODE
+02-06 20:10:06.441 E/shramp_front_cam (5) CameraConfiguration.java : 137 : <init>(): TONEMAP_CURVE
+02-06 20:10:06.441 E/shramp_front_cam (5) CameraConfiguration.java : 137 : <init>(): return;
+02-06 20:10:06.441 E/shramp_front_cam (5) ShrampCameraSetup.java : 92 : <init>(): Configuring optics
+02-06 20:10:06.441 E/shramp_front_cam (5) CameraConfiguration.java : 140 : <init>(): LENS_APERTURE
+02-06 20:10:06.441 E/shramp_front_cam (5) CameraConfiguration.java : 140 : <init>(): LENS_FILTER_DENSITY
+02-06 20:10:06.441 E/shramp_front_cam (5) CameraConfiguration.java : 140 : <init>(): LENS_FOCAL_LENGTH
+02-06 20:10:06.441 E/shramp_front_cam (5) CameraConfiguration.java : 140 : <init>(): LENS_FOCUS_DISTANCE
+02-06 20:10:06.451 E/shramp_front_cam (5) CameraConfiguration.java : 140 : <init>(): LENS_OPTICAL_STABILIZATION_MODE
+02-06 20:10:06.451 E/shramp_front_cam (5) CameraConfiguration.java : 140 : <init>(): return;
+02-06 20:10:06.451 E/shramp_front_cam (5) ShrampCameraSetup.java : 92 : <init>(): Configuring statistics
+02-06 20:10:06.451 E/shramp_front_cam (5) CameraConfiguration.java : 143 : <init>(): STATISTICS_FACE_DETECT_MODE
+02-06 20:10:06.451 E/shramp_front_cam (5) CameraConfiguration.java : 143 : <init>(): STATISTICS_INFO_AVAILABLE_HOT_PIXEL_MAP_MODES
+02-06 20:10:06.451 E/shramp_front_cam (5) CameraConfiguration.java : 143 : <init>(): STATISTICS_INFO_AVAILABLE_LENS_SHADING_MAP_MODES
+02-06 20:10:06.451 E/shramp_front_cam (5) CameraConfiguration.java : 143 : <init>(): STATISTICS_OIS_DATA_MODE
+02-06 20:10:06.451 E/shramp_front_cam (5) CameraConfiguration.java : 143 : <init>(): return;
+02-06 20:10:06.451 E/shramp_front_cam (5) ShrampCameraSetup.java : 92 : <init>(): Configuring sensor
+02-06 20:10:06.451 E/shramp_front_cam (5) CameraConfiguration.java : 146 : <init>(): SENSOR_SENSITIVITY
+02-06 20:10:06.451 E/shramp_front_cam (5) CameraConfiguration.java : 146 : <init>(): SENSOR_EXPOSURE_TIME
+02-06 20:10:06.451 E/shramp_front_cam (5) CameraConfiguration.java : 146 : <init>(): SENSOR_FRAME_DURATION
+02-06 20:10:06.451 E/shramp_front_cam (5) CameraConfiguration.java : 146 : <init>(): return;
+02-06 20:10:06.451 E/shramp_front_cam (5) ShrampCameraSetup.java : 92 : <init>(): Irrelevant setting: CONTROL_AWB_REGIONS
+02-06 20:10:06.451 E/shramp_front_cam (5) ShrampCameraSetup.java : 92 : <init>(): Irrelevant setting: CONTROL_AF_REGIONS
+02-06 20:10:06.451 E/shramp_front_cam (5) ShrampCameraSetup.java : 92 : <init>(): Irrelevant setting: CONTROL_AF_TRIGGER
+02-06 20:10:06.451 E/shramp_front_cam (5) ShrampCameraSetup.java : 92 : <init>(): Irrelevant setting: CONTROL_AE_REGIONS
+02-06 20:10:06.451 E/shramp_front_cam (5) ShrampCameraSetup.java : 92 : <init>(): Irrelevant setting: CONTROL_AE_PRECAPTURE_TRIGGER
+02-06 20:10:06.451 E/shramp_front_cam (5) ShrampCameraSetup.java : 92 : <init>(): Irrelevant setting: CONTROL_ENABLE_ZSL
+02-06 20:10:06.451 E/shramp_front_cam (5) ShrampCameraSetup.java : 92 : <init>(): Irrelevant setting: CONTROL_SCENE_MODE
+02-06 20:10:06.451 E/shramp_front_cam (5) ShrampCameraSetup.java : 92 : <init>(): Irrelevant setting: JPEG_GPS_LOCATION
+02-06 20:10:06.451 E/shramp_front_cam (5) ShrampCameraSetup.java : 92 : <init>(): Irrelevant setting: JPEG_ORIENTATION
+02-06 20:10:06.451 E/shramp_front_cam (5) ShrampCameraSetup.java : 92 : <init>(): Irrelevant setting: JPEG_QUALITY
+02-06 20:10:06.451 E/shramp_front_cam (5) ShrampCameraSetup.java : 92 : <init>(): Irrelevant setting: JPEG_THUMBNAIL_QUALITY
+02-06 20:10:06.451 E/shramp_front_cam (5) ShrampCameraSetup.java : 92 : <init>(): Irrelevant setting: SCALAR_CROP_REGION
+02-06 20:10:06.451 E/shramp_front_cam (5) ShrampCameraSetup.java : 92 : <init>(): Irrelevant setting: SENSOR_TEST_PATTERN_MODE
+02-06 20:10:06.451 E/shramp_front_cam (5) ShrampCameraSetup.java : 92 : <init>(): Irrelevant setting: SENSOR_TEST_PATTERN_DATA
+02-06 20:10:06.451 E/shramp_front_cam (5) ShrampCameraSetup.java : 92 : <init>(): return;
+02-06 20:10:06.451 E/shramp_front_cam (5) ShrampCameraDevice.java : 179 : onOpened(): Reporting camera configuration
+02-06 20:10:06.461 E/shramp_front_cam (5) ShrampCameraDevice.java : 179 : onOpened():  
+    Hardware level: Legacy
+    Camera version: Not supported
+    Sensor physical size: 2.5429397x1.4462907 [mm]
+    Total pixel array size: 1920x1080
+    Pre-correction pixel array size: Not supported
+    Active pixel array size: 1920x1080
+    Sensor has optically black regions: Not supported
+    Color filter arrangement: Unavailable
+    Output Format: YUV_420_888
+    Bits per pixel: 12
+    Output size: 1920x1080
+    Capture Template: Preview
+     
+    Flash is: Off
+    Control mode is: Off
+    Capture intent is: Preview
+    Auto-white balance mode is: Disabled
+    Auto-white balance lock is: Disabled
+    Auto-focus mode is: Disabled
+    Auto-exposure mode is: Disabled
+    Auto-exposure lock is: Disabled
+    Auto-exposure antibanding mode is: Disabled
+    Auto-exposure compensation is: Disabled
+    Auto-exposure target fps range: Disabled
+    Black level lock is: Engaged
+    Color aberration correction is: Fast
+    Color correction mode is: Transform matrix
+    Transform matrix is: ( 1 0 0 ),( 0 1 0 ),( 0 0 1 )
+    Color correction gains are: ( 1 1 1 1 )
+    Color effect mode is: Off
+    Post-raw sensitivity boost is: Not supported
+    Video stabilization mode is: Off
+    Distortion correction mode is: Not supported
+    Edge mode is: Not settable
+    Hot pixel mode is: Not settable
+    Noise reduction mode is: Fast
+    Reprocess factor is: Not supported
+    Shading mode is: Not settable
+    Tone-map mode is: Not settable
+    Tone-map contrast curve is: Not settable
+    Lens aperture (f-number, f/N) is: Not settable
+    Lens filter density is: Not settable
+    Lens focal length: 1.85 [mm]
+    Lens focus distance: 0.0
+    Lens optical stabilization is: Not settable
+    Face detection mode is: Off
+    Hot pixel map mode is: Not settable
+    Lens shading map mode is: Not settable
+    OIS data mode is: Not supported
+    Sensor sensitivity is: Not settable
+    Sensor exposure time is: Not settable
+    Sensor frame duration is: Not settable
+02-06 20:10:06.461 E/shramp_front_cam (5) ShrampCameraDevice.java : 179 : onOpened(): return;
+02-06 20:10:06.461 E/shramp_front_cam (5) CameraDeviceImpl.java : 118 : run(): return;
+02-06 20:10:06.461 E/main (5) ShrampCameraDevice.java : 114 : close(): Closing camera device
+02-06 20:10:06.511 E/main (5) ShrampCameraDevice.java : 114 : close(): return;
+02-06 20:10:06.511 E/shramp_front_cam (5) CameraDeviceImpl.java : 182 : run(): No additional action defined; return;
+02-06 20:10:06.511 E/main (5) ShrampCameraManager.java : 314 : closeCamera(): Ending shramp_front_cam thread
+02-06 20:10:06.511 E/main (5) ShrampCameraManager.java : 314 : closeCamera(): return;
+02-06 20:10:06.511 E/main (5) ShrampCameraManager.java : 277 : closeFrontCamera(): return;
+02-06 20:10:06.511 E/main (5) MaineShrampCamera.java : 25 : <init>(): return;
+02-06 20:10:06.511 E/main (5) MaineShRAMP.java : 126 : startApp(): Opening back camera
+02-06 20:10:06.511 E/main (5) MaineShrampCamera.java : 33 : <init>(): Creating CameraDevice
+02-06 20:10:06.511 E/main (5) ShrampCameraDevice.java : 55 : <init>(): Initializing callback and starting background thread
+02-06 20:10:06.511 E/main (5) ShrampCameraDevice.java : 73 : <init>(): Starting thread: shramp_back_cam
+02-06 20:10:06.511 E/main (5) ShrampCameraDevice.java : 73 : <init>(): Thread: shramp_back_cam started; return;
+02-06 20:10:06.521 E/main (5) ShrampCameraDevice.java : 55 : <init>(): return;
+02-06 20:10:06.521 E/main (5) ShrampCameraManager.java : 212 : openBackCamera(): Opening camera now
+02-06 20:10:06.751 E/main (5) ShrampCameraManager.java : 212 : openBackCamera(): return;
+02-06 20:10:06.751 E/main (5) MaineShrampCamera.java : 33 : <init>(): return;
+02-06 20:10:06.751 E/main (5) MaineShRAMP.java : 126 : startApp(): Closing back camera
+02-06 20:10:06.751 E/main (5) MaineShrampCamera.java : 36 : <init>(): Close back camera
+02-06 20:10:06.751 E/main (5) ShrampCameraManager.java : 287 : closeBackCamera(): Closing camera now
+02-06 20:10:06.751 E/main (5) ShrampCameraManager.java : 314 : closeCamera(): Calling statecallback close
+02-06 20:10:06.751 E/shramp_back_cam (5) CameraDeviceImpl.java : 118 : run(): Camera opened, configuring for capture
+02-06 20:10:06.751 E/shramp_back_cam (5) ShrampCameraDevice.java : 179 : onOpened(): Loading camera abilities
+02-06 20:10:06.751 E/shramp_back_cam (5) ShrampCameraSetup.java : 86 : <init>(): Loading camera abilities
+02-06 20:10:06.751 E/shramp_back_cam (5) ShrampCameraSetup.java : 181 : <init>(): return;
+02-06 20:10:06.751 E/shramp_back_cam (5) ShrampCameraSetup.java : 86 : <init>(): Loading stream format
+02-06 20:10:06.761 E/shramp_back_cam (5) ShrampCameraSetup.java : 184 : <init>(): return;
+02-06 20:10:06.761 E/shramp_back_cam (5) ShrampCameraSetup.java : 86 : <init>(): return;
+02-06 20:10:06.761 E/shramp_back_cam (5) ShrampCameraSetup.java : 88 : <init>(): return CaptureRequest.Builder;
+02-06 20:10:06.761 E/shramp_back_cam (5) ShrampCameraDevice.java : 179 : onOpened(): Configuring camera
+02-06 20:10:06.761 E/shramp_back_cam (5) ShrampCameraSetup.java : 92 : <init>(): Configuring flash
+02-06 20:10:06.761 E/shramp_back_cam (5) CameraConfiguration.java : 115 : <init>(): FLASH_MODE
+02-06 20:10:06.761 E/shramp_back_cam (5) CameraConfiguration.java : 115 : <init>(): return;
+02-06 20:10:06.761 E/shramp_back_cam (5) ShrampCameraSetup.java : 92 : <init>(): Configuring control mode
+02-06 20:10:06.761 E/shramp_back_cam (5) CameraConfiguration.java : 118 : <init>(): CONTROL_MODE
+02-06 20:10:06.761 E/shramp_back_cam (5) CameraConfiguration.java : 118 : <init>(): return;
+02-06 20:10:06.761 E/shramp_back_cam (5) ShrampCameraSetup.java : 92 : <init>(): Configuring capture intent
+02-06 20:10:06.761 E/shramp_back_cam (5) CameraConfiguration.java : 121 : <init>(): CONTROL_CAPTURE_INTENT
+02-06 20:10:06.761 E/shramp_back_cam (5) CameraConfiguration.java : 121 : <init>(): return;
+02-06 20:10:06.761 E/shramp_back_cam (5) ShrampCameraSetup.java : 92 : <init>(): Configuring auto-white balance
+02-06 20:10:06.761 E/shramp_back_cam (5) CameraConfiguration.java : 128 : <init>(): CONTROL_AWB_MODE
+02-06 20:10:06.761 E/shramp_back_cam (5) CameraConfiguration.java : 128 : <init>(): CONTROL_AWB_LOCK
+02-06 20:10:06.761 E/shramp_back_cam (5) CameraConfiguration.java : 128 : <init>(): return;
+02-06 20:10:06.761 E/shramp_back_cam (5) ShrampCameraSetup.java : 92 : <init>(): Configuring auto-focus
+02-06 20:10:06.761 E/shramp_back_cam (5) CameraConfiguration.java : 131 : <init>(): CONTROL_AF_MODE
+02-06 20:10:06.761 E/shramp_back_cam (5) CameraConfiguration.java : 131 : <init>(): return;
+02-06 20:10:06.761 E/shramp_back_cam (5) ShrampCameraSetup.java : 92 : <init>(): Configuring auto-exposure
+02-06 20:10:06.761 E/shramp_back_cam (5) CameraConfiguration.java : 134 : <init>(): CONTROL_AE_MODE
+02-06 20:10:06.761 E/shramp_back_cam (5) CameraConfiguration.java : 134 : <init>(): CONTROL_AE_LOCK
+02-06 20:10:06.761 E/shramp_back_cam (5) CameraConfiguration.java : 134 : <init>(): CONTROL_AE_ANTIBANDING_MODE
+02-06 20:10:06.761 E/shramp_back_cam (5) CameraConfiguration.java : 134 : <init>(): CONTROL_AE_EXPOSURE_COMPENSATION
+02-06 20:10:06.761 E/shramp_back_cam (5) CameraConfiguration.java : 134 : <init>(): CONTROL_AE_TARGET_FPS
+02-06 20:10:06.771 E/shramp_back_cam (5) CameraConfiguration.java : 134 : <init>(): return;
+02-06 20:10:06.771 E/shramp_back_cam (5) ShrampCameraSetup.java : 92 : <init>(): Configuring corrections
+02-06 20:10:06.771 E/shramp_back_cam (5) CameraConfiguration.java : 137 : <init>(): BLACK_LEVEL_LOCK
+02-06 20:10:06.771 E/shramp_back_cam (5) CameraConfiguration.java : 137 : <init>(): COLOR_CORRECTION_ABERRATION_MODE
+02-06 20:10:06.771 E/shramp_back_cam (5) CameraConfiguration.java : 137 : <init>(): COLOR_CORRECTION_MODE
+02-06 20:10:06.771 E/shramp_back_cam (5) CameraConfiguration.java : 137 : <init>(): COLOR_CORRECTION_TRANSFORM
+02-06 20:10:06.771 E/shramp_back_cam (5) CameraConfiguration.java : 137 : <init>(): COLOR_CORRECTION_GAINS
+02-06 20:10:06.771 E/shramp_back_cam (5) CameraConfiguration.java : 137 : <init>(): COLOR_EFFECT_MODE
+02-06 20:10:06.771 E/shramp_back_cam (5) CameraConfiguration.java : 137 : <init>(): CONTROL_POST_RAW_SENSITIVITY_BOOST
+02-06 20:10:06.771 E/shramp_back_cam (5) CameraConfiguration.java : 137 : <init>(): CONTROL_VIDEO_SABILIZATION_MODE
+02-06 20:10:06.771 E/shramp_back_cam (5) CameraConfiguration.java : 137 : <init>(): DISTORTION_CORRECTION_MODE
+02-06 20:10:06.771 E/shramp_back_cam (5) CameraConfiguration.java : 137 : <init>(): EDGE_MODE
+02-06 20:10:06.771 E/shramp_back_cam (5) CameraConfiguration.java : 137 : <init>(): HOT_PIXEL_MODE
+02-06 20:10:06.771 E/shramp_back_cam (5) CameraConfiguration.java : 137 : <init>(): NOISE_REDUCTION_MODE
+02-06 20:10:06.771 E/shramp_back_cam (5) CameraConfiguration.java : 137 : <init>(): REPROCESS_EFFECTIVE_EXPOSURE_FACTOR
+02-06 20:10:06.771 E/shramp_back_cam (5) CameraConfiguration.java : 137 : <init>(): SHADING_MODE
+02-06 20:10:06.771 E/shramp_back_cam (5) CameraConfiguration.java : 137 : <init>(): TONEMAP_MODE
+02-06 20:10:06.771 E/shramp_back_cam (5) CameraConfiguration.java : 137 : <init>(): TONEMAP_CURVE
+02-06 20:10:06.771 E/shramp_back_cam (5) CameraConfiguration.java : 137 : <init>(): return;
+02-06 20:10:06.771 E/shramp_back_cam (5) ShrampCameraSetup.java : 92 : <init>(): Configuring optics
+02-06 20:10:06.771 E/shramp_back_cam (5) CameraConfiguration.java : 140 : <init>(): LENS_APERTURE
+02-06 20:10:06.771 E/shramp_back_cam (5) CameraConfiguration.java : 140 : <init>(): LENS_FILTER_DENSITY
+02-06 20:10:06.781 E/shramp_back_cam (5) CameraConfiguration.java : 140 : <init>(): LENS_FOCAL_LENGTH
+02-06 20:10:06.781 E/shramp_back_cam (5) CameraConfiguration.java : 140 : <init>(): LENS_FOCUS_DISTANCE
+02-06 20:10:06.781 E/shramp_back_cam (5) CameraConfiguration.java : 140 : <init>(): LENS_OPTICAL_STABILIZATION_MODE
+02-06 20:10:06.781 E/shramp_back_cam (5) CameraConfiguration.java : 140 : <init>(): return;
+02-06 20:10:06.781 E/shramp_back_cam (5) ShrampCameraSetup.java : 92 : <init>(): Configuring statistics
+02-06 20:10:06.781 E/shramp_back_cam (5) CameraConfiguration.java : 143 : <init>(): STATISTICS_FACE_DETECT_MODE
+02-06 20:10:06.781 E/shramp_back_cam (5) CameraConfiguration.java : 143 : <init>(): STATISTICS_INFO_AVAILABLE_HOT_PIXEL_MAP_MODES
+02-06 20:10:06.781 E/shramp_back_cam (5) CameraConfiguration.java : 143 : <init>(): STATISTICS_INFO_AVAILABLE_LENS_SHADING_MAP_MODES
+02-06 20:10:06.781 E/shramp_back_cam (5) CameraConfiguration.java : 143 : <init>(): STATISTICS_OIS_DATA_MODE
+02-06 20:10:06.781 E/shramp_back_cam (5) CameraConfiguration.java : 143 : <init>(): return;
+02-06 20:10:06.781 E/shramp_back_cam (5) ShrampCameraSetup.java : 92 : <init>(): Configuring sensor
+02-06 20:10:06.781 E/shramp_back_cam (5) CameraConfiguration.java : 146 : <init>(): SENSOR_SENSITIVITY
+02-06 20:10:06.781 E/shramp_back_cam (5) CameraConfiguration.java : 146 : <init>(): SENSOR_EXPOSURE_TIME
+02-06 20:10:06.781 E/shramp_back_cam (5) CameraConfiguration.java : 146 : <init>(): SENSOR_FRAME_DURATION
+02-06 20:10:06.781 E/shramp_back_cam (5) CameraConfiguration.java : 146 : <init>(): return;
+02-06 20:10:06.781 E/shramp_back_cam (5) ShrampCameraSetup.java : 92 : <init>(): Irrelevant setting: CONTROL_AWB_REGIONS
+02-06 20:10:06.781 E/shramp_back_cam (5) ShrampCameraSetup.java : 92 : <init>(): Irrelevant setting: CONTROL_AF_REGIONS
+02-06 20:10:06.781 E/shramp_back_cam (5) ShrampCameraSetup.java : 92 : <init>(): Irrelevant setting: CONTROL_AF_TRIGGER
+02-06 20:10:06.781 E/shramp_back_cam (5) ShrampCameraSetup.java : 92 : <init>(): Irrelevant setting: CONTROL_AE_REGIONS
+02-06 20:10:06.781 E/shramp_back_cam (5) ShrampCameraSetup.java : 92 : <init>(): Irrelevant setting: CONTROL_AE_PRECAPTURE_TRIGGER
+02-06 20:10:06.781 E/shramp_back_cam (5) ShrampCameraSetup.java : 92 : <init>(): Irrelevant setting: CONTROL_ENABLE_ZSL
+02-06 20:10:06.781 E/shramp_back_cam (5) ShrampCameraSetup.java : 92 : <init>(): Irrelevant setting: CONTROL_SCENE_MODE
+02-06 20:10:06.781 E/shramp_back_cam (5) ShrampCameraSetup.java : 92 : <init>(): Irrelevant setting: JPEG_GPS_LOCATION
+02-06 20:10:06.781 E/shramp_back_cam (5) ShrampCameraSetup.java : 92 : <init>(): Irrelevant setting: JPEG_ORIENTATION
+02-06 20:10:06.781 E/shramp_back_cam (5) ShrampCameraSetup.java : 92 : <init>(): Irrelevant setting: JPEG_QUALITY
+02-06 20:10:06.781 E/shramp_back_cam (5) ShrampCameraSetup.java : 92 : <init>(): Irrelevant setting: JPEG_THUMBNAIL_QUALITY
+02-06 20:10:06.791 E/shramp_back_cam (5) ShrampCameraSetup.java : 92 : <init>(): Irrelevant setting: SCALAR_CROP_REGION
+02-06 20:10:06.791 E/shramp_back_cam (5) ShrampCameraSetup.java : 92 : <init>(): Irrelevant setting: SENSOR_TEST_PATTERN_MODE
+02-06 20:10:06.791 E/shramp_back_cam (5) ShrampCameraSetup.java : 92 : <init>(): Irrelevant setting: SENSOR_TEST_PATTERN_DATA
+02-06 20:10:06.791 E/shramp_back_cam (5) ShrampCameraSetup.java : 92 : <init>(): return;
+02-06 20:10:06.791 E/shramp_back_cam (5) ShrampCameraDevice.java : 179 : onOpened(): Reporting camera configuration
+02-06 20:10:06.791 E/shramp_back_cam (5) ShrampCameraDevice.java : 179 : onOpened():  
+    Hardware level: Legacy
+    Camera version: Not supported
+    Sensor physical size: 4.5229335x3.40235 [mm]
+    Total pixel array size: 4128x3096
+    Pre-correction pixel array size: Not supported
+    Active pixel array size: 4128x3096
+    Sensor has optically black regions: Not supported
+    Color filter arrangement: Unavailable
+    Output Format: YUV_420_888
+    Bits per pixel: 12
+    Output size: 1440x1080
+    Capture Template: Preview
+     
+    Flash is: Off
+    Control mode is: Off
+    Capture intent is: Preview
+    Auto-white balance mode is: Disabled
+    Auto-white balance lock is: Disabled
+    Auto-focus mode is: Disabled
+    Auto-exposure mode is: Disabled
+    Auto-exposure lock is: Disabled
+    Auto-exposure antibanding mode is: Disabled
+    Auto-exposure compensation is: Disabled
+    Auto-exposure target fps range: Disabled
+    Black level lock is: Engaged
+    Color aberration correction is: Fast
+    Color correction mode is: Transform matrix
+    Transform matrix is: ( 1 0 0 ),( 0 1 0 ),( 0 0 1 )
+    Color correction gains are: ( 1 1 1 1 )
+    Color effect mode is: Off
+    Post-raw sensitivity boost is: Not supported
+    Video stabilization mode is: Off
+    Distortion correction mode is: Not supported
+    Edge mode is: Not settable
+    Hot pixel mode is: Not settable
+    Noise reduction mode is: Fast
+    Reprocess factor is: Not supported
+    Shading mode is: Not settable
+    Tone-map mode is: Not settable
+    Tone-map contrast curve is: Not settable
+    Lens aperture (f-number, f/N) is: Not settable
+    Lens filter density is: Not settable
+    Lens focal length: 4.2 [mm]
+    Lens focus distance: 0.0
+    Lens optical stabilization is: Not settable
+    Face detection mode is: Off
+    Hot pixel map mode is: Not settable
+    Lens shading map mode is: Not settable
+    OIS data mode is: Not supported
+    Sensor sensitivity is: Not settable
+    Sensor exposure time is: Not settable
+    Sensor frame duration is: Not settable
+02-06 20:10:06.791 E/shramp_back_cam (5) ShrampCameraDevice.java : 179 : onOpened(): return;
+02-06 20:10:06.791 E/shramp_back_cam (5) CameraDeviceImpl.java : 118 : run(): return;
+02-06 20:10:06.791 E/main (5) ShrampCameraDevice.java : 114 : close(): Closing camera device
+02-06 20:10:06.851 E/main (5) ShrampCameraDevice.java : 114 : close(): return;
+02-06 20:10:06.851 E/main (5) ShrampCameraManager.java : 314 : closeCamera(): Ending shramp_back_cam thread
+02-06 20:10:06.851 E/shramp_back_cam (5) CameraDeviceImpl.java : 182 : run(): No additional action defined; return;
+02-06 20:10:06.851 E/main (5) ShrampCameraManager.java : 314 : closeCamera(): return;
+02-06 20:10:06.851 E/main (5) ShrampCameraManager.java : 287 : closeBackCamera(): return;
+02-06 20:10:06.851 E/main (5) MaineShrampCamera.java : 36 : <init>(): return;
+02-06 20:10:06.851 E/main (5) MaineShRAMP.java : 126 : startApp(): No external camera detected
+02-06 20:10:06.851 E/main (5) MaineShRAMP.java : 126 : startApp(): return;
+02-06 20:10:06.851 E/MaineShRAMP.startApp(): RETURN
+02-06 20:10:06.851 E/CheckPermissionsCheckPermissions(MaineShRAMP, Runnable): RETURN
+02-06 20:10:06.851 E/MaineShRAMP.onCreate(): RETURN

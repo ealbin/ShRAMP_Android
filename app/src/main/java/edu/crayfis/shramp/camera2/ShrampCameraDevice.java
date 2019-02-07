@@ -1,4 +1,4 @@
-package Camera2;
+package edu.crayfis.shramp.camera2;
 
 import android.annotation.TargetApi;
 import android.hardware.camera2.CameraCharacteristics;
@@ -8,9 +8,7 @@ import android.os.HandlerThread;
 import android.os.Process;
 import android.support.annotation.NonNull;
 
-import Logging.DividerStyle;
-import Logging.OutStream;
-import Logging.ShrampLogger;
+import edu.crayfis.shramp.logging.ShrampLogger;
 
 /**
  * ShrampCameraDevice sets up, shuts down and controls the actions (onOpened, etc)
@@ -34,15 +32,14 @@ class ShrampCameraDevice {
     private ShrampStateCallback mStateCallback; // nested class defined at bottom
 
     // created in ShrampStateCallback.onOpen()
-    private ShrampCameraCaptureSession mShrampCameraCaptureSession;
+    private ShrampCameraSetup mShrampCameraSetup;
 
     // time to wait for threads to quit [miliseconds]
     // 0 means wait forever
     private static final Long JOIN_MAX_WAIT_IN_MS = 0L;
 
-     // Logging object
+     // logging
     private static ShrampLogger mLogger = new ShrampLogger(ShrampLogger.DEFAULT_STREAM);
-    private static final String TAG = "ShrampCameraDevice";
 
     //**********************************************************************************************
     // Class Methods
@@ -68,60 +65,31 @@ class ShrampCameraDevice {
     ShrampCameraDevice(@NonNull CameraCharacteristics characteristics,
                        @NonNull String name, int priority) {
 
-        mLogger.divider(DividerStyle.Strong);
-
         mName     = name;
         mPriority = priority;
         mCameraCharacteristics = characteristics;
 
-        mLogger.log(TAG, "Initializing callback and starting background thread");
+        mLogger.log("Initializing callback and starting background thread");
         restart();
 
-        mLogger.log(TAG, "return;");
+        mLogger.log("return;");
     }
 
     /**
      * If the HandlerThread has been stopped, it can be restarted here
      */
     void restart() {
-        final String LTAG = TAG.concat("restart()");
-        mLogger.logTrace();
 
+        mLogger.log("Starting thread: " + mName);
         mStateCallback = new ShrampStateCallback();
         mHandlerThread = new HandlerThread(mName, mPriority);
         mHandlerThread.start();  // must start before calling .getLooper()
         mHandler       = new Handler(mHandlerThread.getLooper());
 
-        mLogger.log(LTAG, "Callback initialized and background thread " + mName + "started");
-        mLogger.log(LTAG, "return;");
+        mLogger.log("Thread: " + mName + " started; return;");
     }
 
-    /**
-     * Call to properly close the camera device and stop the background thread
-     */
-    void close() {
-        final String LTAG = TAG.concat("close()");
-        mLogger.divider(DividerStyle.Weak);
-        mLogger.logTrace();
-
-        mLogger.log(LTAG, "Closing camera now");
-        mStateCallback.close();
-        mStateCallback = null;
-
-        mLogger.log(LTAG, "Ending " + mName + " thread");
-        mHandlerThread.quitSafely();
-        try {
-            mHandlerThread.join(JOIN_MAX_WAIT_IN_MS);
-        }
-        catch (InterruptedException e) {
-            // TODO ERROR
-            mLogger.log(LTAG, "ERROR:  Interrupted Exception");
-        }
-        mHandlerThread = null;
-        mHandler       = null;
-
-        mLogger.log(LTAG, "return;");
-    }
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
      * Access ShrampStateCallback for this device
@@ -136,6 +104,33 @@ class ShrampCameraDevice {
     Handler getHandler() { return mHandler; }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Call to properly close the camera device and stop the background thread
+     */
+    void close() {
+
+        mLogger.log("Calling statecallback close");
+        mStateCallback.close();
+        mStateCallback = null;
+
+        mLogger.log("Ending " + mName + " thread");
+        mHandlerThread.quitSafely();
+        try {
+            mHandlerThread.join(JOIN_MAX_WAIT_IN_MS);
+        }
+        catch (InterruptedException e) {
+            // TODO ERROR
+            mLogger.log("ERROR: Interrupted Exception");
+        }
+        mHandlerThread = null;
+        mHandler       = null;
+
+        mLogger.log("return;");
+    }
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
     // implementation of nested class ShrampStateCallback
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -143,7 +138,10 @@ class ShrampCameraDevice {
      * Class for handling asynchronous callbacks from camera device
      */
     class ShrampStateCallback extends CameraDevice.StateCallback {
-        final String LTAG = TAG.concat(".ShrampStateCallback");
+
+        //******************************************************************************************
+        // Class Variables
+        //----------------
 
         // Error codes
         private static final int NO_ERROR = 0;
@@ -155,6 +153,13 @@ class ShrampCameraDevice {
         private CameraDevice mCameraDevice;
         private Integer      mError;
 
+        //******************************************************************************************
+        // Class Methods
+        //--------------
+
+        /**
+         * Default constructor
+         */
         ShrampStateCallback() { super(); }
 
         /**
@@ -165,16 +170,14 @@ class ShrampCameraDevice {
         @Override
         public void onOpened(@NonNull CameraDevice camera) {
             synchronized (LOCK) {
-                mLogger.divider(DividerStyle.Normal);
-                mLogger.logTrace();
 
                 mCameraDevice = camera;
                 mError        = NO_ERROR;
 
-                mLogger.log(LTAG, "onOpened: creating ShrampCameraCaptureSession");
-                mShrampCameraCaptureSession =
-                        new ShrampCameraCaptureSession(mCameraDevice, mCameraCharacteristics);
-                mLogger.log(LTAG, "onOpened: return;");
+                mLogger.log("Camera opened, configuring for capture");
+                mShrampCameraSetup =
+                        new ShrampCameraSetup(mCameraDevice, mCameraCharacteristics);
+                mLogger.log("return;");
             }
         }
 
@@ -186,11 +189,9 @@ class ShrampCameraDevice {
         @Override
         public void onClosed(@NonNull CameraDevice camera) {
             synchronized (LOCK) {
-                mLogger.divider(DividerStyle.Normal);
-                mLogger.logTrace();
 
                 mCameraDevice = camera;
-                mLogger.log(LTAG, "onClosed: return;");
+                mLogger.log("No additional action defined; return;");
             }
         }
 
@@ -202,14 +203,11 @@ class ShrampCameraDevice {
         @Override
         public void onDisconnected(@NonNull CameraDevice camera) {
             synchronized (LOCK) {
-                mLogger.divider(DividerStyle.Normal);
-                mLogger.logTrace();
-
                 mCameraDevice = camera;
 
-                mLogger.log(LTAG, "onDisconnected: closing");
+                mLogger.log("Disconnected, closing");
                 close();
-                mLogger.log(LTAG, "onDisconnected: return;");
+                mLogger.log("return;");
             }
         }
 
@@ -221,8 +219,6 @@ class ShrampCameraDevice {
         @Override
         public void onError(@NonNull CameraDevice camera, int error) {
             synchronized (LOCK) {
-                mLogger.divider(DividerStyle.Normal);
-                mLogger.logTrace();
 
                 mCameraDevice = camera;
                 mError = error;
@@ -230,35 +226,37 @@ class ShrampCameraDevice {
                 switch (mError) {
                     case (ERROR_CAMERA_DEVICE): {
                         // TODO fatal error
-                        mLogger.log(LTAG, "onError: ERROR_CAMERA_DEVICE");
+                        mLogger.log("ERROR_CAMERA_DEVICE");
                         break;
                     }
                     case (ERROR_CAMERA_DISABLED): {
                         // TODO disabled due to device policy
-                        mLogger.log(LTAG, "onError: ERROR_CAMERA_DISABLED");
+                        mLogger.log("ERROR_CAMERA_DISABLED");
                         break;
                     }
                     case (ERROR_CAMERA_IN_USE): {
                         // TODO someone else is using the camera already
-                        mLogger.log(LTAG, "onError: ERROR_CAMERA_IN_USE");
+                        mLogger.log("ERROR_CAMERA_IN_USE");
                         break;
                     }
                     case (ERROR_CAMERA_SERVICE): {
                         // TODO fatal error
-                        mLogger.log(LTAG, "onError: ERROR_CAMERA_SERVICE");
+                        mLogger.log("ERROR_CAMERA_SERVICE");
                         break;
                     }
                     case (ERROR_MAX_CAMERAS_IN_USE): {
                         // TODO too many cameras are in use
-                        mLogger.log(LTAG, "onError: ERROR_MAX_CAMERAS_IN_USE");
+                        mLogger.log("ERROR_MAX_CAMERAS_IN_USE");
                     }
                 }
 
-                mLogger.log(LTAG, "onError: closing");
+                mLogger.log("Fatal error, closing");
                 close();
-                mLogger.log(LTAG, "onError: return;");
+                mLogger.log("return;");
             }
         }
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
 
         /**
          * Access CameraDevice
@@ -272,21 +270,21 @@ class ShrampCameraDevice {
          */
         int getErrorCode() { return mError; }
 
+        ////////////////////////////////////////////////////////////////////////////////////////////
+
         /**
          * Close camera device
          */
         void close() {
             synchronized (LOCK) {
-                mLogger.divider(DividerStyle.Normal);
-                mLogger.logTrace();
 
+                mLogger.log("Closing camera device");
                 if (mCameraDevice != null) {
                     mCameraDevice.close();
                     mCameraDevice = null;
                 }
-                mLogger.log(LTAG, "close: return;");
+                mLogger.log("return;");
             }
         }
     }
-
 }

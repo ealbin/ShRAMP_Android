@@ -11,7 +11,7 @@ import android.widget.TextView;
 
 import java.io.File;
 
-import Camera2.MaineShrampCamera;
+import edu.crayfis.shramp.camera2.MaineShrampCamera;
 import Trash.Camera;
 
 @TargetApi(Build.VERSION_CODES.LOLLIPOP) // 21
