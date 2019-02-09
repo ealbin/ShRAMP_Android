@@ -1,12 +1,16 @@
 package edu.crayfis.shramp;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
+import android.graphics.SurfaceTexture;
 import android.os.Build;
 import android.os.Environment;
 import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Surface;
+import android.view.TextureView;
+import android.view.View;
 import android.widget.TextView;
 
 import java.io.File;
@@ -15,7 +19,7 @@ import edu.crayfis.shramp.camera2.MaineShrampCamera;
 import Trash.Camera;
 
 @TargetApi(Build.VERSION_CODES.LOLLIPOP) // 21
-public class MaineShRAMP extends AppCompatActivity implements AsyncResponse {
+public class MaineShRAMP extends Activity implements AsyncResponse, TextureView.SurfaceTextureListener {
     //**********************************************************************************************
     // Class Variables
     //----------------
@@ -102,6 +106,7 @@ public class MaineShRAMP extends AppCompatActivity implements AsyncResponse {
         Log.e(LOCAL_TAG, "RETURN");
     }
 
+    TextureView mTextureView;
 
     /**
      * After permissions are granted, begin app operations here.
@@ -122,8 +127,10 @@ public class MaineShRAMP extends AppCompatActivity implements AsyncResponse {
         textOut.append("----------------------------------------------------------\n\n");
         textOut.append("Capturing a camera frame..  \n");
 
-        Log.e(LOCAL_TAG, "Creating camera via new MainShrampCamera()");
-        mShrampCam = new MaineShrampCamera(this);
+        mTextureView = new TextureView(this);
+        mTextureView.setSurfaceTextureListener(this);
+        setView(mTextureView);
+
 
 //        mCamera = new Camera(this, mQuit_action);
 
@@ -139,6 +146,34 @@ public class MaineShRAMP extends AppCompatActivity implements AsyncResponse {
         Log.e(LOCAL_TAG, "RETURN");
     }
 
+    public void setView(View view) {
+        setContentView(view);
+    }
+
+
+    @Override
+    public void onSurfaceTextureAvailable(SurfaceTexture arg0, int arg1, int arg2) {
+
+        Surface surface = new Surface(arg0);
+
+        Log.e("================> ", "Creating camera via new MainShrampCamera()");
+        mShrampCam = new MaineShrampCamera(this, surface);
+
+
+    }
+
+    @Override
+    public boolean onSurfaceTextureDestroyed(SurfaceTexture arg0) {
+        return false;
+    }
+
+    @Override
+    public void onSurfaceTextureSizeChanged(SurfaceTexture arg0, int arg1,int arg2) {
+    }
+
+    @Override
+    public void onSurfaceTextureUpdated(SurfaceTexture arg0) {
+    }
 
     // ---------- CAMERA STUFF ------------------
     public String filename = Environment.getExternalStorageDirectory()+"/ShRAMP_PIC.jpg";

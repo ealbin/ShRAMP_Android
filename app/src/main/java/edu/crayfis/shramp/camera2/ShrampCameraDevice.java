@@ -1,12 +1,20 @@
 package edu.crayfis.shramp.camera2;
 
 import android.annotation.TargetApi;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
+import android.hardware.camera2.CameraManager;
+import android.hardware.camera2.CameraMetadata;
+import android.hardware.camera2.CaptureRequest;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Process;
 import android.support.annotation.NonNull;
+import android.view.Surface;
+
+import java.util.List;
 
 import edu.crayfis.shramp.logging.ShrampLogger;
 
@@ -22,19 +30,25 @@ class ShrampCameraDevice {
     //----------------
 
     // passed into constructor
-    private CameraCharacteristics mCameraCharacteristics;
+    private CameraCharacteristics  mCameraCharacteristics;
 
     // created in constructor
-    private HandlerThread       mHandlerThread;
-    private Handler             mHandler;
-    private String              mName;
-    private Integer             mPriority;
-    private ShrampStateCallback mStateCallback; // nested class defined at bottom
+    private HandlerThread          mHandlerThread;
+    private Handler                mHandler;
+    private String                 mName;
+    private Integer                mPriority;
+    private ShrampStateCallback    mStateCallback; // nested class defined at bottom
 
     // created in ShrampStateCallback.onOpen()
-    private ShrampCameraSetup mShrampCameraSetup;
+    private CameraDevice           mCameraDevice;
+    private ShrampCameraSetup      mShrampCameraSetup;
+    private ShrampCaptureSession   mShrampCaptureSession;
+    private CaptureRequest.Builder mCaptureRequestBuilder;
 
-    // time to wait for threads to quit [miliseconds]
+    // output surfaces linked with this camera
+    private List<Surface>        mOutputSurfaces;
+
+    // time to wait for threads to quit [milliseconds]
     // 0 means wait forever
     private static final Long JOIN_MAX_WAIT_IN_MS = 0L;
 
@@ -81,12 +95,53 @@ class ShrampCameraDevice {
     void restart() {
 
         mLogger.log("Starting thread: " + mName);
-        mStateCallback = new ShrampStateCallback();
+        mStateCallback = new ShrampStateCallback(this);
         mHandlerThread = new HandlerThread(mName, mPriority);
         mHandlerThread.start();  // must start before calling .getLooper()
         mHandler       = new Handler(mHandlerThread.getLooper());
 
         mLogger.log("Thread: " + mName + " started; return;");
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    void startCapture(List<Surface> outputSurfaces) {
+        /*
+        CaptureRequest.Builder builder;
+        try {
+             builder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
+             builder.set(CaptureRequest.FLASH_MODE, CameraMetadata.FLASH_MODE_OFF);
+
+        }
+        catch (Exception e) {
+            return;
+        }
+        */
+        mLogger.log("Creating capture session");
+        if (mCameraDevice != null) {
+            try {
+                for (Surface surface : outputSurfaces) {
+                    mCaptureRequestBuilder.addTarget(surface);
+                    //builder.addTarget(surface);
+                }
+                CaptureRequest captureRequest = mCaptureRequestBuilder.build();
+                //CaptureRequest request = builder.build();
+
+                mShrampCaptureSession = new ShrampCaptureSession(captureRequest);
+                //mShrampCaptureSession = new ShrampCaptureSession(request);
+                mLogger.log(mShrampCaptureSession.toString());
+                CameraCaptureSession.StateCallback callback = mShrampCaptureSession.getStateCallback();
+
+                mLogger.log("createCaptureSession()");
+                // use same thread/handler as camera device, set handler = null
+                mCameraDevice.createCaptureSession(outputSurfaces, callback, null);
+            }
+            catch (CameraAccessException e ) {
+                mLogger.log("ERROR: Camera Access Exception");
+            }
+        }
+
+        mLogger.log("return;");
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -143,6 +198,8 @@ class ShrampCameraDevice {
         // Class Variables
         //----------------
 
+        private ShrampCameraDevice mmShrampCameraDevice;
+
         // Error codes
         private static final int NO_ERROR = 0;
 
@@ -150,17 +207,22 @@ class ShrampCameraDevice {
         private final Object LOCK = new Object();
 
         // set in onOpened, onClosed, onDisconnected, onError
-        private CameraDevice mCameraDevice;
         private Integer      mError;
 
         //******************************************************************************************
         // Class Methods
         //--------------
 
+        // disable default one
+        private ShrampStateCallback() {}
+
         /**
          * Default constructor
          */
-        ShrampStateCallback() { super(); }
+        ShrampStateCallback(ShrampCameraDevice shrampCameraDevice) {
+            super();
+            mmShrampCameraDevice = shrampCameraDevice;
+        }
 
         /**
          * Actions when camera is opened.
@@ -177,6 +239,10 @@ class ShrampCameraDevice {
                 mLogger.log("Camera opened, configuring for capture");
                 mShrampCameraSetup =
                         new ShrampCameraSetup(mCameraDevice, mCameraCharacteristics);
+                mCaptureRequestBuilder = mShrampCameraSetup.getCaptureRequestBuilder();
+
+                // TODO call ready
+                ShrampCameraManager.Callback.cameraReady(mmShrampCameraDevice);
                 mLogger.log("return;");
             }
         }
@@ -280,6 +346,7 @@ class ShrampCameraDevice {
 
                 mLogger.log("Closing camera device");
                 if (mCameraDevice != null) {
+                    mShrampCaptureSession = null;
                     mCameraDevice.close();
                     mCameraDevice = null;
                 }

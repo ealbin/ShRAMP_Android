@@ -290,6 +290,11 @@ public class ShrampCameraSetup {
                 captureTemplate = CameraDevice.TEMPLATE_PREVIEW;
                 mmUsingManualTemplate = false;
             }
+
+
+            // delete
+            //captureTemplate = CameraDevice.TEMPLATE_PREVIEW;
+
             try {
                 mLogger.log("return CaptureRequest.Builder;");
                 return mCameraDevice.createCaptureRequest(captureTemplate);

@@ -1,7 +1,9 @@
 package edu.crayfis.shramp.camera2;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.Context;
+import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
@@ -9,9 +11,14 @@ import android.hardware.camera2.CameraManager;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.view.Surface;
+import android.view.TextureView;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.TreeMap;
 
+import edu.crayfis.shramp.MaineShRAMP;
 import edu.crayfis.shramp.logging.ShrampLogger;
 
 /**
@@ -33,21 +40,25 @@ class ShrampCameraManager {
     // Enum for selecting Front, Back, or External cameras
     private enum Select { FRONT, BACK, EXTERNAL }
 
-
     //**********************************************************************************************
     // Class Variables
     //----------------
 
-
      // There should be only one ShrampCameraManager instance in existence.
      // This is it's reference, access it with getInstance(Context)
     private static ShrampCameraManager mInstance;
+
+    private static MaineShRAMP mActivity;
+    private static Callback mCallback;
 
     // set in getInstance(Context)
     private static CameraManager                            mCameraManager;
     private static TreeMap<Select, String>                  mCameraIds;
     private static TreeMap<Select, CameraCharacteristics>   mCameraCharacteristics;
     private static TreeMap<Select, ShrampCameraDevice>      mShrampCameraDevices;
+
+    // Lock to prevent multiple threads from opening a 2nd camera before closing the first
+    private static final Object ACTION_LOCK = new Object();
 
     // logging
     private static ShrampLogger mLogger = new ShrampLogger(ShrampLogger.DEFAULT_STREAM);
@@ -64,17 +75,20 @@ class ShrampCameraManager {
     /**
      * Get access to single instance camera manager.
      * Manages all camera devices (front, back, or external) present.
-     * @param context Context to provide CAMERA_SERVICE and access to a CameraManager object.
+     * @param activity Context to provide CAMERA_SERVICE and access to a CameraManager object.
      * @return The single instance of ShrampCameraManager, or null if something doesn't exist.
      */
     @Nullable
-    static synchronized ShrampCameraManager getInstance(@NonNull Context context) {
+    static synchronized ShrampCameraManager getInstance(@NonNull MaineShRAMP activity) {
 
         if (mInstance != null) { return mInstance; }
 
+        mCallback = new Callback();
+
         mLogger.log("Creating CameraManager");
         mInstance      = new ShrampCameraManager();
-        mCameraManager = (CameraManager)context.getSystemService(Context.CAMERA_SERVICE);
+        mActivity = activity;
+        mCameraManager = (CameraManager)activity.getSystemService(Context.CAMERA_SERVICE);
 
         if (mCameraManager == null) {
             // TODO report anomally
@@ -171,6 +185,23 @@ class ShrampCameraManager {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    static class Callback {
+
+        static TextureView mmTextureView;
+        static List<Surface> mmSurfaces;
+
+
+        static void cameraReady(ShrampCameraDevice shrampCameraDevice) {
+
+            mLogger.log("mmSurface is " + mmSurfaces.size());
+            mLogger.log("Ready to start capture");
+            shrampCameraDevice.startCapture(mmSurfaces);
+        }
+    }
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
     /**
      * Open front camera device and configure it for capture
      */
@@ -238,29 +269,31 @@ class ShrampCameraManager {
      * Create ShrampCameraDevice, instantiate camera callbacks, and open the camera
      * @param cameraKey Select which camera to open
      */
-    private synchronized void openCamera(Select cameraKey) {
+    private void openCamera(Select cameraKey) {
 
-        mLogger.log("Opening camera now");
-        String                     cameraId            = mCameraIds.get(cameraKey);
-        assert                     cameraId           != null;
-        ShrampCameraDevice         shrampCameraDevice  = mShrampCameraDevices.get(cameraKey);
-        assert                     shrampCameraDevice != null;
+        synchronized (ACTION_LOCK) {
+            mLogger.log("Opening camera now");
+            String                     cameraId            = mCameraIds.get(cameraKey);
+            assert                     cameraId           != null;
+            ShrampCameraDevice         shrampCameraDevice  = mShrampCameraDevices.get(cameraKey);
+            assert                     shrampCameraDevice != null;
 
-        CameraDevice.StateCallback stateCallback       = shrampCameraDevice.getStateCallback();
-        Handler                    handler             = shrampCameraDevice.getHandler();
+            CameraDevice.StateCallback stateCallback       = shrampCameraDevice.getStateCallback();
+            Handler                    handler             = shrampCameraDevice.getHandler();
 
-        try {
-            mCameraManager.openCamera(cameraId, stateCallback, handler);
-        }
-        catch (SecurityException e) {
-            // TODO user hasn't granted permissions
-            mLogger.log("ERROR: Security Exception; return;");
-            return;
-        }
-        catch (CameraAccessException e) {
-            // TODO ERROR
-            mLogger.log("ERROR: Camera Access Exception; return;");
-            return;
+            try {
+                mCameraManager.openCamera(cameraId, stateCallback, handler);
+            }
+            catch (SecurityException e) {
+                // TODO user hasn't granted permissions
+                mLogger.log("ERROR: Security Exception; return;");
+                return;
+            }
+            catch (CameraAccessException e) {
+                // TODO ERROR
+                mLogger.log("ERROR: Camera Access Exception; return;");
+                return;
+            }
         }
 
         mLogger.log("return;");
@@ -302,101 +335,33 @@ class ShrampCameraManager {
      * Close camera device and background threads
      * @param cameraKey Select which camera to close
      */
-    private synchronized void closeCamera(Select cameraKey) {
+    private void closeCamera(Select cameraKey) {
 
         if (!mShrampCameraDevices.containsKey(cameraKey)) {
             mLogger.log("There was no camera to close; return;");
             return;
         }
 
-        mLogger.log("Closing camera now");
-        try {
-            mShrampCameraDevices.get(cameraKey).close();
-        }
-        catch (NullPointerException e) {
-            mLogger.log("ERROR: null pointer exception; return;");
-            return;
+        synchronized (ACTION_LOCK) {
+            mLogger.log("Closing camera now");
+            try {
+                mShrampCameraDevices.get(cameraKey).close();
+                Thread.sleep(100);
+            }
+            catch (NullPointerException e) {
+                mLogger.log("ERROR: null pointer exception; return;");
+                return;
+            }
+            catch (InterruptedException e) {
+                mLogger.log("ERROR: sleep interrupted exception; return;");
+                return;
+            }
         }
 
         mLogger.log("return;");
     }
 
-   /////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-
-
-
-
-
-
-    // unfinished / unused:
-    //---------------------
-
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    // implementation of nested static abstract AvailabilityCallback class /////////////////////////
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    private CameraManager.AvailabilityCallback mAvailabilityCallback
-            = new CameraManager.AvailabilityCallback() {
 
-        // set in onCameraAvailable, onCameraUnavailable
-        private String mCameraId;
 
-        @Override
-        public void onCameraAvailable(@NonNull String cameraId) {
-            super.onCameraAvailable(cameraId);
-
-            mCameraId = cameraId;
-        }
-
-        @Override
-        public void onCameraUnavailable(@NonNull String cameraId) {
-            super.onCameraUnavailable(cameraId);
-
-            mCameraId = cameraId;
-        }
-    };
-
-    // access mAvailabilityCallback
-    CameraManager.AvailabilityCallback getmAvailabilityCallback() {
-        return mAvailabilityCallback;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    // implementation of nested static abstract TorchCallback class ////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    // (API 23)
-    /*
-    private CameraManager.TorchCallback mTorchCallback = new CameraManager.TorchCallback() {
-
-        // set in onTorchModeUnavailable, onTorchModeChanged
-        private String  mCameraId;
-
-        // set in onTorchModeChanged
-        private boolean mEnabled;
-
-        @Override
-        public void onTorchModeUnavailable(@NonNull String cameraId) {
-            super.onTorchModeUnavailable(cameraId);
-
-            mCameraId = cameraId;
-        }
-
-        @Override
-        public void onTorchModeChanged(@NonNull String cameraId, boolean enabled) {
-            super.onTorchModeChanged(cameraId, enabled);
-
-            mCameraId = cameraId;
-            mEnabled  = enabled;
-        }
-    };
-
-    // access mTorchCallback
-    public CameraManager.TorchCallback getmTorchCallback() {
-        return mTorchCallback;
-    }
-    */
 }

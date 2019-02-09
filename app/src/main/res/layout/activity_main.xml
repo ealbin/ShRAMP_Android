@@ -9,25 +9,25 @@
     <TextView
         android:id="@+id/textOut"
         android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_height="291dp"
         android:layout_marginStart="32dp"
-        android:layout_marginLeft="32dp"
         android:layout_marginTop="32dp"
         android:layout_marginEnd="32dp"
-        android:layout_marginRight="32dp"
-        android:layout_marginBottom="32dp"
         android:textSize="18sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextureView
-        android:id="@+id/preview_view"
-        android:layout_width="350dp"
-        android:layout_height="400dp"
-        tools:layout_editor_absoluteX="30dp"
-        tools:layout_editor_absoluteY="315dp" />
+        android:id="@+id/textureView"
+        android:layout_width="372dp"
+        android:layout_height="705dp"
+        android:layout_margin="10dp"
+        android:alpha=".3"
+        android:visibility="visible"
+        tools:layout_editor_absoluteX="16dp"
+        tools:layout_editor_absoluteY="16dp" />
 
 </android.support.constraint.ConstraintLayout>

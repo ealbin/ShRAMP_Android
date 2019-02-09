@@ -44,7 +44,7 @@ public class CaptureProcessing {
         //Allocation mAllocation = Allocation.
 
         Log.e(LOCAL_TAG, "Surface stuff");
-        mTexture_view = (TextureView) mMaine_shramp.findViewById(R.id.preview_view);
+        //mTexture_view = (TextureView) mMaine_shramp.findViewById(R.id.preview_view);
         assert mTexture_view != null;
         mTexture_view.setSurfaceTextureListener(mSurface_listener);
         Log.e(LOCAL_TAG, mTexture_view.toString());

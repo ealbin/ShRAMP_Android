@@ -86,10 +86,6 @@ final class CameraConfiguration {
     private boolean mmMinExposureTimeOn;
     private boolean mmMinFrameDurationOn;
 
-    //private CameraDevice mCameraDevice;
-
-    //private StreamConfigurationMap mStreamConfigurationMap;
-
     //******************************************************************************************
     // Class Methods
     //--------------
@@ -254,7 +250,8 @@ final class CameraConfiguration {
         if (mCameraAbilities.contains(CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_MANUAL_SENSOR)) {
             mCaptureRequestBuilder.set(
                     CaptureRequest.CONTROL_CAPTURE_INTENT,
-                    CameraMetadata.CONTROL_CAPTURE_INTENT_MANUAL);
+                    //CameraMetadata.CONTROL_CAPTURE_INTENT_MANUAL); //TODO UNCOMMENT
+                    CameraMetadata.CONTROL_CAPTURE_INTENT_PREVIEW);
             mmCaptureIntentPreview = false;
 
             mLogger.log("return;");
@@ -1188,12 +1185,18 @@ final class CameraConfiguration {
         // SENSOR_SENSITIVITY
         mLogger.log("SENSOR_SENSITIVITY");
 
+        Integer maxAnalogSensitivty;
+
         mmMaxAnalogSensitivity = false;
         if (!isControlModeAuto() || !isControlAeModeOn()) {
-            Integer maxSensitivty = mCameraCharacteristics.get(
+            Integer maxAnalogSensitivity = mCameraCharacteristics.get(
                     CameraCharacteristics.SENSOR_MAX_ANALOG_SENSITIVITY);
 
-            if (maxSensitivty != null) {
+            Range<Integer> sensitivityRange = mCameraCharacteristics.get(
+                    CameraCharacteristics.SENSOR_INFO_SENSITIVITY_RANGE);
+
+            if (sensitivityRange != null) {
+                Integer maxSensitivty = sensitivityRange.getUpper();
                 mmMaxAnalogSensitivity = true;
                 mCaptureRequestBuilder.set(
                         CaptureRequest.SENSOR_SENSITIVITY,
