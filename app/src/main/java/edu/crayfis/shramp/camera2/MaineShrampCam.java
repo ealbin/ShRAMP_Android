@@ -1,26 +1,19 @@
 package edu.crayfis.shramp.camera2;
 
-import android.app.Activity;
-import android.content.Context;
-import android.graphics.SurfaceTexture;
 import android.view.Surface;
-import android.view.TextureView;
 
 import java.util.ArrayList;
 
 import edu.crayfis.shramp.MaineShRAMP;
 import edu.crayfis.shramp.logging.ShrampLogger;
 
-import static edu.crayfis.shramp.camera2.ShrampCameraManager.Callback.mmSurfaces;
-import static edu.crayfis.shramp.camera2.ShrampCameraManager.Callback.mmTextureView;
-
-public class MaineShrampCamera {
+public class MaineShrampCam {
 
     //**********************************************************************************************
     // Class Variables
     //----------------
 
-    private ShrampCameraManager mCameraManager;
+    private ShrampCamManager mCameraManager;
 
     // logging
     private static ShrampLogger mLogger = new ShrampLogger(ShrampLogger.DEFAULT_STREAM);
@@ -29,14 +22,14 @@ public class MaineShrampCamera {
     // Class Methods
     //--------------
 
-    public MaineShrampCamera(MaineShRAMP activity, Surface surface) {
+    public MaineShrampCam(MaineShRAMP activity, Surface surface) {
 
-        mLogger.log("Loading ShrampCameraManager");
-        mCameraManager = ShrampCameraManager.getInstance(activity);
+        mLogger.log("Loading ShrampCamManager");
+        mCameraManager = ShrampCamManager.getInstance(activity);
         assert mCameraManager != null;
 
-        ShrampCameraManager.Callback.mmSurfaces = new ArrayList<>();
-        ShrampCameraManager.Callback.mmSurfaces.add(surface);
+        ShrampCamManager.Callback.mmSurfaces = new ArrayList<>();
+        ShrampCamManager.Callback.mmSurfaces.add(surface);
 
         if (mCameraManager.hasFrontCamera()) {
             // do nothing for now

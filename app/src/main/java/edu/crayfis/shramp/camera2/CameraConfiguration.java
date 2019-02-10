@@ -13,7 +13,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import static edu.crayfis.shramp.camera2.ShrampCameraSetup.mLogger;
+import static edu.crayfis.shramp.camera2.ShrampCamSetup.mLogger;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // implementation of nested class CameraConfiguration
@@ -21,7 +21,7 @@ import static edu.crayfis.shramp.camera2.ShrampCameraSetup.mLogger;
 
 /**
  * Helper class to encapsulate the process of configuring the capture session.
- * It's meant to be a nested class of ShrampCameraSetup, but it's so long it deserves it's own file.
+ * It's meant to be a nested class of ShrampCamSetup, but it's so long it deserves it's own file.
  */
 final class CameraConfiguration {
 
@@ -29,13 +29,13 @@ final class CameraConfiguration {
     // Class Variables
     //----------------
 
-    // reference back to owning ShrampCameraSetup object
-    final ShrampCameraSetup mSetup;
+    // reference back to owning ShrampCamSetup object
+    final ShrampCamSetup mSetup;
 
     // and class needed variables
     private List<Integer>                          mCameraAbilities;
     private CameraCharacteristics                  mCameraCharacteristics;
-    private ShrampCameraSetup.CaptureConfiguration mCaptureConfiguration;
+    private ShrampCamSetup.CaptureConfiguration mCaptureConfiguration;
     private CaptureRequest.Builder                 mCaptureRequestBuilder;
 
     // configure flash
@@ -94,7 +94,7 @@ final class CameraConfiguration {
      * This is a biggie..
      * reference:  https://developer.android.com/reference/android/hardware/camera2/CaptureRequest
      */
-    CameraConfiguration(ShrampCameraSetup setup) {
+    CameraConfiguration(ShrampCamSetup setup) {
 
         mSetup                 = setup;
         mCameraAbilities       = setup.getCameraAbilities();

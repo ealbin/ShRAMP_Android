@@ -32,7 +32,7 @@ import edu.crayfis.shramp.logging.ShrampLogger;
  * ShRAMP optimizes settings for dark, raw and fast capture.
  */
 @TargetApi(21) // Lollipop
-public class ShrampCameraSetup {
+public class ShrampCamSetup2 {
 
     //**********************************************************************************************
     // Class Variables
@@ -64,14 +64,14 @@ public class ShrampCameraSetup {
     //--------------
 
     /**
-     * Create ShrampCameraSetup and accompanying objects.
+     * Create ShrampCamSetup and accompanying objects.
      * Configures camera device through creation of CaptureConfiguration and CameraConfiguration
      * objects.
      * @param device CameraDevice to configure
      * @param characteristics CameraCharacteristics of device to configure
      */
-    ShrampCameraSetup(@NonNull CameraDevice device,
-                      @NonNull CameraCharacteristics characteristics) {
+    ShrampCamSetup2(@NonNull CameraDevice device,
+                    @NonNull CameraCharacteristics characteristics) {
 
         // only allow one camera to be setup at a time
         synchronized (LOCK) {
@@ -89,7 +89,7 @@ public class ShrampCameraSetup {
 
             // configure camera for capture
             mLogger.log("Configuring camera");
-            mCameraConfiguration = new CameraConfiguration(this);
+            //mCameraConfiguration = new CameraConfiguration(this);
 
             // dump settings to log
             mLogger.log("Reporting camera configuration");
@@ -609,7 +609,7 @@ public class ShrampCameraSetup {
         // set in setRepeatingRequest(List<CaptureRequest>, CaptureCallback, Handler)
         private CaptureRequest                          mCaptureRequest;
         private List<CaptureRequest>                    mCaptureRequests;
-        private CameraCaptureSession.CaptureCallback    mCaptureCallback;
+        private CaptureCallback    mCaptureCallback;
         private Handler                                 mHandler;
 
         @NonNull
@@ -631,7 +631,7 @@ public class ShrampCameraSetup {
 
         @Override
         public int capture(@NonNull CaptureRequest request,
-                           @Nullable CameraCaptureSession.CaptureCallback listener,
+                           @Nullable CaptureCallback listener,
                            @Nullable Handler handler) throws CameraAccessException {
 
             mCaptureRequest  = request;
@@ -643,7 +643,7 @@ public class ShrampCameraSetup {
 
         @Override
         public int captureBurst(@NonNull List<CaptureRequest> requests,
-                                @Nullable CameraCaptureSession.CaptureCallback listener,
+                                @Nullable CaptureCallback listener,
                                 @Nullable Handler handler) throws CameraAccessException {
 
             mCaptureRequests = requests;
@@ -655,7 +655,7 @@ public class ShrampCameraSetup {
 
         @Override
         public int setRepeatingRequest(@NonNull CaptureRequest request,
-                                       @Nullable CameraCaptureSession.CaptureCallback listener,
+                                       @Nullable CaptureCallback listener,
                                        @Nullable Handler handler) throws CameraAccessException {
 
             mCaptureRequest  = request;
@@ -667,7 +667,7 @@ public class ShrampCameraSetup {
 
         @Override
         public int setRepeatingBurst(@NonNull List<CaptureRequest> requests,
-                                     @Nullable CameraCaptureSession.CaptureCallback listener,
+                                     @Nullable CaptureCallback listener,
                                      @Nullable Handler handler) throws CameraAccessException {
 
             mCaptureRequests = requests;

@@ -15,7 +15,7 @@ import android.widget.TextView;
 
 import java.io.File;
 
-import edu.crayfis.shramp.camera2.MaineShrampCamera;
+import edu.crayfis.shramp.camera2.MaineShrampCam;
 import Trash.Camera;
 
 @TargetApi(Build.VERSION_CODES.LOLLIPOP) // 21
@@ -38,7 +38,7 @@ public class MaineShRAMP extends Activity implements AsyncResponse, TextureView.
     public static CheckPermissions mCheck_permissions;
 
 
-    private  MaineShrampCamera mShrampCam;
+    private MaineShrampCam mShrampCam;
 
     public Runnable mQuit_action = new Runnable() {
         @Override
@@ -157,7 +157,7 @@ public class MaineShRAMP extends Activity implements AsyncResponse, TextureView.
         Surface surface = new Surface(arg0);
 
         Log.e("================> ", "Creating camera via new MainShrampCamera()");
-        mShrampCam = new MaineShrampCamera(this, surface);
+        mShrampCam = new MaineShrampCam(this, surface);
 
 
     }

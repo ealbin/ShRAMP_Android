@@ -1,9 +1,7 @@
 package edu.crayfis.shramp.camera2;
 
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.content.Context;
-import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
@@ -14,7 +12,6 @@ import android.support.annotation.Nullable;
 import android.view.Surface;
 import android.view.TextureView;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 
@@ -22,16 +19,16 @@ import edu.crayfis.shramp.MaineShRAMP;
 import edu.crayfis.shramp.logging.ShrampLogger;
 
 /**
- * The ShrampCameraManager class augments/wraps the Android CameraManager.
+ * The ShrampCamManager class augments/wraps the Android CameraManager.
  * Usage:
  *      // from an Activity or Frangment "this"
- *      ShrampCameraManager myManager = ShrampCameraManager.getInstance(this)
+ *      ShrampCamManager myManager = ShrampCamManager.getInstance(this)
  *      if (myManager.hasBackCamera()) {
  *          myManager.openBackCamera();
  *      }
  */
 @TargetApi(21) // Lollipop
-class ShrampCameraManager {
+class ShrampCamManager {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // Nested Enum
@@ -44,9 +41,9 @@ class ShrampCameraManager {
     // Class Variables
     //----------------
 
-     // There should be only one ShrampCameraManager instance in existence.
+     // There should be only one ShrampCamManager instance in existence.
      // This is it's reference, access it with getInstance(Context)
-    private static ShrampCameraManager mInstance;
+    private static ShrampCamManager mInstance;
 
     private static MaineShRAMP mActivity;
     private static Callback mCallback;
@@ -55,7 +52,7 @@ class ShrampCameraManager {
     private static CameraManager                            mCameraManager;
     private static TreeMap<Select, String>                  mCameraIds;
     private static TreeMap<Select, CameraCharacteristics>   mCameraCharacteristics;
-    private static TreeMap<Select, ShrampCameraDevice>      mShrampCameraDevices;
+    private static TreeMap<Select, ShrampCam>      mShrampCameraDevices;
 
     // Lock to prevent multiple threads from opening a 2nd camera before closing the first
     private static final Object ACTION_LOCK = new Object();
@@ -70,23 +67,23 @@ class ShrampCameraManager {
     /**
      * Disable default constructor to limit access to getInstance(Context)
      */
-    private ShrampCameraManager() {}
+    private ShrampCamManager() {}
 
     /**
      * Get access to single instance camera manager.
      * Manages all camera devices (front, back, or external) present.
      * @param activity Context to provide CAMERA_SERVICE and access to a CameraManager object.
-     * @return The single instance of ShrampCameraManager, or null if something doesn't exist.
+     * @return The single instance of ShrampCamManager, or null if something doesn't exist.
      */
     @Nullable
-    static synchronized ShrampCameraManager getInstance(@NonNull MaineShRAMP activity) {
+    static synchronized ShrampCamManager getInstance(@NonNull MaineShRAMP activity) {
 
         if (mInstance != null) { return mInstance; }
 
         mCallback = new Callback();
 
         mLogger.log("Creating CameraManager");
-        mInstance      = new ShrampCameraManager();
+        mInstance      = new ShrampCamManager();
         mActivity = activity;
         mCameraManager = (CameraManager)activity.getSystemService(Context.CAMERA_SERVICE);
 
@@ -159,7 +156,7 @@ class ShrampCameraManager {
             }
         }
 
-        mLogger.log("return ShrampCameraManager;");
+        mLogger.log("return ShrampCamManager;");
         return mInstance;
     }
 
@@ -191,11 +188,11 @@ class ShrampCameraManager {
         static List<Surface> mmSurfaces;
 
 
-        static void cameraReady(ShrampCameraDevice shrampCameraDevice) {
+        static void cameraReady(ShrampCam shrampCam) {
 
             mLogger.log("mmSurface is " + mmSurfaces.size());
             mLogger.log("Ready to start capture");
-            shrampCameraDevice.startCapture(mmSurfaces);
+            shrampCam.startCapture(mmSurfaces);
         }
     }
 
@@ -217,7 +214,7 @@ class ShrampCameraManager {
 
         mLogger.log("Creating CameraDevice");
         mShrampCameraDevices.put(Select.FRONT,
-                new ShrampCameraDevice(characteristics, "shramp_front_cam"));
+                new ShrampCam(characteristics, "shramp_front_cam"));
 
         openCamera(Select.FRONT);
         mLogger.log("return;");
@@ -238,7 +235,7 @@ class ShrampCameraManager {
 
         mLogger.log("Creating CameraDevice");
         mShrampCameraDevices.put(Select.BACK,
-                new ShrampCameraDevice(characteristics, "shramp_back_cam"));
+                new ShrampCam(characteristics, "shramp_back_cam"));
 
         openCamera(Select.BACK);
         mLogger.log("return;");
@@ -259,30 +256,27 @@ class ShrampCameraManager {
 
         mLogger.log("Creating CameraDevice");
         mShrampCameraDevices.put(Select.EXTERNAL,
-                new ShrampCameraDevice(characteristics, "shramp_external_cam"));
+                new ShrampCam(characteristics, "shramp_external_cam"));
 
         openCamera(Select.EXTERNAL);
         mLogger.log("return;");
     }
 
     /**
-     * Create ShrampCameraDevice, instantiate camera callbacks, and open the camera
+     * Create ShrampCam, instantiate camera callbacks, and open the camera
      * @param cameraKey Select which camera to open
      */
     private void openCamera(Select cameraKey) {
 
         synchronized (ACTION_LOCK) {
             mLogger.log("Opening camera now");
-            String                     cameraId            = mCameraIds.get(cameraKey);
-            assert                     cameraId           != null;
-            ShrampCameraDevice         shrampCameraDevice  = mShrampCameraDevices.get(cameraKey);
-            assert                     shrampCameraDevice != null;
-
-            CameraDevice.StateCallback stateCallback       = shrampCameraDevice.getStateCallback();
-            Handler                    handler             = shrampCameraDevice.getHandler();
+            String                     cameraId   = mCameraIds.get(cameraKey);
+            assert                     cameraId  != null;
+            ShrampCam shrampCam = mShrampCameraDevices.get(cameraKey);
+            assert                     shrampCam != null;
 
             try {
-                mCameraManager.openCamera(cameraId, stateCallback, handler);
+                mCameraManager.openCamera(cameraId, shrampCam, shrampCam.getHandler());
             }
             catch (SecurityException e) {
                 // TODO user hasn't granted permissions
