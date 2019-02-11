@@ -14,7 +14,8 @@ abstract class Level4_Intent extends Level3_Mode {
     // Class Variables
     //----------------
 
-    private String mIntentName;
+    protected Integer mIntent;
+    private   String  mIntentName;
 
     //**********************************************************************************************
     // Class Methods
@@ -25,6 +26,8 @@ abstract class Level4_Intent extends Level3_Mode {
         super(characteristics, cameraDevice);
         setControlCaptureIntent();
     }
+
+    //----------------------------------------------------------------------------------------------
 
     /**
      *
@@ -60,9 +63,8 @@ abstract class Level4_Intent extends Level3_Mode {
          */
         CaptureRequest.Key key = CaptureRequest.CONTROL_CAPTURE_INTENT;
         if (mRequestKeys.contains(key)) {
-            int intent;
             if (super.mIsManualSensorAble) {
-                intent      = CameraMetadata.CONTROL_CAPTURE_INTENT_MANUAL;
+                mIntent     = CameraMetadata.CONTROL_CAPTURE_INTENT_MANUAL;
                 mIntentName = "MANUAL";
                 /*
                  * Added in API 21
@@ -75,7 +77,7 @@ abstract class Level4_Intent extends Level3_Mode {
                  */
             }
             else {
-                intent      = CameraMetadata.CONTROL_CAPTURE_INTENT_PREVIEW;
+                mIntent     = CameraMetadata.CONTROL_CAPTURE_INTENT_PREVIEW;
                 mIntentName = "PREVIEW";
                 /*
                  * Added in API 21
@@ -85,9 +87,11 @@ abstract class Level4_Intent extends Level3_Mode {
                  * The precapture trigger may be used to start off a metering w/flash sequence.
                  */
             }
-            mCaptureRequestBuilder.set(key, intent);
+            mCaptureRequestBuilder.set(key, mIntent);
         }
     }
+
+    //----------------------------------------------------------------------------------------------
 
     /**
      *
@@ -97,8 +101,7 @@ abstract class Level4_Intent extends Level3_Mode {
     public String toString() {
         String string = super.toString() + "\n";
 
-        string = string.concat("CaptureRequest.CONTROL_CAPTURE_INTENT\n");
-        string = string.concat("\t" + "Capture intent is: " + mIntentName + "\n");
+        string = string.concat("CaptureRequest.CONTROL_CAPTURE_INTENT: " + mIntentName + "\n");
 
         return string;
     }

@@ -18,6 +18,7 @@ import java.security.Permission;
 import java.util.List;
 import java.util.Set;
 
+import edu.crayfis.shramp.camera2.settings.Settings;
 import edu.crayfis.shramp.logging.DividerStyle;
 import edu.crayfis.shramp.logging.ShrampLogger;
 
@@ -145,6 +146,7 @@ class ShrampCam extends CameraDevice.StateCallback {
 
             mLogger.log("Camera opened, configuring for capture");
 
+            /**
             mLogger.divider(DividerStyle.Strong);
 
             mLogger.log("mCameraCharacteristics.getKeys()");
@@ -198,7 +200,8 @@ class ShrampCam extends CameraDevice.StateCallback {
             }
 
             mLogger.divider(DividerStyle.Strong);
-
+            */
+            Settings settings = new Settings(mCameraCharacteristics, mCameraDevice);
             //mShrampCamSetup =
             //        new ShrampCamSetup(mCameraDevice, mCameraCharacteristics);
             //mCaptureRequestBuilder = mShrampCamSetup.getCaptureRequestBuilder();

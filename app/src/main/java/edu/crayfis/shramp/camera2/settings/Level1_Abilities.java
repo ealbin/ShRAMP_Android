@@ -40,6 +40,8 @@ abstract class Level1_Abilities extends Level0_Hardware {
         getCapabilities();
     }
 
+    //----------------------------------------------------------------------------------------------
+
     /**
      *
      */
@@ -614,6 +616,8 @@ abstract class Level1_Abilities extends Level0_Hardware {
 
     }
 
+    //----------------------------------------------------------------------------------------------
+
     /**
      *
      * @param bool
@@ -627,6 +631,8 @@ abstract class Level1_Abilities extends Level0_Hardware {
             return "No";
         }
     }
+
+    //----------------------------------------------------------------------------------------------
 
     /**
      *

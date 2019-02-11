@@ -32,6 +32,8 @@ abstract class Level2_Template extends Level1_Abilities {
         getCaptureRequestBuilder(cameraDevice);
     }
 
+    //----------------------------------------------------------------------------------------------
+
     /**
      *
      * @param cameraDevice
@@ -80,6 +82,8 @@ abstract class Level2_Template extends Level1_Abilities {
         }
     }
 
+    //----------------------------------------------------------------------------------------------
+
     /**
      *
      * @return
@@ -88,8 +92,7 @@ abstract class Level2_Template extends Level1_Abilities {
     public String toString() {
         String string = super.toString() + "\n";
 
-        string = string.concat("CameraDevice.createCaptureRequest\n");
-        string = string.concat("\t" + "Template type: " + mTemplateName + "\n");
+        string = string.concat("CameraDevice.createCaptureRequest: " + mTemplateName + "\n");
 
         return string;
     }

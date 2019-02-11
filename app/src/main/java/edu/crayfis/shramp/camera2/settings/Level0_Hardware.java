@@ -1,8 +1,12 @@
 package edu.crayfis.shramp.camera2.settings;
 
 import android.annotation.TargetApi;
+import android.graphics.Rect;
 import android.hardware.camera2.CameraCharacteristics;
+import android.os.Build;
 import android.support.annotation.NonNull;
+import android.util.Size;
+import android.util.SizeF;
 
 @TargetApi(21)
 abstract class Level0_Hardware {
@@ -21,8 +25,30 @@ abstract class Level0_Hardware {
     //----------------
 
     protected CameraCharacteristics mCameraCharacteristics;
+
     protected HardwareLevel         mHardwareLevel;
     private   String                mHardwareLevelName;
+
+    protected String                mInfoVersion;
+    private   String                mInfoVersionName;
+
+    protected SizeF                 mSensorInfoPhysicalSize;
+    private   String                mSensorInfoPhysicalSizeName;
+
+    protected Size                  mSensorInfoPixelArraySize;
+    private   String                mSensorInfoPixelArraySizeName;
+
+    protected Rect                  mSensorInfoPreCorrectionActiveArraySize;
+    private   String                mSensorInfoPreCorrectionActiveArraySizeName;
+
+    protected Rect                  mSensorInfoActiveArraySize;
+    private   String                mSensorInfoActiveArraySizeName;
+
+    protected Integer               mSensorInfoColorFilterArrangement;
+    private   String                mSensorInfoColorFilterArrangementName;
+
+    protected Rect[]                mSensorOpticalBlackRegions;
+    private   String                mSensorOpticalBlackRegionsName;
 
     //**********************************************************************************************
     // Class Methods
@@ -33,7 +59,16 @@ abstract class Level0_Hardware {
     protected Level0_Hardware(@NonNull CameraCharacteristics characteristics) {
         mCameraCharacteristics = characteristics;
         getHardwareLevel();
+        getInfoVersion();
+        getSensorInfoPhysicalSize();
+        getSensorInfoPixelArraySize();
+        getSensorInfoPreCorrectionActiveArraySize();
+        getSensorInfoActiveArraySize();
+        getSensorInfoColorFilterArrangement();
+        getSensorOpticalBlackRegions();
     }
+
+    //----------------------------------------------------------------------------------------------
 
     /**
      *
@@ -244,16 +279,138 @@ abstract class Level0_Hardware {
         }
     }
 
+    //----------------------------------------------------------------------------------------------
+
+    /**
+     *
+     */
+    private void getInfoVersion() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+            mInfoVersion     = null;
+            mInfoVersionName = "Not supported";
+            return;
+        }
+        CameraCharacteristics.Key key = CameraCharacteristics.INFO_VERSION;
+        /*
+         * Added in API 28
+         *
+         * A short string for manufacturer version information about the camera device, such as
+         * ISP hardware, sensors, etc.
+         *
+         * This can be used in TAG_IMAGE_DESCRIPTION in jpeg EXIF. This key may be absent if no
+         * version information is available on the device.
+         *
+         * Optional - This value may be null on some devices.
+         */
+        try {
+            mInfoVersion = (String) mCameraCharacteristics.get(key);
+            mInfoVersionName = mInfoVersion.replaceAll(":", "=");
+        }
+        catch (NullPointerException e) {
+            mInfoVersion     = null;
+            mInfoVersionName = "Not supported";
+        }
+    }
+
+    //----------------------------------------------------------------------------------------------
+
+    /**
+     *
+     */
+    private void getSensorInfoPhysicalSize() {
+        CameraCharacteristics.Key key = CameraCharacteristics.SENSOR_INFO_PHYSICAL_SIZE;
+        /*
+         * Added in API 21
+         *
+         * The physical dimensions of the full pixel array.
+         *
+         * This is the physical size of the sensor pixel array defined by
+         * android.sensor.info.pixelArraySize.
+         *
+         * Units: Millimeters
+         *
+         * This key is available on all devices.
+         */
+        mSensorInfoPhysicalSize = (SizeF) mCameraCharacteristics.get(key);
+        mSensorInfoPhysicalSizeName = mSensorInfoPhysicalSize.toString() + " [mm]";
+    }
+
+    //----------------------------------------------------------------------------------------------
+
+    /**
+     *
+     */
+    private void getSensorInfoPixelArraySize() {
+        CameraCharacteristics.Key key = CameraCharacteristics.SENSOR_INFO_PIXEL_ARRAY_SIZE;
+        /*
+         * Added in API 21
+         *
+         * Dimensions of the full pixel array, possibly including black calibration pixels.
+         *
+         * The pixel count of the full pixel array of the image sensor, which covers
+         * android.sensor.info.physicalSize area. This represents the full pixel dimensions of the
+         * raw buffers produced by this sensor.
+         *
+         * If a camera device supports raw sensor formats, either this or
+         * android.sensor.info.preCorrectionActiveArraySize is the maximum dimensions for the raw
+         * output formats listed in StreamConfigurationMap (this depends on whether or not the image
+         * sensor returns buffers containing pixels that are not part of the active array region
+         * for blacklevel calibration or other purposes).
+         *
+         * Some parts of the full pixel array may not receive light from the scene, or be otherwise
+         * inactive. The android.sensor.info.preCorrectionActiveArraySize key defines the rectangle
+         * of active pixels that will be included in processed image formats.
+         *
+         * Units: Pixels
+         *
+         * This key is available on all devices.
+         */
+        mSensorInfoPixelArraySize = (Size) mCameraCharacteristics.get(key);
+        mSensorInfoPixelArraySizeName = mSensorInfoPixelArraySize.toString() + " [pixels]";
+    }
+
+    //----------------------------------------------------------------------------------------------
+
+    private void getSensorInfoPreCorrectionActiveArraySize() {
+
+    }
+
+    //----------------------------------------------------------------------------------------------
+
+    private void getSensorInfoActiveArraySize() {
+
+    }
+
+    //----------------------------------------------------------------------------------------------
+
+    private void getSensorInfoColorFilterArrangement() {
+
+    }
+
+    //----------------------------------------------------------------------------------------------
+
+    private void getSensorOpticalBlackRegions() {
+
+    }
+
+    //----------------------------------------------------------------------------------------------
+
     /**
      *
      * @return
      */
     @NonNull
     public String toString() {
-        String string = "\n";
+        String string = " \n\n";
 
-        string = string.concat("CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL\n");
-        string = string.concat("\t" + "Hardware level: " + mHardwareLevelName + "\n");
+        string = string.concat("CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL: " + mHardwareLevelName + "\n");
+        string = string.concat("CameraCharacteristics.INFO_VERSION: " + mInfoVersionName + "\n");
+        string = string.concat("CameraCharacteristics.SENSOR_INFO_PHYSICAL_SIZE: " + mSensorInfoPhysicalSizeName + "\n");
+        string = string.concat("CameraCharacteristics.SENSOR_INFO_PIXEL_ARRAY_SIZE: " + mSensorInfoPixelArraySizeName + "\n");
+        string = string.concat("CameraCharacteristics.SENSOR_INFO_PRE_CORRECTION_ACTIVE_ARRAY_SIZE: " + mSensorInfoPreCorrectionActiveArraySizeName + "\n");
+        string = string.concat("CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE: " + mSensorInfoActiveArraySizeName + "\n");
+        string = string.concat("CameraCharacteristics.SENSOR_INFO_COLOR_FILTER_ARRANGEMENT: " + mSensorInfoColorFilterArrangementName + "\n");
+        string = string.concat("CameraCharacteristics.SENSOR_OPTICAL_BLACK_REGIONS: " + mSensorOpticalBlackRegionsName + "\n");
 
         return string;
     }

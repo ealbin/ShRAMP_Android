@@ -9,6 +9,7 @@ import android.os.Build;
 import android.support.annotation.NonNull;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @TargetApi(21)
@@ -20,7 +21,8 @@ abstract class Level3_Mode extends Level2_Template {
 
     protected List<CaptureRequest.Key<?>> mRequestKeys;
 
-    private String mModeName;
+    protected int    mControlMode;
+    private   String mControlModeName;
 
     //**********************************************************************************************
     // Class Methods
@@ -33,6 +35,27 @@ abstract class Level3_Mode extends Level2_Template {
         setControlMode();
     }
 
+    //----------------------------------------------------------------------------------------------
+
+    /**
+     *
+     * @param key
+     * @return
+     */
+    protected List<Integer> getAvailable(CameraCharacteristics.Key key) {
+        int[] available = (int[])super.mCameraCharacteristics.get(key);
+        assert available != null;
+
+        List<Integer> list = new ArrayList<>();
+        for (int item : available) {
+            list.add(item);
+        }
+
+        return list;
+    }
+
+    //----------------------------------------------------------------------------------------------
+
     // Documentation provided by:
     // https://developer.android.com/reference/android/hardware/camera2/CaptureRequest.html
     // https://developer.android.com/reference/android/hardware/camera2/CameraMetadata.html
@@ -43,10 +66,8 @@ abstract class Level3_Mode extends Level2_Template {
      */
     private void setControlMode() {
         CaptureRequest.Key key = CaptureRequest.CONTROL_MODE;
-        int mode;
         int modeOff  = CameraMetadata.CONTROL_MODE_OFF;
         int modeAuto = CameraMetadata.CONTROL_MODE_AUTO;
-
         /*
          * Added in API 21
          *
@@ -72,8 +93,8 @@ abstract class Level3_Mode extends Level2_Template {
          */
 
         // Default
-        mode      = modeAuto;
-        mModeName = "Auto";
+        mControlMode     = modeAuto;
+        mControlModeName = "Auto";
         /*
          * Added in API 21
          *
@@ -85,8 +106,8 @@ abstract class Level3_Mode extends Level2_Template {
 
         if (super.mHardwareLevel == HardwareLevel.LIMITED
                 || super.mHardwareLevel == HardwareLevel.FULL ) {
-            mode      = modeOff;
-            mModeName = "Off";
+            mControlMode     = modeOff;
+            mControlModeName = "Off";
             /*
              * Added in API 21
              *
@@ -106,9 +127,6 @@ abstract class Level3_Mode extends Level2_Template {
              */
         }
         else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            int[] modes = super.mCameraCharacteristics.get(
-                    CameraCharacteristics.CONTROL_AVAILABLE_MODES);
-            assert modes != null;
             /*
              * Added in API 23
              *
@@ -119,17 +137,16 @@ abstract class Level3_Mode extends Level2_Template {
              * LEGACY mode devices will always support AUTO mode.
              * LIMITED and FULL devices will always support OFF, AUTO modes.
              */
-            List<Integer> modesList = new ArrayList<>();
-            for (int availableMode : modes) {
-                modesList.add(availableMode);
-            }
-            if (modesList.contains(modeOff)) {
-                mode      = modeOff;
-                mModeName = "Off";
+            List<Integer> modes = getAvailable(CameraCharacteristics.CONTROL_AVAILABLE_MODES);
+            if (modes.contains(modeOff)) {
+                mControlMode     = modeOff;
+                mControlModeName = "Off";
             }
         }
-        super.mCaptureRequestBuilder.set(key, mode);
+        super.mCaptureRequestBuilder.set(key, mControlMode);
     }
+
+    //----------------------------------------------------------------------------------------------
 
     /**
      *
@@ -139,8 +156,7 @@ abstract class Level3_Mode extends Level2_Template {
     public String toString() {
         String string = super.toString() + "\n";
 
-        string = string.concat("CaptureRequest.CONTROL_MODE\n");
-        string = string.concat("\t" + "Control mode is: " + mModeName + "\n");
+        string = string.concat("CaptureRequest.CONTROL_MODE: " + mControlModeName + "\n");
 
         return string;
     }
