@@ -1,4 +1,4 @@
-package sci.crayfis.shramp.camera2;
+package sci.crayfis.shramp.camera2.capture;
 
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
@@ -10,7 +10,7 @@ import android.view.Surface;
 
 import sci.crayfis.shramp.logging.ShrampLogger;
 
-public class ShrampCaptureSession {
+public class ShrampCamCapture {
 
     //**********************************************************************************************
     // Class Variables
@@ -31,14 +31,14 @@ public class ShrampCaptureSession {
     // Class Methods
     //--------------
 
-    ShrampCaptureSession(CaptureRequest captureRequest) {
+    ShrampCamCapture(CaptureRequest captureRequest) {
 
         mCaptureRequest = captureRequest;
 
         mStateCallback   = new StateCallback();
         mCaptureCallback = new CaptureCallback();
 
-        mLogger.log("return ShrampCaptureSession;");
+        mLogger.log("return ShrampCamCapture;");
     }
 
     StateCallback getStateCallback() {

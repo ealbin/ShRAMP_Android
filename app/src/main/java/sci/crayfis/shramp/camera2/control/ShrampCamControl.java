@@ -1,12 +1,10 @@
-package sci.crayfis.shramp.camera2;
+package sci.crayfis.shramp.camera2.control;
 
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
-import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.Surface;
@@ -19,16 +17,16 @@ import sci.crayfis.shramp.MaineShRAMP;
 import sci.crayfis.shramp.logging.ShrampLogger;
 
 /**
- * The ShrampCamManager class augments/wraps the Android CameraManager.
+ * The ShrampCamControl class augments/wraps the Android CameraManager.
  * Usage:
  *      // from an Activity or Frangment "this"
- *      ShrampCamManager myManager = ShrampCamManager.getInstance(this)
+ *      ShrampCamControl myManager = ShrampCamControl.getInstance(this)
  *      if (myManager.hasBackCamera()) {
  *          myManager.openBackCamera();
  *      }
  */
 @TargetApi(21) // Lollipop
-class ShrampCamManager {
+public class ShrampCamControl {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // Nested Enum
@@ -41,9 +39,9 @@ class ShrampCamManager {
     // Class Variables
     //----------------
 
-     // There should be only one ShrampCamManager instance in existence.
+     // There should be only one ShrampCamControl instance in existence.
      // This is it's reference, access it with getInstance(Context)
-    private static ShrampCamManager mInstance;
+    private static ShrampCamControl mInstance;
 
     private static MaineShRAMP mActivity;
     private static Callback mCallback;
@@ -67,23 +65,23 @@ class ShrampCamManager {
     /**
      * Disable default constructor to limit access to getInstance(Context)
      */
-    private ShrampCamManager() {}
+    private ShrampCamControl() {}
 
     /**
      * Get access to single instance camera manager.
      * Manages all camera devices (front, back, or external) present.
      * @param activity Context to provide CAMERA_SERVICE and access to a CameraManager object.
-     * @return The single instance of ShrampCamManager, or null if something doesn't exist.
+     * @return The single instance of ShrampCamControl, or null if something doesn't exist.
      */
     @Nullable
-    static synchronized ShrampCamManager getInstance(@NonNull MaineShRAMP activity) {
+    public static synchronized ShrampCamControl getInstance(@NonNull MaineShRAMP activity) {
 
         if (mInstance != null) { return mInstance; }
 
         mCallback = new Callback();
 
         mLogger.log("Creating CameraManager");
-        mInstance      = new ShrampCamManager();
+        mInstance      = new ShrampCamControl();
         mActivity = activity;
         mCameraManager = (CameraManager)activity.getSystemService(Context.CAMERA_SERVICE);
 
@@ -156,7 +154,7 @@ class ShrampCamManager {
             }
         }
 
-        mLogger.log("return ShrampCamManager;");
+        mLogger.log("return ShrampCamControl;");
         return mInstance;
     }
 
@@ -166,29 +164,29 @@ class ShrampCamManager {
      * Does this device have a front-facing camera (same side as the screen)
      * @return true if yes, false if no
      */
-    boolean hasFrontCamera() { return mCameraCharacteristics.containsKey(Select.FRONT); }
+    public boolean hasFrontCamera() { return mCameraCharacteristics.containsKey(Select.FRONT); }
 
     /**
      * Does this device have a back-facing camera (opposite side as the screen)
      * @return true if yes, false if no
      */
-    boolean hasBackCamera() { return mCameraCharacteristics.containsKey(Select.BACK); }
+    public boolean hasBackCamera() { return mCameraCharacteristics.containsKey(Select.BACK); }
 
     /**
      * Does this device have an external camera plugged in
      * @return true if yes, false if no
      */
-    boolean hasExternalCamera() { return mCameraCharacteristics.containsKey(Select.EXTERNAL); }
+    public boolean hasExternalCamera() { return mCameraCharacteristics.containsKey(Select.EXTERNAL); }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    static class Callback {
+    public static class Callback {
 
-        static TextureView mmTextureView;
-        static List<Surface> mmSurfaces;
+        public static TextureView mmTextureView;
+        public static List<Surface> mmSurfaces;
 
 
-        static void cameraReady(ShrampCam shrampCam) {
+        public static void cameraReady(ShrampCam shrampCam) {
 
             mLogger.log("mmSurface is " + mmSurfaces.size());
             mLogger.log("Ready to start capture");
@@ -202,7 +200,7 @@ class ShrampCamManager {
     /**
      * Open front camera device and configure it for capture
      */
-    synchronized void openFrontCamera() {
+    public synchronized void openFrontCamera() {
 
         if (!hasFrontCamera()) {
             // TODO no front camera
@@ -223,7 +221,7 @@ class ShrampCamManager {
     /**
      * Open back camera device and configure it for capture
      */
-    synchronized void openBackCamera() {
+    public synchronized void openBackCamera() {
 
         if (!hasBackCamera()) {
             // TODO no back camera
@@ -244,7 +242,7 @@ class ShrampCamManager {
     /**
      * Open external camera device and configure it for capture
      */
-    synchronized void openExternalCamera() {
+    public synchronized void openExternalCamera() {
 
         if (!hasExternalCamera()) {
             // TODO no external camera
@@ -298,7 +296,7 @@ class ShrampCamManager {
     /**
      * Close front camera device and background threads
      */
-    synchronized void closeFrontCamera() {
+    public synchronized void closeFrontCamera() {
 
         mLogger.log("Close front camera");
         closeCamera(Select.FRONT);
@@ -308,7 +306,7 @@ class ShrampCamManager {
     /**
      * Close back camera device and background threads
      */
-    synchronized void closeBackCamera() {
+    public synchronized void closeBackCamera() {
 
         mLogger.log("Close back camera");
         closeCamera(Select.BACK);
@@ -318,7 +316,7 @@ class ShrampCamManager {
     /**
      * Close back camera device and background threads
      */
-    synchronized void closeExternalCamera() {
+    public synchronized void closeExternalCamera() {
 
         mLogger.log("Close external camera");
         closeCamera(Select.EXTERNAL);

@@ -1,8 +1,6 @@
-package sci.crayfis.shramp.camera2;
+package sci.crayfis.shramp.camera2.control;
 
 import android.annotation.TargetApi;
-import android.hardware.camera2.CameraAccessException;
-import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CaptureRequest;
@@ -15,7 +13,8 @@ import android.view.Surface;
 import java.util.List;
 
 import Trash.ShrampCamSetup;
-import sci.crayfis.shramp.camera2.settings.MaineShrampSettings;
+import sci.crayfis.shramp.camera2.capture.ShrampCamCapture;
+import sci.crayfis.shramp.camera2.settings.ShrampCamSettings;
 import sci.crayfis.shramp.logging.ShrampLogger;
 
 /**
@@ -43,7 +42,7 @@ class ShrampCam extends CameraDevice.StateCallback {
 
 
     private ShrampCamSetup mShrampCamSetup;
-    private ShrampCaptureSession   mShrampCaptureSession;
+    private ShrampCamCapture mShrampCamCapture;
     private CaptureRequest.Builder mCaptureRequestBuilder;
 
     // output surfaces linked with this camera
@@ -142,15 +141,15 @@ class ShrampCam extends CameraDevice.StateCallback {
 
             mLogger.log("Camera opened, configuring for capture");
 
-            MaineShrampSettings maineShrampSettings =
-                    new MaineShrampSettings(mCameraCharacteristics, mCameraDevice);
+            ShrampCamSettings shrampCamSettings =
+                    new ShrampCamSettings(mCameraCharacteristics, mCameraDevice);
 
-            maineShrampSettings.logSettings();
-            //maineShrampSettings.keyDump();
+            shrampCamSettings.logSettings();
+            //shrampCamSettings.keyDump();
 
-            mCaptureRequestBuilder = maineShrampSettings.getCaptureRequestBuilder();
+            mCaptureRequestBuilder = shrampCamSettings.getCaptureRequestBuilder();
 
-            ShrampCamManager.Callback.cameraReady(this);
+            ShrampCamControl.Callback.cameraReady(this);
             mLogger.log("return;");
         }
     }
@@ -253,7 +252,7 @@ class ShrampCam extends CameraDevice.StateCallback {
 
         mLogger.log("Closing camera device");
         if (mCameraDevice != null) {
-            mShrampCaptureSession = null;
+            mShrampCamCapture = null;
             mCameraDevice.close();
             mCameraDevice = null;
         }
@@ -304,6 +303,7 @@ class ShrampCam extends CameraDevice.StateCallback {
             return;
         }
         */
+        /*
         mLogger.log("Creating capture session");
         if (mCameraDevice != null) {
             try {
@@ -314,10 +314,10 @@ class ShrampCam extends CameraDevice.StateCallback {
                 CaptureRequest captureRequest = mCaptureRequestBuilder.build();
                 //CaptureRequest request = builder.build();
 
-                mShrampCaptureSession = new ShrampCaptureSession(captureRequest);
-                //mShrampCaptureSession = new ShrampCaptureSession(request);
-                mLogger.log(mShrampCaptureSession.toString());
-                CameraCaptureSession.StateCallback callback = mShrampCaptureSession.getStateCallback();
+                mShrampCamCapture = new ShrampCamCapture(captureRequest);
+                //mShrampCamCapture = new ShrampCamCapture(request);
+                mLogger.log(mShrampCamCapture.toString());
+                CameraCaptureSession.StateCallback callback = mShrampCamCapture.getStateCallback();
 
                 mLogger.log("createCaptureSession()");
                 // use same thread/handler as camera device, set handler = null
@@ -327,7 +327,7 @@ class ShrampCam extends CameraDevice.StateCallback {
                 mLogger.log("ERROR: Camera Access Exception");
             }
         }
-
+        */
         mLogger.log("return;");
     }
 

@@ -13,7 +13,7 @@ import java.util.Set;
 import sci.crayfis.shramp.logging.ShrampLogger;
 
 @TargetApi(21)
-public final class MaineShrampSettings extends Level17_Misc{
+public final class ShrampCamSettings extends Level17_Misc{
 
     //**********************************************************************************************
     // Class Variables
@@ -31,8 +31,8 @@ public final class MaineShrampSettings extends Level17_Misc{
      * @param characteristics
      * @param cameraDevice
      */
-    public MaineShrampSettings(@NonNull CameraCharacteristics characteristics,
-                               @NonNull CameraDevice cameraDevice) {
+    public ShrampCamSettings(@NonNull CameraCharacteristics characteristics,
+                             @NonNull CameraDevice cameraDevice) {
         super(characteristics, cameraDevice);
     }
 

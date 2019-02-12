@@ -5,6 +5,7 @@ import android.view.Surface;
 import java.util.ArrayList;
 
 import sci.crayfis.shramp.MaineShRAMP;
+import sci.crayfis.shramp.camera2.control.ShrampCamControl;
 import sci.crayfis.shramp.logging.ShrampLogger;
 
 public class MaineShrampCam {
@@ -13,7 +14,7 @@ public class MaineShrampCam {
     // Class Variables
     //----------------
 
-    private ShrampCamManager mCameraManager;
+    private ShrampCamControl mCameraManager;
 
     // logging
     private static ShrampLogger mLogger = new ShrampLogger(ShrampLogger.DEFAULT_STREAM);
@@ -24,12 +25,12 @@ public class MaineShrampCam {
 
     public MaineShrampCam(MaineShRAMP activity, Surface surface) {
 
-        mLogger.log("Loading ShrampCamManager");
-        mCameraManager = ShrampCamManager.getInstance(activity);
+        mLogger.log("Loading ShrampCamControl");
+        mCameraManager = ShrampCamControl.getInstance(activity);
         assert mCameraManager != null;
 
-        ShrampCamManager.Callback.mmSurfaces = new ArrayList<>();
-        ShrampCamManager.Callback.mmSurfaces.add(surface);
+        ShrampCamControl.Callback.mmSurfaces = new ArrayList<>();
+        ShrampCamControl.Callback.mmSurfaces.add(surface);
 
         if (mCameraManager.hasFrontCamera()) {
             // do nothing for now
