@@ -14,7 +14,7 @@ import java.text.DecimalFormat;
 import java.util.List;
 
 @TargetApi(21)
-abstract class Level7_AutoExposure extends Level6_AutoFocus {
+abstract class Level08_AutoExposure extends Level07_AutoFocus {
 
     //**********************************************************************************************
     // Class Variables
@@ -26,7 +26,7 @@ abstract class Level7_AutoExposure extends Level6_AutoFocus {
     protected Integer             mControlAeAntibandingMode;
     private   String              mControlAeAntibandingModeName;
 
-    protected Double              mControlAeExposureCompensation;
+    protected Integer             mControlAeExposureCompensation;
     private   String              mControlAeExposureCompensationName;
 
     protected Boolean             mControlAeLock;
@@ -45,8 +45,8 @@ abstract class Level7_AutoExposure extends Level6_AutoFocus {
     // Class Methods
     //--------------
 
-    protected Level7_AutoExposure(@NonNull CameraCharacteristics characteristics,
-                                  @NonNull CameraDevice cameraDevice) {
+    protected Level08_AutoExposure(@NonNull CameraCharacteristics characteristics,
+                                   @NonNull CameraDevice cameraDevice) {
         super(characteristics, cameraDevice);
         setControlAeMode();
         setControlAeAntibandingMode();
@@ -71,7 +71,7 @@ abstract class Level7_AutoExposure extends Level6_AutoFocus {
     private void setControlAeMode() {
         CaptureRequest.Key key = CaptureRequest.CONTROL_AE_MODE;
         int modeOff = CameraMetadata.CONTROL_AE_MODE_OFF;
-        int modeOn = CameraMetadata.CONTROL_AE_MODE_ON;
+        int modeOn  = CameraMetadata.CONTROL_AE_MODE_ON;
         /*
          * Added in API 21
          *
@@ -284,7 +284,11 @@ abstract class Level7_AutoExposure extends Level6_AutoFocus {
 
         Range<Integer> compensationRange = super.mCameraCharacteristics.get(
                                            CameraCharacteristics.CONTROL_AE_COMPENSATION_RANGE);
-        assert compensationRange != null;
+        if (compensationRange == null) {
+            mControlAeExposureCompensation     = null;
+            mControlAeExposureCompensationName = "Not supported";
+            return;
+        }
         /*
          * Added in API 21
          *
@@ -315,6 +319,11 @@ abstract class Level7_AutoExposure extends Level6_AutoFocus {
 
         Rational controlAeCompensationStep = super.mCameraCharacteristics.get(
                                              CameraCharacteristics.CONTROL_AE_COMPENSATION_STEP);
+        if (controlAeCompensationStep == null) {
+            mControlAeExposureCompensation     = null;
+            mControlAeExposureCompensationName = "Not supported";
+            return;
+        }
         /*
          * Added in API 21
          *
@@ -331,10 +340,10 @@ abstract class Level7_AutoExposure extends Level6_AutoFocus {
          *
          * This key is available on all devices.
          */
-        mControlAeExposureCompensation     = compensationRange.getLower()
-                                             * controlAeCompensationStep.doubleValue();
+        mControlAeExposureCompensation = compensationRange.getLower();
         DecimalFormat df = new DecimalFormat("#.##");
-        mControlAeExposureCompensationName = df.format(mControlAeExposureCompensation) + " [EV]";
+        mControlAeExposureCompensationName =
+                df.format(mControlAeExposureCompensation * controlAeCompensationStep.doubleValue() ) + " [EV]";
 
         super.mCaptureRequestBuilder.set(key, mControlAeExposureCompensation);
     }
@@ -399,6 +408,12 @@ abstract class Level7_AutoExposure extends Level6_AutoFocus {
         if (!super.mRequestKeys.contains(key)) {
             mControlAeLock     = null;
             mControlAeLockName = "Not supported";
+            return;
+        }
+
+        if (mControlAeMode == null || mControlAeMode == CameraMetadata.CONTROL_AWB_MODE_OFF) {
+            mControlAeLock     = null;
+            mControlAeLockName = "Disabled";
             return;
         }
 
@@ -517,7 +532,11 @@ abstract class Level7_AutoExposure extends Level6_AutoFocus {
 
         Range<Integer>[] fpsRanges = mCameraCharacteristics.get(
                 CameraCharacteristics.CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES);
-        assert fpsRanges != null;
+        if (fpsRanges == null) {
+            mControlAeTargetFpsRange     = null;
+            mControlAeTargetFpsRangeName = "Not supported";
+            return;
+        }
 
         Range<Integer> fastestRange = null;
         for (Range<Integer> range : fpsRanges) {
@@ -544,8 +563,8 @@ abstract class Level7_AutoExposure extends Level6_AutoFocus {
      */
     private void setControlAeRegions() {
         CaptureRequest.Key key = CaptureRequest.CONTROL_AE_REGIONS;
-        mControlAeRegions     = null;
-        mControlAeRegionsName = "Not applicable";
+        mControlAeRegions      = null;
+        mControlAeRegionsName  = "Not applicable";
         /*
          * Added in API 21
          *
@@ -613,18 +632,20 @@ abstract class Level7_AutoExposure extends Level6_AutoFocus {
      * @return
      */
     @NonNull
-    public String toString() {
-        String string = super.toString() + "\n";
+    public List<String> getString() {
+        List<String> stringList = super.getString();
 
-        string = string.concat("CaptureRequest.CONTROL_AE_MODE: " + mControlAeModeName + "\n");
-        string = string.concat("CaptureRequest.CONTROL_AE_ANTIBANDING_MODE: " + mControlAeAntibandingModeName + "\n");
-        string = string.concat("CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION: " + mControlAeExposureCompensationName + "\n");
-        string = string.concat("CaptureRequest.CONTROL_AE_LOCK: " + mControlAeLockName + "\n");
-        string = string.concat("CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER: " + mControlAePrecaptureTriggerName + "\n");
-        string = string.concat("CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE: " + mControlAeTargetFpsRangeName + "\n");
-        string = string.concat("CaptureRequest.CONTROL_AE_REGIONS: " + mControlAeRegionsName + "\n");
+        String string = "Level 08 (Auto-exposure)\n";
+        string += "CaptureRequest.CONTROL_AE_MODE:                  " + mControlAeModeName                 + "\n";
+        string += "CaptureRequest.CONTROL_AE_ANTIBANDING_MODE:      " + mControlAeAntibandingModeName      + "\n";
+        string += "CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION: " + mControlAeExposureCompensationName + "\n";
+        string += "CaptureRequest.CONTROL_AE_LOCK:                  " + mControlAeLockName                 + "\n";
+        string += "CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER:    " + mControlAePrecaptureTriggerName    + "\n";
+        string += "CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE:      " + mControlAeTargetFpsRangeName       + "\n";
+        string += "CaptureRequest.CONTROL_AE_REGIONS:               " + mControlAeRegionsName              + "\n";
 
-        return string;
+        stringList.add(string);
+        return stringList;
     }
 
 }

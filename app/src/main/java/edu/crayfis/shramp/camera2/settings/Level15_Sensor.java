@@ -9,9 +9,10 @@ import android.support.annotation.NonNull;
 import android.util.Range;
 
 import java.text.DecimalFormat;
+import java.util.List;
 
 @TargetApi(21)
-abstract class Level14_Sensor extends Level13_Lens {
+abstract class Level15_Sensor extends Level14_Lens {
 
     //**********************************************************************************************
     // Class Variables
@@ -23,6 +24,8 @@ abstract class Level14_Sensor extends Level13_Lens {
     protected Long    mSensorFrameDuration;
     private   String  mSensorFrameDurationName;
 
+    protected Integer mSensorAnalogSensitivity;
+    private   String  mSensorAnalogSensitivityName;
     protected Integer mSensorSensitivity;
     private   String  mSensorSensitivityName;
 
@@ -37,7 +40,7 @@ abstract class Level14_Sensor extends Level13_Lens {
     // Class Methods
     //--------------
 
-    protected Level14_Sensor(@NonNull CameraCharacteristics characteristics,
+    protected Level15_Sensor(@NonNull CameraCharacteristics characteristics,
                              @NonNull CameraDevice cameraDevice) {
         super(characteristics, cameraDevice);
         setSensorExposureTime();
@@ -88,9 +91,9 @@ abstract class Level14_Sensor extends Level13_Lens {
             return;
         }
 
-        if (super.mControlMode == CameraMetadata.CONTROL_MODE_OFF
-                || super.mControlAeMode == null
-                || super.mControlAeMode == CameraMetadata.CONTROL_AE_MODE_OFF) {
+        if (super.mControlMode != CameraMetadata.CONTROL_MODE_OFF
+                || ( super.mControlAeMode != null
+                     && super.mControlAeMode != CameraMetadata.CONTROL_AE_MODE_OFF)) {
             mSensorExposureTime     = null;
             mSensorExposureTimeName = "Disabled";
             return;
@@ -98,10 +101,14 @@ abstract class Level14_Sensor extends Level13_Lens {
 
         Range<Long> times = super.mCameraCharacteristics.get(
                             CameraCharacteristics.SENSOR_INFO_EXPOSURE_TIME_RANGE);
-        assert times != null;
+        if (times == null) {
+            mSensorExposureTime     = null;
+            mSensorExposureTimeName = "Not supported";
+            return;
+        }
 
-        mSensorExposureTime = times.getLower();
-        DecimalFormat df = new DecimalFormat("#.##");
+        mSensorExposureTime     = times.getLower();
+        DecimalFormat df        = new DecimalFormat("#.##");
         mSensorExposureTimeName = df.format(mSensorExposureTime / 1000.) + " [us]";
 
         super.mCaptureRequestBuilder.set(key, mSensorExposureTime);
@@ -201,37 +208,159 @@ abstract class Level14_Sensor extends Level13_Lens {
             return;
         }
 
-        if (super.mControlMode == CameraMetadata.CONTROL_MODE_OFF
-                || super.mControlAeMode == null
-                || super.mControlAeMode == CameraMetadata.CONTROL_AE_MODE_OFF) {
+        if (super.mControlMode != CameraMetadata.CONTROL_MODE_OFF
+                || ( super.mControlAeMode != null
+                     && super.mControlAeMode != CameraMetadata.CONTROL_AE_MODE_OFF)) {
             mSensorFrameDuration     = null;
             mSensorFrameDurationName = "Disabled";
             return;
         }
 
+        long minDuration = super.mStreamConfigurationMap.getOutputMinFrameDuration(
+                           super.mOutputFormat, super.mOutputSize);
 
-
+        mSensorFrameDuration     = minDuration;
+        DecimalFormat df         = new DecimalFormat("#.##");
+        mSensorFrameDurationName = df.format(mSensorFrameDuration / 1000. / 1000.) + " [ms]";
     }
 
     //----------------------------------------------------------------------------------------------
 
+    /**
+     *
+     */
     private void setSensorSensitivity() {
         CaptureRequest.Key key = CaptureRequest.SENSOR_SENSITIVITY;
+        /*
+         * Added in API 21
+         *
+         * The amount of gain applied to sensor data before processing.
+         *
+         * The sensitivity is the standard ISO sensitivity value, as defined in ISO 12232:2006.
+         *
+         * The sensitivity must be within android.sensor.info.sensitivityRange, and if if it less
+         * than android.sensor.maxAnalogSensitivity, the camera device is guaranteed to use only
+         * analog amplification for applying the gain.
+         *
+         * If the camera device cannot apply the exact sensitivity requested, it will reduce the
+         * gain to the nearest supported value. The final sensitivity used will be available in the
+         * output capture result.
+         *
+         * This control is only effective if android.control.aeMode or android.control.mode is set
+         * to OFF; otherwise the auto-exposure algorithm will override this value.
+         *
+         * Units: ISO arithmetic units
+         *
+         * Range of valid values:
+         * android.sensor.info.sensitivityRange
+         *
+         * Optional - This value may be null on some devices.
+         *
+         * Full capability - Present on all camera devices that report being HARDWARE_LEVEL_FULL
+         * devices in the android.info.supportedHardwareLevel key
+         */
+        if (!super.mRequestKeys.contains(key)) {
+            mSensorAnalogSensitivity     = null;
+            mSensorAnalogSensitivityName = "Not supported";
+            mSensorSensitivity           = null;
+            mSensorSensitivityName       = "Not supported";
+            return;
+        }
 
+        if (super.mControlMode != CameraMetadata.CONTROL_MODE_OFF
+                || ( super.mControlAeMode != null
+                     && super.mControlAeMode != CameraMetadata.CONTROL_AE_MODE_OFF)) {
+            mSensorAnalogSensitivity     = null;
+            mSensorAnalogSensitivityName = "Disabled";
+            mSensorSensitivity           = null;
+            mSensorSensitivityName       = "Disabled";
+            return;
+        }
+
+        Integer maxAnalogSensitivity = super.mCameraCharacteristics.get(
+                                       CameraCharacteristics.SENSOR_MAX_ANALOG_SENSITIVITY);
+        if (maxAnalogSensitivity == null) {
+            mSensorAnalogSensitivity     = null;
+            mSensorAnalogSensitivityName = "Not supported";
+        }
+        else {
+            mSensorAnalogSensitivity     = maxAnalogSensitivity;
+            mSensorAnalogSensitivityName = "ISO " + Integer.toString(mSensorAnalogSensitivity);
+        }
+
+        Range<Integer> sensitivityRange = super.mCameraCharacteristics.get(
+                                          CameraCharacteristics.SENSOR_INFO_SENSITIVITY_RANGE);
+        if (sensitivityRange == null) {
+            mSensorSensitivity     = null;
+            mSensorSensitivityName = "Not supported";
+        }
+        else {
+            mSensorSensitivity     = sensitivityRange.getUpper();
+            mSensorSensitivityName = "ISO " + Integer.toString(mSensorSensitivity);
+        }
+
+        if (mSensorSensitivity == null || mSensorAnalogSensitivity == null) {
+            return;
+        }
+
+        super.mCaptureRequestBuilder.set(key, mSensorSensitivity);
     }
 
     //----------------------------------------------------------------------------------------------
 
+    /**
+     *
+     */
     private void setSensorTestPatternMode() {
         CaptureRequest.Key key = CaptureRequest.SENSOR_TEST_PATTERN_MODE;
-
+        mSensorTestPatternMode     = null;
+        mSensorTestPatternModeName = "Not applicable";
+        /*
+         * Added in API 21
+         *
+         * When enabled, the sensor sends a test pattern instead of doing a real exposure from the
+         * camera.
+         *
+         * When a test pattern is enabled, all manual sensor controls specified by android.sensor.*
+         * will be ignored. All other controls should work as normal.
+         *
+         * For example, if manual flash is enabled, flash firing should still occur
+         * (and that the test pattern remain unmodified, since the flash would not actually affect
+         * it).
+         *
+         * Defaults to OFF.
+         *
+         * Available values for this device:
+         * android.sensor.availableTestPatternModes
+         *
+         * Optional - This value may be null on some devices.
+         */
     }
 
     //----------------------------------------------------------------------------------------------
 
+    /**
+     *
+     */
     private void setSensorTestPatternData() {
         CaptureRequest.Key key = CaptureRequest.SENSOR_TEST_PATTERN_DATA;
-
+        mSensorTestPatternData     = null;
+        mSensorTestPatternDataName = "Not applicable";
+        /*
+         * Added in API 21
+         *
+         * A pixel [R, G_even, G_odd, B] that supplies the test pattern when
+         * android.sensor.testPatternMode is SOLID_COLOR.
+         *
+         * Each color channel is treated as an unsigned 32-bit integer. The camera device then uses
+         * the most significant X bits that correspond to how many bits are in its Bayer raw sensor
+         * output.
+         *
+         * For example, a sensor with RAW10 Bayer output would use the 10 most significant bits from
+         * each color channel.
+         *
+         * Optional - This value may be null on some devices.
+         */
     }
 
     //----------------------------------------------------------------------------------------------
@@ -241,16 +370,19 @@ abstract class Level14_Sensor extends Level13_Lens {
      * @return
      */
     @NonNull
-    public String toString() {
-        String string = super.toString() + "\n";
+    public List<String> getString() {
+        List<String> stringList = super.getString();
 
-        string = string.concat("CaptureRequest.SENSOR_EXPOSURE_TIME: " + mSensorExposureTimeName + "\n");
-        string = string.concat("CaptureRequest.SENSOR_FRAME_DURATION: " + mSensorFrameDurationName + "\n");
-        string = string.concat("CaptureRequest.SENSOR_SENSITIVITY: " + mSensorSensitivityName + "\n");
-        string = string.concat("CaptureRequest.SENSOR_TEST_PATTERN_MODE: " + mSensorTestPatternModeName + "\n");
-        string = string.concat("CaptureRequest.SENSOR_TEST_PATTERN_DATA: " + mSensorTestPatternDataName + "\n");
+        String string = "Level 15 (Sensor)\n";
+        string += "CaptureRequest.SENSOR_EXPOSURE_TIME:                 " + mSensorExposureTimeName      + "\n";
+        string += "CaptureRequest.SENSOR_FRAME_DURATION:                " + mSensorFrameDurationName     + "\n";
+        string += "CameraCharacteristics.SENSOR_MAX_ANALOG_SENSITIVITY: " + mSensorAnalogSensitivityName + "\n";
+        string += "CaptureRequest.SENSOR_SENSITIVITY:                   " + mSensorSensitivityName       + "\n";
+        string += "CaptureRequest.SENSOR_TEST_PATTERN_MODE:             " + mSensorTestPatternModeName   + "\n";
+        string += "CaptureRequest.SENSOR_TEST_PATTERN_DATA:             " + mSensorTestPatternDataName   + "\n";
 
-        return string;
+        stringList.add(string);
+        return stringList;
     }
 
 }

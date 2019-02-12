@@ -9,11 +9,10 @@ import android.os.Build;
 import android.support.annotation.NonNull;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @TargetApi(21)
-abstract class Level3_Mode extends Level2_Template {
+abstract class Level04_Mode extends Level03_Template {
 
     //**********************************************************************************************
     // Class Variables
@@ -28,8 +27,8 @@ abstract class Level3_Mode extends Level2_Template {
     // Class Methods
     //--------------
 
-    protected Level3_Mode(@NonNull CameraCharacteristics characteristics,
-                          @NonNull CameraDevice cameraDevice) {
+    protected Level04_Mode(@NonNull CameraCharacteristics characteristics,
+                           @NonNull CameraDevice cameraDevice) {
         super(characteristics, cameraDevice);
         mRequestKeys = super.mCameraCharacteristics.getAvailableCaptureRequestKeys();
         setControlMode();
@@ -153,12 +152,14 @@ abstract class Level3_Mode extends Level2_Template {
      * @return
      */
     @NonNull
-    public String toString() {
-        String string = super.toString() + "\n";
+    public List<String> getString() {
+        List<String> stringList = super.getString();
 
-        string = string.concat("CaptureRequest.CONTROL_MODE: " + mControlModeName + "\n");
+        String string = "Level 04 (Mode)\n";
+        string += "CaptureRequest.CONTROL_MODE: " + mControlModeName + "\n";
 
-        return string;
+        stringList.add(string);
+        return stringList;
     }
 
 }

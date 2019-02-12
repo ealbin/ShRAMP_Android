@@ -4,8 +4,10 @@ import android.annotation.TargetApi;
 import android.hardware.camera2.CameraCharacteristics;
 import android.support.annotation.NonNull;
 
+import java.util.List;
+
 @TargetApi(21)
-abstract class Level1_Abilities extends Level0_Hardware {
+abstract class Level01_Abilities extends Level00_Hardware {
 
     //**********************************************************************************************
     // Class Variables
@@ -34,7 +36,7 @@ abstract class Level1_Abilities extends Level0_Hardware {
     // Class Methods
     //--------------
 
-    protected Level1_Abilities(@NonNull CameraCharacteristics characteristics) {
+    protected Level01_Abilities(@NonNull CameraCharacteristics characteristics) {
         super(characteristics);
         mCameraCharacteristics = characteristics;
         getCapabilities();
@@ -42,19 +44,19 @@ abstract class Level1_Abilities extends Level0_Hardware {
 
     //----------------------------------------------------------------------------------------------
 
+    /*
+     * Documentation provided by:
+     * https://developer.android.com/reference/android/hardware/camera2/CameraCharacteristics.html
+     * https://developer.android.com/reference/android/hardware/camera2/CameraMetadata.html
+     */
+
     /**
      *
      */
     private void getCapabilities() {
+        CameraCharacteristics.Key key = CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES;
+        int[] capabilities = (int[]) mCameraCharacteristics.get(key);
 
-        assert mCameraCharacteristics != null;
-        int[] capabilities = mCameraCharacteristics.get(
-                CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES);
-
-        /*
-         * Documentation provided by:
-         * https://developer.android.com/reference/android/hardware/camera2/CameraMetadata.html
-         */
         assert capabilities != null;
         for (int code : capabilities) {
             switch (code) {
@@ -639,49 +641,27 @@ abstract class Level1_Abilities extends Level0_Hardware {
      * @return
      */
     @NonNull
-    public String toString() {
-        String string = super.toString() + "\n";
+    public List<String> getString() {
+        List<String> stringList = super.getString();
 
-        string = string.concat("CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES\n");
+        String string = "Level 01 (Abilities)\n";
+        string += "CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_BACKWARD_COMPATIBLE:          " + bool2YN(mIsBackwardCompatibleAble)        + "\n";
+        string += "CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_MANUAL_SENSOR:                " + bool2YN(mIsManualSensorAble)              + "\n";
+        string += "CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_MANUAL_POST_PROCESSING:       " + bool2YN(mIsManualPostProcessingAble)      + "\n";
+        string += "CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_RAW:                          " + bool2YN(mIsRawAble)                       + "\n";
+        string += "CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_READ_SENSOR_SETTINGS:         " + bool2YN(mIsReadSensorSettingsAble)        + "\n";
+        string += "CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_BURST_CAPTURE:                " + bool2YN(mIsBurstCaptureAble)              + "\n";
+        string += "CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_PRIVATE_REPROCESSING:         " + bool2YN(mIsPrivateReprocessingAble)       + "\n";
+        string += "CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_YUV_REPROCESSING:             " + bool2YN(mIsYuvReprocessingAble)           + "\n";
+        string += "CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_DEPTH_OUTPUT:                 " + bool2YN(mIsDepthOutputAble)               + "\n";
+        string += "CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_CONSTRAINED_HIGH_SPEED_VIDEO: " + bool2YN(mIsConstrainedHighSpeedVideoAble) + "\n";
+        string += "CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_MOTION_TRACKING:              " + bool2YN(mIsMotionTrackingAble)            + "\n";
+        string += "CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_LOGICAL_MULTI_CAMERA:         " + bool2YN(mIsLogicalMultiCameraAble)        + "\n";
+        string += "CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_MONOCHROME:                   " + bool2YN(mIsMonochromeAble)                + "\n";
+        string += "Unknown capabilities:                                                              " + bool2YN(mHasUnknownAbility)               + "\n";
 
-        string = string.concat("\t" + "Added in API 21:\n");
-        string = string.concat("\t\t" + "BACKWARD_COMPATIBLE: "
-                + bool2YN(mIsBackwardCompatibleAble) + "\n");
-        string = string.concat("\t\t" + "MANUAL_SENSOR: "
-                + bool2YN(mIsManualSensorAble) + "\n");
-        string = string.concat("\t\t" + "MANUAL_POST_PROCESSING: "
-                + bool2YN(mIsManualPostProcessingAble) + "\n");
-        string = string.concat("\t\t" + "RAW: "
-                + bool2YN(mIsRawAble) + "\n");
-
-        string = string.concat("\t" + "Added in API 22:\n");
-        string = string.concat("\t\t" + "READ_SENSOR_SETTINGS: "
-                + bool2YN(mIsReadSensorSettingsAble) + "\n");
-        string = string.concat("\t\t" + "BURST_CAPTURE: "
-                + bool2YN(mIsBurstCaptureAble) + "\n");
-
-        string = string.concat("\t" + "Added in API 23:\n");
-        string = string.concat("\t\t" + "PRIVATE_REPROCESSING: "
-                + bool2YN(mIsPrivateReprocessingAble) + "\n");
-        string = string.concat("\t\t" +"YUV_REPROCESSING: "
-                + bool2YN(mIsYuvReprocessingAble) + "\n");
-        string = string.concat("\t\t" + "DEPTH_OUTPUT: "
-                + bool2YN(mIsDepthOutputAble) + "\n");
-        string = string.concat("\t\t" + "CONSTRAINED_HIGH_SPEED_VIDEO: "
-                + bool2YN(mIsConstrainedHighSpeedVideoAble) + "\n");
-
-        string = string.concat("\t" + "Added in API 28:\n");
-        string = string.concat("\t\t" + "MOTION_TRACKING: "
-                + bool2YN(mIsMotionTrackingAble) + "\n");
-        string = string.concat("\t\t" + "LOGICAL_MULTI_CAMERA: "
-                + bool2YN(mIsLogicalMultiCameraAble) + "\n");
-        string = string.concat("\t\t" + "MONOCHROME: "
-                + bool2YN(mIsMonochromeAble) + "\n");
-
-        string = string.concat("\t" + "Unknown capabilities: "
-                + bool2YN(mHasUnknownAbility) + "\n");
-
-        return string;
+        stringList.add(string);
+        return stringList;
     }
 
 }

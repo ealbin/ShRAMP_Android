@@ -8,8 +8,10 @@ import android.location.Location;
 import android.support.annotation.NonNull;
 import android.util.Size;
 
+import java.util.List;
+
 @TargetApi(21)
-abstract class Level12_JPEG extends Level11_MiscModes {
+abstract class Level13_JPEG extends Level12_MiscModes {
 
     //**********************************************************************************************
     // Class Variables
@@ -35,7 +37,7 @@ abstract class Level12_JPEG extends Level11_MiscModes {
     // Class Methods
     //--------------
 
-    protected Level12_JPEG(@NonNull CameraCharacteristics characteristics,
+    protected Level13_JPEG(@NonNull CameraCharacteristics characteristics,
                            @NonNull CameraDevice cameraDevice) {
         super(characteristics, cameraDevice);
         setJpegGpsLocation();
@@ -203,16 +205,18 @@ abstract class Level12_JPEG extends Level11_MiscModes {
      * @return
      */
     @NonNull
-    public String toString() {
-        String string = super.toString() + "\n";
+    public List<String> getString() {
+        List<String> stringList = super.getString();
 
-        string = string.concat("CaptureRequest.JPEG_GPS_LOCATION: " + mJpegGpsLocationName + "\n");
-        string = string.concat("CaptureRequest.JPEG_ORIENTATION: " + mJpegOrientationName + "\n");
-        string = string.concat("CaptureRequest.JPEG_QUALITY: " + mJpegQualityName + "\n");
-        string = string.concat("CaptureRequest.JPEG_THUMBNAIL_QUALITY: " + mJpegThumbnailQualityName + "\n");
-        string = string.concat("CaptureRequest.JPEG_THUMBNAIL_SIZE: " + mJpegThumbnailSizeName + "\n");
+        String string = "Level 13 (JPEG)\n";
+        string += "CaptureRequest.JPEG_GPS_LOCATION:      " + mJpegGpsLocationName      + "\n";
+        string += "CaptureRequest.JPEG_ORIENTATION:       " + mJpegOrientationName      + "\n";
+        string += "CaptureRequest.JPEG_QUALITY:           " + mJpegQualityName          + "\n";
+        string += "CaptureRequest.JPEG_THUMBNAIL_QUALITY: " + mJpegThumbnailQualityName + "\n";
+        string += "CaptureRequest.JPEG_THUMBNAIL_SIZE:    " + mJpegThumbnailSizeName    + "\n";
 
-        return string;
+        stringList.add(string);
+        return stringList;
     }
 
 }

@@ -11,7 +11,7 @@ import android.support.annotation.NonNull;
 import java.util.List;
 
 @TargetApi(21)
-abstract class Level10_Tonemap extends Level9_Color {
+abstract class Level11_Tonemap extends Level10_Color {
 
     //**********************************************************************************************
     // Class Variables
@@ -27,7 +27,7 @@ abstract class Level10_Tonemap extends Level9_Color {
     // Class Methods
     //--------------
 
-    protected Level10_Tonemap(@NonNull CameraCharacteristics characteristics,
+    protected Level11_Tonemap(@NonNull CameraCharacteristics characteristics,
                               @NonNull CameraDevice cameraDevice) {
         super(characteristics, cameraDevice);
         setTonemapMode();
@@ -48,7 +48,7 @@ abstract class Level10_Tonemap extends Level9_Color {
     private void setTonemapMode() {
         CaptureRequest.Key key = CaptureRequest.TONEMAP_MODE;
         int modeCurve = CameraMetadata.TONEMAP_MODE_CONTRAST_CURVE;
-        int modeFast = CameraMetadata.TONEMAP_MODE_FAST;
+        int modeFast  = CameraMetadata.TONEMAP_MODE_FAST;
         /*
          * Added in API 21
          *
@@ -80,13 +80,13 @@ abstract class Level10_Tonemap extends Level9_Color {
          * devices in the android.info.supportedHardwareLevel key
          */
         if (!super.mRequestKeys.contains(key)) {
-            mTonemapMode = null;
+            mTonemapMode     = null;
             mTonemapModeName = "Not supported";
             return;
         }
 
         // Default
-        mTonemapMode = modeFast;
+        mTonemapMode     = modeFast;
         mTonemapModeName = "Fast";
         /*
          * Added in API 21
@@ -97,7 +97,7 @@ abstract class Level10_Tonemap extends Level9_Color {
 
         List<Integer> modes = super.getAvailable(CameraCharacteristics.TONEMAP_AVAILABLE_TONE_MAP_MODES);
         if (modes.contains(modeCurve)) {
-            mTonemapMode = modeCurve;
+            mTonemapMode     = modeCurve;
             mTonemapModeName = "Contrast curve";
             /*
              * Added in API 21
@@ -175,7 +175,7 @@ abstract class Level10_Tonemap extends Level9_Color {
          * Full capability - Present on all camera devices that report being HARDWARE_LEVEL_FULL
          * devices in the android.info.supportedHardwareLevel key
          */
-        if (mTonemapMode != CameraMetadata.TONEMAP_MODE_CONTRAST_CURVE) {
+        if (mTonemapMode == null || mTonemapMode != CameraMetadata.TONEMAP_MODE_CONTRAST_CURVE) {
             mTonemapCurve     = null;
             mTonemapCurveName = "Not supported";
             return;
@@ -195,13 +195,15 @@ abstract class Level10_Tonemap extends Level9_Color {
      * @return
      */
     @NonNull
-    public String toString() {
-        String string = super.toString() + "\n";
+    public List<String> getString() {
+        List<String> stringList = super.getString();
 
-        string = string.concat("CaptureRequest.TONEMAP_MODE: " + mTonemapModeName + "\n");
-        string = string.concat("CaptureRequest.TONEMAP_CURVE: " + mTonemapCurveName + "\n");
+        String string = "Level 11 (Tonemap)\n";
+        string += "CaptureRequest.TONEMAP_MODE:  " + mTonemapModeName  + "\n";
+        string += "CaptureRequest.TONEMAP_CURVE: " + mTonemapCurveName + "\n";
 
-        return string;
+        stringList.add(string);
+        return stringList;
     }
 
 }

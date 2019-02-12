@@ -3,13 +3,17 @@ package edu.crayfis.shramp.camera2.settings;
 import android.annotation.TargetApi;
 import android.graphics.Rect;
 import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraMetadata;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.util.Size;
 import android.util.SizeF;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @TargetApi(21)
-abstract class Level0_Hardware {
+abstract class Level00_Hardware {
 
     static protected enum HardwareLevel {
         LEGACY,   // Added in API 21
@@ -54,9 +58,9 @@ abstract class Level0_Hardware {
     // Class Methods
     //--------------
 
-    private Level0_Hardware() {}
+    private Level00_Hardware() {}
 
-    protected Level0_Hardware(@NonNull CameraCharacteristics characteristics) {
+    protected Level00_Hardware(@NonNull CameraCharacteristics characteristics) {
         mCameraCharacteristics = characteristics;
         getHardwareLevel();
         getInfoVersion();
@@ -67,8 +71,13 @@ abstract class Level0_Hardware {
         getSensorInfoColorFilterArrangement();
         getSensorOpticalBlackRegions();
     }
-
     //----------------------------------------------------------------------------------------------
+
+    /*
+     * Documentation provided by:
+     * https://developer.android.com/reference/android/hardware/camera2/CameraCharacteristics.html
+     * https://developer.android.com/reference/android/hardware/camera2/CameraMetadata.html
+     */
 
     /**
      *
@@ -126,7 +135,10 @@ abstract class Level0_Hardware {
          */
         CameraCharacteristics.Key key = CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL;
         Integer hardwareLevel = (Integer) mCameraCharacteristics.get(key);
-        assert hardwareLevel != null;
+        if (hardwareLevel == null) {
+            mHardwareLevelName = "Not supported";
+            return;
+        }
 
         switch (hardwareLevel) {
             case (CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_LEGACY): {
@@ -302,14 +314,13 @@ abstract class Level0_Hardware {
          *
          * Optional - This value may be null on some devices.
          */
-        try {
-            mInfoVersion = (String) mCameraCharacteristics.get(key);
-            mInfoVersionName = mInfoVersion.replaceAll(":", "=");
-        }
-        catch (NullPointerException e) {
-            mInfoVersion     = null;
+        mInfoVersion = (String) mCameraCharacteristics.get(key);
+        if (mInfoVersion == null) {
             mInfoVersionName = "Not supported";
+            return;
         }
+
+        mInfoVersionName = mInfoVersion.replaceAll(":", "=");
     }
 
     //----------------------------------------------------------------------------------------------
@@ -332,6 +343,10 @@ abstract class Level0_Hardware {
          * This key is available on all devices.
          */
         mSensorInfoPhysicalSize = (SizeF) mCameraCharacteristics.get(key);
+        if (mSensorInfoPhysicalSize == null) {
+            mSensorInfoPhysicalSizeName = "Not supported";
+            return;
+        }
         mSensorInfoPhysicalSizeName = mSensorInfoPhysicalSize.toString() + " [mm]";
     }
 
@@ -366,31 +381,255 @@ abstract class Level0_Hardware {
          * This key is available on all devices.
          */
         mSensorInfoPixelArraySize = (Size) mCameraCharacteristics.get(key);
+        if (mSensorInfoPixelArraySize == null) {
+            mSensorInfoPixelArraySizeName = "Not supported";
+            return;
+        }
         mSensorInfoPixelArraySizeName = mSensorInfoPixelArraySize.toString() + " [pixels]";
     }
 
     //----------------------------------------------------------------------------------------------
 
+    /**
+     *
+     */
     private void getSensorInfoPreCorrectionActiveArraySize() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            mSensorInfoPreCorrectionActiveArraySize     = null;
+            mSensorInfoPreCorrectionActiveArraySizeName = "Not supported";
+            return;
+        }
+        CameraCharacteristics.Key key = CameraCharacteristics.SENSOR_INFO_PRE_CORRECTION_ACTIVE_ARRAY_SIZE;
+        /*
+         * Added in API 23
+         *
+         * The area of the image sensor which corresponds to active pixels prior to the application
+         * of any geometric distortion correction.
+         *
+         * This is the rectangle representing the size of the active region of the sensor (i.e. the
+         * region that actually receives light from the scene) before any geometric correction has
+         * been applied, and should be treated as the active region rectangle for any of the raw
+         * formats. All metadata associated with raw processing (e.g. the lens shading correction
+         * map, and radial distortion fields) treats the top, left of this rectangle as the origin,
+         * (0,0).
+         *
+         * The size of this region determines the maximum field of view and the maximum number of
+         * pixels that an image from this sensor can contain, prior to the application of geometric
+         * distortion correction. The effective maximum pixel dimensions of a
+         * post-distortion-corrected image is given by the android.sensor.info.activeArraySize
+         * field, and the effective maximum field of view for a post-distortion-corrected image can
+         * be calculated by applying the geometric distortion correction fields to this rectangle,
+         * and cropping to the rectangle given in android.sensor.info.activeArraySize.
+         *
+         * E.g. to calculate position of a pixel, (x,y), in a processed YUV output image with the
+         * dimensions in android.sensor.info.activeArraySize given the position of a pixel,
+         * (x', y'), in the raw pixel array with dimensions give in
+         * android.sensor.info.pixelArraySize:
+         *
+         *      Choose a pixel (x', y') within the active array region of the raw buffer given in
+         *      android.sensor.info.preCorrectionActiveArraySize, otherwise this pixel is considered
+         *      to be outside of the FOV, and will not be shown in the processed output image.
+         *
+         *      Apply geometric distortion correction to get the post-distortion pixel coordinate,
+         *      (x_i, y_i). When applying geometric correction metadata, note that metadata for raw
+         *      buffers is defined relative to the top, left of the
+         *      android.sensor.info.preCorrectionActiveArraySize rectangle.
+         *
+         *      If the resulting corrected pixel coordinate is within the region given in
+         *      android.sensor.info.activeArraySize, then the position of this pixel in the
+         *      processed output image buffer is (x_i - activeArray.left, y_i - activeArray.top),
+         *      when the top, left coordinate of that buffer is treated as (0, 0).
+         *
+         * Thus, for pixel x',y' = (25, 25) on a sensor where android.sensor.info.pixelArraySize is
+         * (100,100), android.sensor.info.preCorrectionActiveArraySize is (10, 10, 100, 100),
+         * android.sensor.info.activeArraySize is (20, 20, 80, 80), and the geometric distortion
+         * correction doesn't change the pixel coordinate, the resulting pixel selected in pixel
+         * coordinates would be x,y = (25, 25) relative to the top,left of the raw buffer with
+         * dimensions given in android.sensor.info.pixelArraySize, and would be (5, 5) relative to
+         * the top,left of post-processed YUV output buffer with dimensions given in
+         * android.sensor.info.activeArraySize.
+         *
+         * The currently supported fields that correct for geometric distortion are:
+         *      android.lens.distortion.
+         *
+         * If the camera device doesn't support geometric distortion correction, or all of the
+         * geometric distortion fields are no-ops, this rectangle will be the same as the
+         * post-distortion-corrected rectangle given in android.sensor.info.activeArraySize.
+         *
+         * This rectangle is defined relative to the full pixel array; (0,0) is the top-left of the
+         * full pixel array, and the size of the full pixel array is given by
+         * android.sensor.info.pixelArraySize.
+         *
+         * The pre-correction active array may be smaller than the full pixel array, since the full
+         * array may include black calibration pixels or other inactive regions.
+         *
+         * Units: Pixel coordinates on the image sensor
+         *
+         * This key is available on all devices.
+         */
 
+        mSensorInfoPreCorrectionActiveArraySize = (Rect) mCameraCharacteristics.get(key);
+        if (mSensorInfoPreCorrectionActiveArraySize == null) {
+            mSensorInfoPreCorrectionActiveArraySizeName = "Not supported";
+            return;
+        }
+        String width  = Integer.toString(mSensorInfoPreCorrectionActiveArraySize.width());
+        String height = Integer.toString(mSensorInfoPreCorrectionActiveArraySize.height());
+        mSensorInfoPreCorrectionActiveArraySizeName = width + "x" + height + " [pixels]";
     }
 
     //----------------------------------------------------------------------------------------------
 
+    /**
+     *
+     */
     private void getSensorInfoActiveArraySize() {
-
+        CameraCharacteristics.Key key = CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE;
+        /*
+         * Added in API 21
+         *
+         * The area of the image sensor which corresponds to active pixels after any geometric
+         * distortion correction has been applied.
+         *
+         * This is the rectangle representing the size of the active region of the sensor
+         * (i.e. the region that actually receives light from the scene) after any geometric
+         * correction has been applied, and should be treated as the maximum size in pixels of any
+         * of the image output formats aside from the raw formats.
+         *
+         * This rectangle is defined relative to the full pixel array; (0,0) is the top-left of the
+         * full pixel array, and the size of the full pixel array is given by
+         * android.sensor.info.pixelArraySize.
+         *
+         * The coordinate system for most other keys that list pixel coordinates, including
+         * android.scaler.cropRegion, is defined relative to the active array rectangle given in
+         * this field, with (0, 0) being the top-left of this rectangle.
+         *
+         * The active array may be smaller than the full pixel array, since the full array may
+         * include black calibration pixels or other inactive regions.
+         *
+         * For devices that do not support android.distortionCorrection.mode control, the active
+         * array must be the same as android.sensor.info.preCorrectionActiveArraySize.
+         *
+         * For devices that support android.distortionCorrection.mode control, the active array
+         * must be enclosed by android.sensor.info.preCorrectionActiveArraySize. The difference
+         * between pre-correction active array and active array accounts for scaling or cropping
+         * caused by lens geometric distortion correction.
+         *
+         * In general, application should always refer to active array size for controls like
+         * metering regions or crop region. Two exceptions are when the application is dealing with
+         * RAW image buffers (RAW_SENSOR, RAW10, RAW12 etc), or when application explicitly set
+         * android.distortionCorrection.mode to OFF. In these cases, application should refer to
+         * android.sensor.info.preCorrectionActiveArraySize.
+         *
+         * Units: Pixel coordinates on the image sensor
+         *
+         * This key is available on all devices.
+         */
+        mSensorInfoActiveArraySize = (Rect) mCameraCharacteristics.get(key);
+        if (mSensorInfoActiveArraySize == null) {
+            mSensorInfoActiveArraySizeName = "Not supported";
+            return;
+        }
+        String width  = Integer.toString(mSensorInfoActiveArraySize.width());
+        String height = Integer.toString(mSensorInfoActiveArraySize.height());
+        mSensorInfoActiveArraySizeName = width + "x" + height + " [pixels]";
     }
 
     //----------------------------------------------------------------------------------------------
 
+    /**
+     *
+     */
     private void getSensorInfoColorFilterArrangement() {
+        CameraCharacteristics.Key key = CameraCharacteristics.SENSOR_INFO_COLOR_FILTER_ARRANGEMENT;
+        /*
+         * Added in API 21
+         *
+         * The arrangement of color filters on sensor; represents the colors in the top-left 2x2
+         * section of the sensor, in reading order.
+         *
+         * Optional - This value may be null on some devices.
+         *
+         * Full capability - Present on all camera devices that report being HARDWARE_LEVEL_FULL
+         * devices in the android.info.supportedHardwareLevel key
+         */
+        mSensorInfoColorFilterArrangement = (Integer) mCameraCharacteristics.get(key);
+        if (mSensorInfoColorFilterArrangement == null) {
+            mSensorInfoColorFilterArrangementName = "Not supported";
+            return;
+        }
 
+        switch (mSensorInfoColorFilterArrangement) {
+            case (CameraMetadata.SENSOR_INFO_COLOR_FILTER_ARRANGEMENT_RGGB): {
+                mSensorInfoColorFilterArrangementName = "RGGB";
+                break;
+            }
+            case (CameraMetadata.SENSOR_INFO_COLOR_FILTER_ARRANGEMENT_GRBG): {
+                mSensorInfoColorFilterArrangementName = "GRBG";
+                break;
+            }
+            case (CameraMetadata.SENSOR_INFO_COLOR_FILTER_ARRANGEMENT_GBRG): {
+                mSensorInfoColorFilterArrangementName = "GBRG";
+                break;
+            }
+            case (CameraMetadata.SENSOR_INFO_COLOR_FILTER_ARRANGEMENT_BGGR): {
+                mSensorInfoColorFilterArrangementName = "BGGR";
+                break;
+            }
+            case (CameraMetadata.SENSOR_INFO_COLOR_FILTER_ARRANGEMENT_RGB): {
+                mSensorInfoColorFilterArrangementName = "RGB";
+                /*
+                 * Added in API 21
+                 *
+                 * Sensor is not Bayer; output has 3 16-bit values for each pixel, instead of
+                 * just 1 16-bit value per pixel.
+                 */
+                break;
+            }
+            default: {
+                mSensorInfoColorFilterArrangementName = "Unknown";
+            }
+        }
     }
 
     //----------------------------------------------------------------------------------------------
 
+    /**
+     *
+     */
     private void getSensorOpticalBlackRegions() {
-
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+            mSensorOpticalBlackRegions     = null;
+            mSensorOpticalBlackRegionsName = "Not supported";
+            return;
+        }
+        CameraCharacteristics.Key key = CameraCharacteristics.SENSOR_OPTICAL_BLACK_REGIONS;
+        /*
+         * Added in API 24
+         *
+         * List of disjoint rectangles indicating the sensor optically shielded black pixel regions.
+         *
+         * In most camera sensors, the active array is surrounded by some optically shielded pixel
+         * areas. By blocking light, these pixels provides a reliable black reference for black
+         * level compensation in active array region.
+         *
+         * This key provides a list of disjoint rectangles specifying the regions of optically
+         * shielded (with metal shield) black pixel regions if the camera device is capable of
+         * reading out these black pixels in the output raw images. In comparison to the fixed black
+         * level values reported by android.sensor.blackLevelPattern, this key may provide a more
+         * accurate way for the application to calculate black level of each captured raw images.
+         *
+         * When this key is reported, the android.sensor.dynamicBlackLevel and
+         * android.sensor.dynamicWhiteLevel will also be reported.
+         *
+         * Optional - This value may be null on some devices.
+         */
+        mSensorOpticalBlackRegions = (Rect[]) mCameraCharacteristics.get(key);
+        if (mSensorOpticalBlackRegions == null) {
+            mSensorOpticalBlackRegionsName = "Not supported";
+            return;
+        }
+        mSensorOpticalBlackRegionsName = Integer.toString(mSensorOpticalBlackRegions.length) + " regions";
     }
 
     //----------------------------------------------------------------------------------------------
@@ -400,18 +639,19 @@ abstract class Level0_Hardware {
      * @return
      */
     @NonNull
-    public String toString() {
-        String string = " \n\n";
+    public List<String> getString() {
+        String string = "Level 00 (Hardware)\n";
+        string += "CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL:                " + mHardwareLevelName                          + "\n";
+        string += "CameraCharacteristics.INFO_VERSION:                                 " + mInfoVersionName                            + "\n";
+        string += "CameraCharacteristics.SENSOR_INFO_PHYSICAL_SIZE:                    " + mSensorInfoPhysicalSizeName                 + "\n";
+        string += "CameraCharacteristics.SENSOR_INFO_PIXEL_ARRAY_SIZE:                 " + mSensorInfoPixelArraySizeName               + "\n";
+        string += "CameraCharacteristics.SENSOR_INFO_PRE_CORRECTION_ACTIVE_ARRAY_SIZE: " + mSensorInfoPreCorrectionActiveArraySizeName + "\n";
+        string += "CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE:                " + mSensorInfoActiveArraySizeName              + "\n";
+        string += "CameraCharacteristics.SENSOR_INFO_COLOR_FILTER_ARRANGEMENT:         " + mSensorInfoColorFilterArrangementName       + "\n";
+        string += "CameraCharacteristics.SENSOR_OPTICAL_BLACK_REGIONS:                 " + mSensorOpticalBlackRegionsName              + "\n";
 
-        string = string.concat("CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL: " + mHardwareLevelName + "\n");
-        string = string.concat("CameraCharacteristics.INFO_VERSION: " + mInfoVersionName + "\n");
-        string = string.concat("CameraCharacteristics.SENSOR_INFO_PHYSICAL_SIZE: " + mSensorInfoPhysicalSizeName + "\n");
-        string = string.concat("CameraCharacteristics.SENSOR_INFO_PIXEL_ARRAY_SIZE: " + mSensorInfoPixelArraySizeName + "\n");
-        string = string.concat("CameraCharacteristics.SENSOR_INFO_PRE_CORRECTION_ACTIVE_ARRAY_SIZE: " + mSensorInfoPreCorrectionActiveArraySizeName + "\n");
-        string = string.concat("CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE: " + mSensorInfoActiveArraySizeName + "\n");
-        string = string.concat("CameraCharacteristics.SENSOR_INFO_COLOR_FILTER_ARRANGEMENT: " + mSensorInfoColorFilterArrangementName + "\n");
-        string = string.concat("CameraCharacteristics.SENSOR_OPTICAL_BLACK_REGIONS: " + mSensorOpticalBlackRegionsName + "\n");
-
-        return string;
+        List<String> stringList = new ArrayList<>();
+        stringList.add(string);
+        return stringList;
     }
 }

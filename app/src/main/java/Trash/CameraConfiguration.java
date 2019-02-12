@@ -1,4 +1,4 @@
-package edu.crayfis.shramp.camera2;
+package Trash;
 
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraMetadata;
@@ -13,7 +13,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import static edu.crayfis.shramp.camera2.ShrampCamSetup.mLogger;
+import static Trash.ShrampCamSetup.mLogger;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // implementation of nested class CameraConfiguration

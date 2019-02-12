@@ -11,7 +11,7 @@ import android.support.annotation.NonNull;
 import java.util.List;
 
 @TargetApi(21)
-abstract class Level6_AutoFocus extends Level5_AutoWhiteBalance {
+abstract class Level07_AutoFocus extends Level06_AutoWhiteBalance {
 
     //**********************************************************************************************
     // Class Variables
@@ -30,8 +30,8 @@ abstract class Level6_AutoFocus extends Level5_AutoWhiteBalance {
     // Class Methods
     //--------------
 
-    protected Level6_AutoFocus(@NonNull CameraCharacteristics characteristics,
-                               @NonNull CameraDevice cameraDevice) {
+    protected Level07_AutoFocus(@NonNull CameraCharacteristics characteristics,
+                                @NonNull CameraDevice cameraDevice) {
         super(characteristics, cameraDevice);
         setControlAfMode();
         setControlAfRegions();
@@ -229,14 +229,16 @@ abstract class Level6_AutoFocus extends Level5_AutoWhiteBalance {
      * @return
      */
     @NonNull
-    public String toString() {
-        String string = super.toString() + "\n";
+    public List<String> getString() {
+        List<String> stringList = super.getString();
 
-        string = string.concat("CaptureRequest.CONTROL_AF_MODE: " + mControlAfModeName + "\n");
-        string = string.concat("CaptureRequest.CONTROL_AF_REGIONS: " + mControlAfRegionsName + "\n");
-        string = string.concat("CaptureRequest.CONTROL_AF_TRIGGER: " + mControlAfTriggerName + "\n");
+        String string = "Level 07 (Auto-focus)\n";
+        string += "CaptureRequest.CONTROL_AF_MODE:    " + mControlAfModeName    + "\n";
+        string += "CaptureRequest.CONTROL_AF_REGIONS: " + mControlAfRegionsName + "\n";
+        string += "CaptureRequest.CONTROL_AF_TRIGGER: " + mControlAfTriggerName + "\n";
 
-        return string;
+        stringList.add(string);
+        return stringList;
     }
 }
 

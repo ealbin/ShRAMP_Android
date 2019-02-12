@@ -9,8 +9,10 @@ import android.os.Build;
 import android.support.annotation.NonNull;
 import android.util.Range;
 
+import java.util.List;
+
 @TargetApi(21)
-abstract class Level8_MiscControls extends Level7_AutoExposure {
+abstract class Level09_MiscControls extends Level08_AutoExposure {
 
     //**********************************************************************************************
     // Class Variables
@@ -35,8 +37,8 @@ abstract class Level8_MiscControls extends Level7_AutoExposure {
     // Class Methods
     //--------------
 
-    protected Level8_MiscControls(@NonNull CameraCharacteristics characteristics,
-                                  @NonNull CameraDevice cameraDevice) {
+    protected Level09_MiscControls(@NonNull CameraCharacteristics characteristics,
+                                   @NonNull CameraDevice cameraDevice) {
         super(characteristics, cameraDevice);
         setControlEffectMode();
         setControlEnableZSL();
@@ -186,8 +188,9 @@ abstract class Level8_MiscControls extends Level7_AutoExposure {
             return;
         }
 
-        if (super.mControlMode == CameraMetadata.CONTROL_MODE_OFF
-                || super.mControlAeMode == CameraMetadata.CONTROL_AE_MODE_OFF) {
+        if (super.mControlMode != CameraMetadata.CONTROL_MODE_OFF
+                || ( super.mControlAeMode != null
+                     && super.mControlAeMode != CameraMetadata.CONTROL_AE_MODE_OFF)) {
             mControlPostRawSensitivityBoost     = null;
             mControlPostRawSensitivityBoostName = "Disabled";
             return;
@@ -195,6 +198,11 @@ abstract class Level8_MiscControls extends Level7_AutoExposure {
 
         Range<Integer> boostRange = super.mCameraCharacteristics.get(
                                     CameraCharacteristics.CONTROL_POST_RAW_SENSITIVITY_BOOST_RANGE);
+        if (boostRange == null) {
+            mControlPostRawSensitivityBoost    = null;
+            mControlPostRawSensitivityBoostName = "Not supported";
+            return;
+        }
         /*
          * Added in API 24
          *
@@ -212,11 +220,6 @@ abstract class Level8_MiscControls extends Level7_AutoExposure {
          *
          * Optional - This value may be null on some devices.
          */
-        if (boostRange == null) {
-            mControlPostRawSensitivityBoost     = null;
-            mControlPostRawSensitivityBoostName = "Not supported";
-            return;
-        }
 
         mControlPostRawSensitivityBoost     = 100;
         mControlPostRawSensitivityBoostName = "ISO 100";
@@ -332,16 +335,18 @@ abstract class Level8_MiscControls extends Level7_AutoExposure {
      * @return
      */
     @NonNull
-    public String toString() {
-        String string = super.toString() + "\n";
+    public List<String> getString() {
+        List<String> stringList = super.getString();
 
-        string = string.concat("CaptureRequest.CONTROL_EFFECT_MODE: " + mControlEffectModeName + "\n");
-        string = string.concat("CaptureRequest.CONTROL_ENABLE_ZSL: " + mControlEnableZslName + "\n");
-        string = string.concat("CaptureRequest.CONTROL_POST_RAW_SENSITIVITY_BOOST: " + mControlPostRawSensitivityBoostName + "\n");
-        string = string.concat("CaptureRequest.CONTROL_SCENE_MODE: " + mControlSceneModeName + "\n");
-        string = string.concat("CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE: " + mControlVideoStabilizationModeName + "\n");
+        String string = "Level 09 (Miscellaneous controls)\n";
+        string += "CaptureRequest.CONTROL_EFFECT_MODE:                " + mControlEffectModeName              + "\n";
+        string += "CaptureRequest.CONTROL_ENABLE_ZSL:                 " + mControlEnableZslName               + "\n";
+        string += "CaptureRequest.CONTROL_POST_RAW_SENSITIVITY_BOOST: " + mControlPostRawSensitivityBoostName + "\n";
+        string += "CaptureRequest.CONTROL_SCENE_MODE:                 " + mControlSceneModeName               + "\n";
+        string += "CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE:   " + mControlVideoStabilizationModeName  + "\n";
 
-        return string;
+        stringList.add(string);
+        return stringList;
     }
 
 }

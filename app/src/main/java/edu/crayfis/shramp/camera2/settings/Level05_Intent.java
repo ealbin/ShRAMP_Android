@@ -7,8 +7,10 @@ import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.support.annotation.NonNull;
 
+import java.util.List;
+
 @TargetApi(21)
-abstract class Level4_Intent extends Level3_Mode {
+abstract class Level05_Intent extends Level04_Mode {
 
     //**********************************************************************************************
     // Class Variables
@@ -21,24 +23,25 @@ abstract class Level4_Intent extends Level3_Mode {
     // Class Methods
     //--------------
 
-    protected Level4_Intent(@NonNull CameraCharacteristics characteristics,
-                            @NonNull CameraDevice cameraDevice) {
+    protected Level05_Intent(@NonNull CameraCharacteristics characteristics,
+                             @NonNull CameraDevice cameraDevice) {
         super(characteristics, cameraDevice);
         setControlCaptureIntent();
     }
 
     //----------------------------------------------------------------------------------------------
 
+    /*
+     * Documentation provided by:
+     * https://developer.android.com/reference/android/hardware/camera2/CaptureRequest.html
+     * https://developer.android.com/reference/android/hardware/camera2/CameraMetadata.html
+     */
+
     /**
      *
      */
     private void setControlCaptureIntent() {
-        /*
-         * Documentation provided by:
-         * https://developer.android.com/reference/android/hardware/camera2/CaptureRequest.html
-         * https://developer.android.com/reference/android/hardware/camera2/CameraMetadata.html
-         */
-
+        CaptureRequest.Key key = CaptureRequest.CONTROL_CAPTURE_INTENT;
         /*
          * Added in API 21
          *
@@ -61,8 +64,7 @@ abstract class Level4_Intent extends Level3_Mode {
          *
          * This key is available on all devices.
          */
-        CaptureRequest.Key key = CaptureRequest.CONTROL_CAPTURE_INTENT;
-        if (mRequestKeys.contains(key)) {
+        if (super.mRequestKeys.contains(key)) {
             if (super.mIsManualSensorAble) {
                 mIntent     = CameraMetadata.CONTROL_CAPTURE_INTENT_MANUAL;
                 mIntentName = "MANUAL";
@@ -87,6 +89,12 @@ abstract class Level4_Intent extends Level3_Mode {
                  * The precapture trigger may be used to start off a metering w/flash sequence.
                  */
             }
+
+            // Patch:
+            // Override INTENT_MANUAL
+            // Seems to cause CAMERA_DEVICE_ERROR when CaptureRequest.Builder is built
+            mIntent     = CameraMetadata.CONTROL_CAPTURE_INTENT_PREVIEW;
+            mIntentName = "PREVIEW";
             mCaptureRequestBuilder.set(key, mIntent);
         }
     }
@@ -98,12 +106,14 @@ abstract class Level4_Intent extends Level3_Mode {
      * @return
      */
     @NonNull
-    public String toString() {
-        String string = super.toString() + "\n";
+    public List<String> getString() {
+        List<String> stringList = super.getString();
 
-        string = string.concat("CaptureRequest.CONTROL_CAPTURE_INTENT: " + mIntentName + "\n");
+        String string = "Level 05 (Intent)\n";
+        string += "CaptureRequest.CONTROL_CAPTURE_INTENT: " + mIntentName + "\n";
 
-        return string;
+        stringList.add(string);
+        return stringList;
     }
 
 }

@@ -12,7 +12,7 @@ import android.support.annotation.NonNull;
 import java.util.List;
 
 @TargetApi(21)
-abstract class Level9_Color extends Level8_MiscControls {
+abstract class Level10_Color extends Level09_MiscControls {
 
     //**********************************************************************************************
     // Class Variables
@@ -34,8 +34,8 @@ abstract class Level9_Color extends Level8_MiscControls {
     // Class Methods
     //--------------
 
-    protected Level9_Color(@NonNull CameraCharacteristics characteristics,
-                           @NonNull CameraDevice cameraDevice) {
+    protected Level10_Color(@NonNull CameraCharacteristics characteristics,
+                            @NonNull CameraDevice cameraDevice) {
         super(characteristics, cameraDevice);
         setColorCorrectionAberrationMode();
         setColorCorrectionGains();
@@ -216,8 +216,8 @@ abstract class Level9_Color extends Level8_MiscControls {
          * devices in the android.info.supportedHardwareLevel key
          */
         if (!super.mRequestKeys.contains(key)) {
-            mColorCorrectionAberrationMode     = null;
-            mColorCorrectionAberrationModeName = "Not supported";
+            mColorCorrectionMode     = null;
+            mColorCorrectionModeName = "Not supported";
             return;
         }
 
@@ -320,15 +320,17 @@ abstract class Level9_Color extends Level8_MiscControls {
      * @return
      */
     @NonNull
-    public String toString() {
-        String string = super.toString() + "\n";
+    public List<String> getString() {
+        List<String> stringList = super.getString();
 
-        string = string.concat("CaptureRequest.COLOR_CORRECTION_ABERRATION_MODE: " + mColorCorrectionAberrationModeName + "\n");
-        string = string.concat("CaptureRequest.COLOR_CORRECTION_GAINS: " + mColorCorrectionGainsName + "\n");
-        string = string.concat("CaptureRequest.COLOR_CORRECTION_MODE: " + mColorCorrectionModeName + "\n");
-        string = string.concat("CaptureRequest.COLOR_CORRECTION_TRANSFORM: " + mColorCorrectionTransformName + "\n");
+        String string = "Level 10 (Color)\n";
+        string += "CaptureRequest.COLOR_CORRECTION_ABERRATION_MODE: " + mColorCorrectionAberrationModeName + "\n";
+        string += "CaptureRequest.COLOR_CORRECTION_GAINS:           " + mColorCorrectionGainsName          + "\n";
+        string += "CaptureRequest.COLOR_CORRECTION_MODE:            " + mColorCorrectionModeName           + "\n";
+        string += "CaptureRequest.COLOR_CORRECTION_TRANSFORM:       " + mColorCorrectionTransformName      + "\n";
 
-        return string;
+        stringList.add(string);
+        return stringList;
     }
 
 

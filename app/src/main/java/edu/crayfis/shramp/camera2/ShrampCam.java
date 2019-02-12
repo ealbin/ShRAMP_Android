@@ -5,21 +5,17 @@ import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
-import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
-import android.hardware.camera2.CaptureResult;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Process;
 import android.support.annotation.NonNull;
 import android.view.Surface;
 
-import java.security.Permission;
 import java.util.List;
-import java.util.Set;
 
-import edu.crayfis.shramp.camera2.settings.Settings;
-import edu.crayfis.shramp.logging.DividerStyle;
+import Trash.ShrampCamSetup;
+import edu.crayfis.shramp.camera2.settings.MaineShrampSettings;
 import edu.crayfis.shramp.logging.ShrampLogger;
 
 /**
@@ -46,7 +42,7 @@ class ShrampCam extends CameraDevice.StateCallback {
     private CameraDevice           mCameraDevice;
 
 
-    private ShrampCamSetup         mShrampCamSetup;
+    private ShrampCamSetup mShrampCamSetup;
     private ShrampCaptureSession   mShrampCaptureSession;
     private CaptureRequest.Builder mCaptureRequestBuilder;
 
@@ -146,67 +142,15 @@ class ShrampCam extends CameraDevice.StateCallback {
 
             mLogger.log("Camera opened, configuring for capture");
 
-            /**
-            mLogger.divider(DividerStyle.Strong);
+            MaineShrampSettings maineShrampSettings =
+                    new MaineShrampSettings(mCameraCharacteristics, mCameraDevice);
 
-            mLogger.log("mCameraCharacteristics.getKeys()");
-            List<CameraCharacteristics.Key<?>> characteristicKeys = mCameraCharacteristics.getKeys();
-            for (CameraCharacteristics.Key key : characteristicKeys) {
-                mLogger.log(key.toString());
-            }
+            maineShrampSettings.logSettings();
+            //maineShrampSettings.keyDump();
 
-            mLogger.divider(DividerStyle.Weak);
+            mCaptureRequestBuilder = maineShrampSettings.getCaptureRequestBuilder();
 
-            mLogger.log("mCameraCharacteristics.getAvailableCaptureRequestKeys()");
-            List<CaptureRequest.Key<?>> requestKeys  = mCameraCharacteristics.getAvailableCaptureRequestKeys();
-            for (CaptureRequest.Key key : requestKeys) {
-                mLogger.log(key.toString());
-            }
-
-            mLogger.divider(DividerStyle.Weak);
-
-            mLogger.log("mCameraCharacteristics.getAvailableSessionKeys()");
-            List<CaptureRequest.Key<?>> sessionKeys  = mCameraCharacteristics.getAvailableSessionKeys();
-            for (CaptureRequest.Key key : sessionKeys) {
-                mLogger.log(key.toString());
-            }
-
-            mLogger.divider(DividerStyle.Weak);
-
-            mLogger.log("mCameraCharacteristics.getAvailablePhysicalCameraRequestKeys()");
-            List<CaptureRequest.Key<?>> physicalKeys = mCameraCharacteristics.getAvailablePhysicalCameraRequestKeys();
-            if (physicalKeys != null) {
-                for (CaptureRequest.Key key : physicalKeys) {
-                    mLogger.log(key.toString());
-                }
-            }
-
-            mLogger.divider(DividerStyle.Weak);
-
-            mLogger.log("mCameraCharacteristics.getPhysicalCameraIds()");
-            Set<String> physicalIds = mCameraCharacteristics.getPhysicalCameraIds();
-            if (physicalIds != null) {
-                for (String id : physicalIds) {
-                    mLogger.log(id);
-                }
-            }
-
-            mLogger.divider(DividerStyle.Weak);
-
-            mLogger.log("mCameraCharacteristics.getAvailableCaptureResultKeys()");
-            List<CaptureResult.Key<?>>  resultKeys   = mCameraCharacteristics.getAvailableCaptureResultKeys();
-            for (CaptureResult.Key key : resultKeys) {
-                mLogger.log(key.toString());
-            }
-
-            mLogger.divider(DividerStyle.Strong);
-            */
-            Settings settings = new Settings(mCameraCharacteristics, mCameraDevice);
-            //mShrampCamSetup =
-            //        new ShrampCamSetup(mCameraDevice, mCameraCharacteristics);
-            //mCaptureRequestBuilder = mShrampCamSetup.getCaptureRequestBuilder();
-
-            //ShrampCamManager.Callback.cameraReady(this);
+            ShrampCamManager.Callback.cameraReady(this);
             mLogger.log("return;");
         }
     }

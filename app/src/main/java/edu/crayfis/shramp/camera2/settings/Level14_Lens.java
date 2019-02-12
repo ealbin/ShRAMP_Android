@@ -8,9 +8,10 @@ import android.hardware.camera2.CaptureRequest;
 import android.support.annotation.NonNull;
 
 import java.text.DecimalFormat;
+import java.util.List;
 
 @TargetApi(21)
-abstract class Level13_Lens extends Level12_JPEG {
+abstract class Level14_Lens extends Level13_JPEG {
 
     //**********************************************************************************************
     // Class Variables
@@ -35,7 +36,7 @@ abstract class Level13_Lens extends Level12_JPEG {
     // Class Methods
     //--------------
 
-    protected Level13_Lens(@NonNull CameraCharacteristics characteristics,
+    protected Level14_Lens(@NonNull CameraCharacteristics characteristics,
                            @NonNull CameraDevice cameraDevice) {
         super(characteristics, cameraDevice);
         setLensAperture();
@@ -102,7 +103,11 @@ abstract class Level13_Lens extends Level12_JPEG {
 
         float[] lensApertures = super.mCameraCharacteristics.get(
                                 CameraCharacteristics.LENS_INFO_AVAILABLE_APERTURES);
-        assert lensApertures != null;
+        if (lensApertures == null) {
+            mLensAperture     = null;
+            mLensApertureName = "Not supported";
+            return;
+        }
 
         Float minAperture = null;
         for (float aperture : lensApertures) {
@@ -162,7 +167,11 @@ abstract class Level13_Lens extends Level12_JPEG {
 
         float[] lensDensities = super.mCameraCharacteristics.get(
                                 CameraCharacteristics.LENS_INFO_AVAILABLE_FILTER_DENSITIES);
-        assert lensDensities != null;
+        if (lensDensities == null) {
+            mLensFilterDensity     = null;
+            mLensFilterDensityName = "Not supported";
+            return;
+        }
 
         Float maxDensity = null;
         for (float density : lensDensities) {
@@ -176,8 +185,8 @@ abstract class Level13_Lens extends Level12_JPEG {
             }
         }
 
-        mLensFilterDensity = maxDensity;
-        DecimalFormat df = new DecimalFormat("#.##");
+        mLensFilterDensity      = maxDensity;
+        DecimalFormat df        = new DecimalFormat("#.##");
         mLensFilterDensityName  = df.format(mLensFilterDensity) + " [EV]";
 
         super.mCaptureRequestBuilder.set(key, mLensFilterDensity);
@@ -211,14 +220,18 @@ abstract class Level13_Lens extends Level12_JPEG {
          * This key is available on all devices.
          */
         if (!super.mRequestKeys.contains(key)) {
-            mLensFocusDistance     = null;
-            mLensFocusDistanceName = "Not supported";
+            mLensFocalLength     = null;
+            mLensFocalLengthName = "Not supported";
             return;
         }
 
         float[] focalLengths = super.mCameraCharacteristics.get(
                                CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS);
-        assert focalLengths != null;
+        if (focalLengths == null) {
+            mLensFocalLength     = null;
+            mLensFocalLengthName = "Not supported";
+            return;
+        }
 
         Float maxFocalLength = null;
         for (float length : focalLengths) {
@@ -232,8 +245,8 @@ abstract class Level13_Lens extends Level12_JPEG {
             }
         }
 
-        mLensFocalLength  = maxFocalLength;
-        DecimalFormat df  = new DecimalFormat("#.##");
+        mLensFocalLength     = maxFocalLength;
+        DecimalFormat df     = new DecimalFormat("#.##");
         mLensFocalLengthName = df.format(mLensFocalLength) + " [mm]";
 
         super.mCaptureRequestBuilder.set(key, mLensFocalLength);
@@ -279,8 +292,8 @@ abstract class Level13_Lens extends Level12_JPEG {
 
         float focusInfinity = 0.f;
 
-        mLensFocusDistance = focusInfinity;
-        DecimalFormat df  = new DecimalFormat("#.##");
+        mLensFocusDistance     = focusInfinity;
+        DecimalFormat df       = new DecimalFormat("#.##");
         mLensFocusDistanceName = "Infinity";
 
         super.mCaptureRequestBuilder.set(key, mLensFocusDistance);
@@ -346,16 +359,18 @@ abstract class Level13_Lens extends Level12_JPEG {
      * @return
      */
     @NonNull
-    public String toString() {
-        String string = super.toString() + "\n";
+    public List<String> getString() {
+        List<String> stringList = super.getString();
 
-        string = string.concat("CaptureRequest.LENS_APERTURE: " + mLensApertureName + "\n");
-        string = string.concat("CaptureRequest.LENS_FILTER_DENSITY: " + mLensFilterDensityName + "\n");
-        string = string.concat("CaptureRequest.LENS_FOCAL_LENGTH: " + mLensFocalLengthName + "\n");
-        string = string.concat("CaptureRequest.LENS_FOCUS_DISTANCE: " + mLensFocusDistanceName + "\n");
-        string = string.concat("CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE: " + mLensOpticalStabilizationModeName + "\n");
+        String string = "Level 14 (Lens)\n";
+        string += "CaptureRequest.LENS_APERTURE:                   " + mLensApertureName                 + "\n";
+        string += "CaptureRequest.LENS_FILTER_DENSITY:             " + mLensFilterDensityName            + "\n";
+        string += "CaptureRequest.LENS_FOCAL_LENGTH:               " + mLensFocalLengthName              + "\n";
+        string += "CaptureRequest.LENS_FOCUS_DISTANCE:             " + mLensFocusDistanceName            + "\n";
+        string += "CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE: " + mLensOpticalStabilizationModeName + "\n";
 
-        return string;
+        stringList.add(string);
+        return stringList;
     }
 
 }

@@ -11,7 +11,7 @@ import android.support.annotation.NonNull;
 import java.util.List;
 
 @TargetApi(21)
-abstract class Level11_MiscModes extends Level10_Tonemap {
+abstract class Level12_MiscModes extends Level11_Tonemap {
 
     //**********************************************************************************************
     // Class Variables
@@ -39,7 +39,7 @@ abstract class Level11_MiscModes extends Level10_Tonemap {
     // Class Methods
     //--------------
 
-    protected Level11_MiscModes(@NonNull CameraCharacteristics characteristics,
+    protected Level12_MiscModes(@NonNull CameraCharacteristics characteristics,
                                 @NonNull CameraDevice cameraDevice) {
         super(characteristics, cameraDevice);
         setDistortionCorrectionMode();
@@ -286,7 +286,7 @@ abstract class Level11_MiscModes extends Level10_Tonemap {
 
         List<Integer> modes = super.getAvailable(CameraCharacteristics.HOT_PIXEL_AVAILABLE_HOT_PIXEL_MODES);
         if (modes.contains(modeOff)) {
-            mHotPixelMode = modeOff;
+            mHotPixelMode     = modeOff;
             mHotPixelModeName = "Off";
             /*
              * Added in API 21
@@ -372,7 +372,7 @@ abstract class Level11_MiscModes extends Level10_Tonemap {
 
         List<Integer> modes = super.getAvailable(CameraCharacteristics.NOISE_REDUCTION_AVAILABLE_NOISE_REDUCTION_MODES);
         if (modes.contains(modeOff)) {
-            mNoiseReductionMode = modeOff;
+            mNoiseReductionMode     = modeOff;
             mNoiseReductionModeName = "Off";
             /*
              * Added in API 21
@@ -383,7 +383,7 @@ abstract class Level11_MiscModes extends Level10_Tonemap {
         else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             int modeMin = CameraMetadata.NOISE_REDUCTION_MODE_MINIMAL;
             if (modes.contains(modeMin)) {
-                mNoiseReductionMode = modeMin;
+                mNoiseReductionMode     = modeMin;
                 mNoiseReductionModeName = "Minimal";
                 /*
                  * Added in API 23
@@ -467,17 +467,19 @@ abstract class Level11_MiscModes extends Level10_Tonemap {
      * @return
      */
     @NonNull
-    public String toString() {
-        String string = super.toString() + "\n";
+    public List<String> getString() {
+        List<String> stringList = super.getString();
 
-        string = string.concat("CaptureRequest.DISTORTION_CORRECTION_MODE: " + mDistortionCorrectionModeName + "\n");
-        string = string.concat("CaptureRequest.EDGE_MODE: " + mEdgeModeName + "\n");
-        string = string.concat("CaptureRequest.FLASH_MODE: " + mFlashModeName + "\n");
-        string = string.concat("CaptureRequest.HOT_PIXEL_MODE: " + mHotPixelModeName + "\n");
-        string = string.concat("CaptureRequest.NOISE_REDUCTION_MODE: " + mNoiseReductionModeName + "\n");
-        string = string.concat("CaptureReuqest.SHADING_MODE: " + mShadingModeName + "\n");
+        String string = "Level 12 (Miscellaneous modes)\n";
+        string += "CaptureRequest.DISTORTION_CORRECTION_MODE: " + mDistortionCorrectionModeName + "\n";
+        string += "CaptureRequest.EDGE_MODE:                  " + mEdgeModeName                 + "\n";
+        string += "CaptureRequest.FLASH_MODE:                 " + mFlashModeName                + "\n";
+        string += "CaptureRequest.HOT_PIXEL_MODE:             " + mHotPixelModeName             + "\n";
+        string += "CaptureRequest.NOISE_REDUCTION_MODE:       " + mNoiseReductionModeName       + "\n";
+        string += "CaptureReuqest.SHADING_MODE:               " + mShadingModeName              + "\n";
 
-        return string;
+        stringList.add(string);
+        return stringList;
     }
 
 }

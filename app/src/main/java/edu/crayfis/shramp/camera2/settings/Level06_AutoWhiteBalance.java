@@ -11,7 +11,7 @@ import android.support.annotation.NonNull;
 import java.util.List;
 
 @TargetApi(21)
-abstract class Level5_AutoWhiteBalance extends Level4_Intent {
+abstract class Level06_AutoWhiteBalance extends Level05_Intent {
 
     //**********************************************************************************************
     // Class Variables
@@ -30,8 +30,8 @@ abstract class Level5_AutoWhiteBalance extends Level4_Intent {
     // Class Methods
     //--------------
 
-    protected Level5_AutoWhiteBalance(@NonNull CameraCharacteristics characteristics,
-                                      @NonNull CameraDevice cameraDevice) {
+    protected Level06_AutoWhiteBalance(@NonNull CameraCharacteristics characteristics,
+                                       @NonNull CameraDevice cameraDevice) {
         super(characteristics, cameraDevice);
         setControlAwbMode();
         setControlAwbLock();
@@ -258,14 +258,16 @@ abstract class Level5_AutoWhiteBalance extends Level4_Intent {
      * @return
      */
     @NonNull
-    public String toString() {
-        String string = super.toString() + "\n";
+    public List<String> getString() {
+        List<String> stringList = super.getString();
 
-        string = string.concat("CaptureRequest.CONTROL_AWB_MODE: " + mControlAwbModeName + "\n");
-        string = string.concat("CaptureRequest.CONTROL_AWB_LOCK: " + mControlAwbLockName + "\n");
-        string = string.concat("CaptureRequest.CONTROL_AWB_REGIONS: " + mControlAwbRegionsName + "\n");
+        String string = "Level 06 (Auto-white balance)\n";
+        string += "CaptureRequest.CONTROL_AWB_MODE:    " + mControlAwbModeName    + "\n";
+        string += "CaptureRequest.CONTROL_AWB_LOCK:    " + mControlAwbLockName    + "\n";
+        string += "CaptureRequest.CONTROL_AWB_REGIONS: " + mControlAwbRegionsName + "\n";
 
-        return string;
+        stringList.add(string);
+        return stringList;
     }
 
 }
