@@ -19,8 +19,8 @@ import android.util.Log;
 import android.util.Range;
 import android.util.Size;
 
-import edu.crayfis.shramp.ChatterBox;
-import edu.crayfis.shramp.MaineShRAMP;
+import sci.crayfis.shramp.ChatterBox;
+import sci.crayfis.shramp.MaineShRAMP;
 
 
 @TargetApi(Build.VERSION_CODES.LOLLIPOP) // 21

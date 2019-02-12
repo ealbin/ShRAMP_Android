@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import Trash.CameraConfiguration;
-import edu.crayfis.shramp.logging.ShrampLogger;
+import sci.crayfis.shramp.logging.ShrampLogger;
 
 /**
  * Configures camera for capture session.

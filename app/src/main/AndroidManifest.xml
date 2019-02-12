@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="edu.crayfis.shramp">
+    package="sci.crayfis.shramp">
 
     <uses-permission android:name="android.permission.CAMERA"
         android:required="true" />
@@ -10,11 +10,11 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:required="true" />
 
-    <uses-feature android:name="android.hardware.edu.crayfis.shramp.camera2.capability.manual_sensor"
+    <uses-feature android:name="android.hardware.sci.crayfis.shramp.camera2.capability.manual_sensor"
         android:required="true" />
-    <uses-feature android:name="android.hardware.edu.crayfis.shramp.camera2.capability.raw"
+    <uses-feature android:name="android.hardware.sci.crayfis.shramp.camera2.capability.raw"
         android:required="true" />
-    <uses-feature android:name="android.hardware.edu.crayfis.shramp.camera2.level_3"
+    <uses-feature android:name="android.hardware.sci.crayfis.shramp.camera2.level_3"
         android:required="true" />
 
     <application

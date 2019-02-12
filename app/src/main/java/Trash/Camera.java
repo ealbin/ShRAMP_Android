@@ -15,8 +15,8 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.Surface;
 
-import edu.crayfis.shramp.CaptureProcessing;
-import edu.crayfis.shramp.MaineShRAMP;
+import sci.crayfis.shramp.CaptureProcessing;
+import sci.crayfis.shramp.MaineShRAMP;
 
 @TargetApi(Build.VERSION_CODES.LOLLIPOP) // 21
 public class Camera extends CameraSetup {
