@@ -12,6 +12,9 @@ import java.util.Set;
 
 import sci.crayfis.shramp.logging.ShrampLogger;
 
+/**
+ * Root class for configuring the camera
+ */
 @TargetApi(21)
 public final class ShrampCamSettings extends Level17_Misc{
 

@@ -5,7 +5,7 @@ import android.os.Build;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-import java.lang.annotation.Target;
+import sci.crayfis.shramp.ui.ChatterBox;
 
 @TargetApi(Build.VERSION_CODES.LOLLIPOP) // 21
 public class CheckAPI {

@@ -1,20 +1,21 @@
-package sci.crayfis.shramp.camera2;
+package Trash;
 
-import android.view.Surface;
+import android.hardware.camera2.CameraManager;
+import android.support.annotation.NonNull;
 
-import java.util.ArrayList;
-
-import sci.crayfis.shramp.MaineShRAMP;
-import sci.crayfis.shramp.camera2.control.ShrampCamControl;
+import sci.crayfis.shramp.camera2.ShrampCamManager;
 import sci.crayfis.shramp.logging.ShrampLogger;
 
+/**
+ *
+ */
 public class MaineShrampCam {
 
     //**********************************************************************************************
     // Class Variables
     //----------------
 
-    private ShrampCamControl mCameraManager;
+    private ShrampCamManager mCameraManager;
 
     // logging
     private static ShrampLogger mLogger = new ShrampLogger(ShrampLogger.DEFAULT_STREAM);
@@ -23,14 +24,14 @@ public class MaineShrampCam {
     // Class Methods
     //--------------
 
-    public MaineShrampCam(MaineShRAMP activity, Surface surface) {
+    public MaineShrampCam(@NonNull CameraManager cameraManager) {
 
-        mLogger.log("Loading ShrampCamControl");
-        mCameraManager = ShrampCamControl.getInstance(activity);
+        mLogger.log("Loading ShrampCamManager");
+        mCameraManager = ShrampCamManager.getInstance(cameraManager);
         assert mCameraManager != null;
 
-        ShrampCamControl.Callback.mmSurfaces = new ArrayList<>();
-        ShrampCamControl.Callback.mmSurfaces.add(surface);
+        //ShrampCamManager.Callback.mmSurfaces = new ArrayList<>();
+        //ShrampCamManager.Callback.mmSurfaces.add(surface);
 
         if (mCameraManager.hasFrontCamera()) {
             // do nothing for now
@@ -39,8 +40,6 @@ public class MaineShrampCam {
         if (mCameraManager.hasBackCamera()) {
             // try to open it and do capture
             mCameraManager.openBackCamera();
-
-
         }
 
         if (mCameraManager.hasExternalCamera()) {

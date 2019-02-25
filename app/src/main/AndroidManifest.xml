@@ -10,26 +10,40 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:required="true" />
 
-    <uses-feature android:name="android.hardware.sci.crayfis.shramp.camera2.capability.manual_sensor"
-        android:required="true" />
-    <uses-feature android:name="android.hardware.sci.crayfis.shramp.camera2.capability.raw"
-        android:required="true" />
-    <uses-feature android:name="android.hardware.sci.crayfis.shramp.camera2.level_3"
-        android:required="true" />
+    <uses-feature android:name="android.hardware.camera2"
+        android:required="true"/>
 
     <application
-        android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
+        android:directBootAware="true"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MaineShRAMP">
+
+        <activity
+            android:name=".MaineShRAMP"
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-    </application>
 
+        <activity
+            android:name=".CaptureOverseer"
+            android:launchMode="singleTask">
+        </activity>
+
+        <activity
+            android:name=".util.FailManager"
+            android:launchMode="singleTask">
+        </activity>
+
+    </application>
 </manifest>
+
+    <!--
+    android:logo="@drawable/logo"
+    android:persistant="true"
+    -->

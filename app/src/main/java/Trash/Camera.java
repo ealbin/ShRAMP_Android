@@ -15,7 +15,6 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.Surface;
 
-import sci.crayfis.shramp.CaptureProcessing;
 import sci.crayfis.shramp.MaineShRAMP;
 
 @TargetApi(Build.VERSION_CODES.LOLLIPOP) // 21

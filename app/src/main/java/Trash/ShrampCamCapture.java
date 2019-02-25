@@ -1,4 +1,4 @@
-package sci.crayfis.shramp.camera2.capture;
+package Trash;
 
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
@@ -183,7 +183,7 @@ public class ShrampCamCapture {
 
         /**
          * This method is called if a single buffer for a capture could not be sent to its
-         * destination surface.
+         * destination surfaces.
          * @param session
          * @param request
          * @param target

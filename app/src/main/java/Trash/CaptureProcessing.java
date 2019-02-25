@@ -1,4 +1,4 @@
-package sci.crayfis.shramp;
+package Trash;
 
 import android.graphics.SurfaceTexture;
 import android.renderscript.Allocation;
@@ -11,6 +11,8 @@ import android.view.SurfaceView;
 import android.view.TextureView;
 
 import org.w3c.dom.Text;
+
+import sci.crayfis.shramp.MaineShRAMP;
 
 public class CaptureProcessing {
     //**********************************************************************************************

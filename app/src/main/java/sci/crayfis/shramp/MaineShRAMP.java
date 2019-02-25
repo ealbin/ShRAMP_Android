@@ -1,53 +1,46 @@
 package sci.crayfis.shramp;
 
+import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.graphics.SurfaceTexture;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.Surface;
-import android.view.TextureView;
-import android.view.View;
 import android.widget.TextView;
 
 import java.io.File;
 
-import sci.crayfis.shramp.camera2.MaineShrampCam;
-import Trash.Camera;
+import sci.crayfis.shramp.util.BuildString;
+import sci.crayfis.shramp.logging.ShrampLogger;
+import sci.crayfis.shramp.ssh.AsyncResponse;
+import sci.crayfis.shramp.util.FailManager;
 
-@TargetApi(Build.VERSION_CODES.LOLLIPOP) // 21
-public class MaineShRAMP extends Activity implements AsyncResponse, TextureView.SurfaceTextureListener {
+/**
+ * Entry point for the ShRAMP app
+ * Checks permissions then runs CaptureOverseer
+ */
+@TargetApi(21)
+public final class MaineShRAMP extends Activity implements AsyncResponse {
+
     //**********************************************************************************************
     // Class Variables
     //----------------
 
-    // debug Logcat strings
-    private final static String     TAG = "MaineShRAMP";
-    private final static String DIVIDER = "---------------------------------------------";
-
-    // SSH is an AsyncTask, holding this reference allows main to
-    // see the result when it finishes.
-    // It's linked to this main activity in onCreate below.
-    public static SSH SSH_reference = new SSH();
-
-    // initialized in onCreate()
-    public static CheckAPI         mCheck_api;
-    public static CheckPermissions mCheck_permissions;
-
-
-    private MaineShrampCam mShrampCam;
-
-    public Runnable mQuit_action = new Runnable() {
-        @Override
-        public void run() {
-            quit();
-        }
+    public static final String[] PERMISSIONS = {
+            Manifest.permission.INTERNET,
+            Manifest.permission.CAMERA,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
+    public static final int PERMISSION_CODE = 0; // could be anything >= 0
 
-    public static Camera mCamera;
+    // logging
+    private static ShrampLogger mLogger = new ShrampLogger(ShrampLogger.DEFAULT_STREAM);
+
+    private Intent mNextActivity;
+    private Intent mFailActivity;
 
     //**********************************************************************************************
     // Class Methods
@@ -58,65 +51,115 @@ public class MaineShRAMP extends Activity implements AsyncResponse, TextureView.
      * @param savedInstanceState passed in by Android OS
      */
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // debug Logcat string
-        final String LOCAL_TAG = TAG.concat(".onCreate()");
+        mNextActivity = new Intent(this, CaptureOverseer.class);
+        mFailActivity = new Intent(this, FailManager.class);
 
-        // debug error stream
-        Log.e(LOCAL_TAG,  DIVIDER);
-        Log.e(LOCAL_TAG, "Welcome to Shower Reconstructing Array of Mobile Phones");
-        Log.e(LOCAL_TAG, "or \"ShRAMP\" for short");
+        mLogger.log("Welcome to the Shower Reconstruction Application for Mobile Phones");
+        mLogger.log("or \"ShRAMP\" for short");
 
-        // Main screen
-        setContentView(R.layout.activity_main);
+        // Get build info
+        String buildString = BuildString.getIt();
+        mLogger.log(buildString);
 
-        // Check API compatibility
-        mCheck_api = new CheckAPI(this, mQuit_action);
-
-        // Check granted permissions, if granted, run startApp()
-        Runnable next_action = new Runnable() {
-            @Override
-            public void run() {
-                startApp();
+        // if API 22 or below, user would have granted permissions on start
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            mLogger.log("API 22 or below, permissions granted on start");
+            mLogger.log("Starting CaptureOverseer");
+            startActivity(mNextActivity);
+        }
+        else {
+            // if API > 22
+            if (permissionsGranted()) {
+                mLogger.log("API 23 or above, and permissions have previously been granted");
+                mLogger.log("Starting CaptureOverseer");
+                startActivity(mNextActivity);
             }
-        };
-        mCheck_permissions = new CheckPermissions(this, next_action, mQuit_action);
-
-        Log.e(LOCAL_TAG, "RETURN");
+            else {
+                mLogger.log("API 23 or above, but permissions not granted, asking permissions");
+                // response to request is handled in onRequestPermissionsResult()
+                requestPermissions(PERMISSIONS, PERMISSION_CODE);
+            }
+        }
+        mLogger.log("return;");
     }
 
+    //----------------------------------------------------------------------------------------------
 
     /**
-     * Passes permission result control back over to mCheck_permissions
+     * Check if permissions have been granted
+     * @return true if all permissions have been granted, false if not
+     */
+    @TargetApi(23)
+    private boolean permissionsGranted() {
+        boolean allGranted = true;
+
+        for (String permission : PERMISSIONS) {
+            int permission_value = checkSelfPermission(permission);
+
+            if (permission_value == PackageManager.PERMISSION_DENIED) {
+                mLogger.log(permission + ": " + "DENIED");
+                allGranted = false;
+            }
+            else {
+                mLogger.log(permission + ": " + "GRANTED");
+            }
+        }
+
+        if (allGranted) {
+            mLogger.log("All permissions granted");
+        }
+        else {
+            mLogger.log("Some or all permissions denied");
+        }
+
+        mLogger.log("permissionsGranted? return: " + Boolean.toString(allGranted));
+        return allGranted;
+    }
+
+    //----------------------------------------------------------------------------------------------
+
+    /**
+     * After user responds to permission request, this routine is called.
      * @param requestCode permission code, see PERMISSION_CODE
      * @param permissions permissions requested
      * @param grantResults user's response
      */
+    @TargetApi(23)
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
-        final String LOCAL_TAG = TAG.concat(".onRequestPermissionsResult()");
-        Log.e(LOCAL_TAG, DIVIDER);
-
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        Log.e(LOCAL_TAG, "Passing control to mCheck_permissions");
-        mCheck_permissions.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        Log.e(LOCAL_TAG, "RETURN");
+        if (permissionsGranted()) {
+            mLogger.log("Permissions asked and granted");
+            mLogger.log("Starting CaptureOverseer");
+            startActivity(mNextActivity);
+        }
+        else {
+            mLogger.log("Permissions were not granted");
+            mLogger.log("Starting FailManager");
+            startActivity(mFailActivity);
+        }
+        mLogger.log("return;");
     }
 
-    TextureView mTextureView;
+    //----------------------------------------------------------------------------------------------
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+    //TextureView mTextureView;
 
     /**
      * After permissions are granted, begin app operations here.
      */
+    /*
     public void startApp(){
-        final String LOCAL_TAG = TAG.concat(".startApp()");
-        Log.e(LOCAL_TAG, DIVIDER);
 
         // set ssh listener to this class for information exchange
-        SSH_reference.mainactivity = this;
+        SSHrampSession_reference.mainactivity = this;
 
         //Intent intent = new Intent(this, DAQActivity.class);
         //startActivity(intent);
@@ -127,9 +170,6 @@ public class MaineShRAMP extends Activity implements AsyncResponse, TextureView.
         textOut.append("----------------------------------------------------------\n\n");
         textOut.append("Capturing a camera frame..  \n");
 
-        mTextureView = new TextureView(this);
-        mTextureView.setSurfaceTextureListener(this);
-        setView(mTextureView);
 
 
 //        mCamera = new Camera(this, mQuit_action);
@@ -143,41 +183,18 @@ public class MaineShRAMP extends Activity implements AsyncResponse, TextureView.
             ssh.execute();
         }
         */
-        Log.e(LOCAL_TAG, "RETURN");
-    }
+        //mLogger.log("return;");
+    //}
 
+    /*
     public void setView(View view) {
         setContentView(view);
     }
-
-
-    @Override
-    public void onSurfaceTextureAvailable(SurfaceTexture arg0, int arg1, int arg2) {
-
-        Surface surface = new Surface(arg0);
-
-        Log.e("================> ", "Creating camera via new MainShrampCamera()");
-        mShrampCam = new MaineShrampCam(this, surface);
-
-
-    }
-
-    @Override
-    public boolean onSurfaceTextureDestroyed(SurfaceTexture arg0) {
-        return false;
-    }
-
-    @Override
-    public void onSurfaceTextureSizeChanged(SurfaceTexture arg0, int arg1,int arg2) {
-    }
-
-    @Override
-    public void onSurfaceTextureUpdated(SurfaceTexture arg0) {
-    }
+    */
 
     // ---------- CAMERA STUFF ------------------
-    public String filename = Environment.getExternalStorageDirectory()+"/ShRAMP_PIC.jpg";
-    public final File file = new File(filename);
+    //public String filename = Environment.getExternalStorageDirectory()+"/ShRAMP_PIC.jpg";
+    //public final File file = new File(filename);
 
 /*
     public void createStillSession() {
@@ -194,31 +211,32 @@ public class MaineShRAMP extends Activity implements AsyncResponse, TextureView.
 
   */
 
+
+    // SSHrampSession is an AsyncTask, holding this reference allows main to
+    // see the result when it finishes.
+    // It's linked to this main activity in onCreate below.
+    //public static SSHrampSession SSHrampSession_reference = new SSHrampSession();
+
+    /*
     public void upload() {
-        final String LOCAL_TAG = TAG.concat(".upload()");
-        Log.e(LOCAL_TAG, "yay!  uploading at last");
 
         TextView textOut = (TextView) findViewById(R.id.textOut);
         textOut.append("Uploading to craydata.ps.uci.edu..  \n");
 
         if (haveSSHKey()) {
-            SSH_reference.execute(filename);
+            SSHrampSession_reference.execute(filename);
         }
         else {
-            Log.e(LOCAL_TAG, "crap");
             textOut.append("\t shit, ssh fail.");
         }
     }
-
+    */
 
         /**
          * Tests if .ssh folder exists and can read it.
          * @return true (yes) or false (no)
          */
     public boolean haveSSHKey() {
-        final String LOCAL_TAG = TAG.concat(".haveSSHKey");
-
-        Log.e(LOCAL_TAG, "checking file access");
         String ssh_path = Environment.getExternalStorageDirectory() + "/.ssh";
         File file_obj = new File(ssh_path);
         return file_obj.canRead();
@@ -226,13 +244,11 @@ public class MaineShRAMP extends Activity implements AsyncResponse, TextureView.
 
     /**
      * Implements the AsyncResponse interface.
-     * Called after an SSH operation is completed as an AsyncTask.
+     * Called after an SSHrampSession operation is completed as an AsyncTask.
      * @param status a string of information to give back to the Activity.
      */
     @Override
     public void processFinish(String status){
-        final String LOCAL_TAG = TAG.concat(".processFinish");
-        Log.e(LOCAL_TAG, "We're done!");
         TextView textOut = (TextView) findViewById(R.id.textOut);
         textOut.append(status);
     }
@@ -243,6 +259,5 @@ public class MaineShRAMP extends Activity implements AsyncResponse, TextureView.
      */
     public void quit() {
         finish();
-        return;
     }
 }

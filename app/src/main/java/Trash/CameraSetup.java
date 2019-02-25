@@ -19,7 +19,6 @@ import android.util.Log;
 import android.util.Range;
 import android.util.Size;
 
-import sci.crayfis.shramp.ChatterBox;
 import sci.crayfis.shramp.MaineShRAMP;
 
 

@@ -1,4 +1,4 @@
-package sci.crayfis.shramp.surface;
+package Trash;
 
 import android.app.Activity;
 import android.graphics.SurfaceTexture;

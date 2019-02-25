@@ -259,7 +259,7 @@ abstract class Level14_Lens extends Level13_JPEG {
         /*
          * Added in API 21
          *
-         * Desired distance to plane of sharpest focus, measured from frontmost surface of the lens.
+         * Desired distance to plane of sharpest focus, measured from frontmost surfaces of the lens.
          *
          * This control can be used for setting manual focus, on devices that support the
          * MANUAL_SENSOR capability and have a variable-focus lens

@@ -1,4 +1,4 @@
-package sci.crayfis.shramp;
+package sci.crayfis.shramp.ssh;
 
 /**
  * Interface for AsyncTasks to send information back to the Activity.

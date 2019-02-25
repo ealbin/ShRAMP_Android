@@ -1,8 +1,7 @@
-package sci.crayfis.shramp;
+package sci.crayfis.shramp.ssh;
 
 import android.os.AsyncTask;
 import android.os.Environment;
-import android.text.format.DateFormat;
 import android.util.Log;
 
 import com.jcraft.jsch.Channel;
@@ -16,23 +15,22 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 
-public class SSH extends AsyncTask<String, Void, String> {
-    final String TAG = "SSH";
+public class SSHrampSession extends AsyncTask<String, Void, String> {
+    final String TAG = "SSHrampSession";
 
     // This is a link back to the MaineShRAMP set in onCreate.
     public AsyncResponse mainactivity = null;
 
     /**
-     * SSH operations to be done in the background asynchronously from the main thread.
+     * SSHrampSession operations to be done in the background asynchronously from the main thread.
      * @param yupvoid dummy name
-     * @return returns the status of the SSH operation which gets passed back to the main activity
+     * @return returns the status of the SSHrampSession operation which gets passed back to the main activity
      */
     protected String doInBackground(String... filenames) {
         final String LOCAL_TAG = TAG.concat(".doInBackground()");
-        Log.e(LOCAL_TAG, "Doing SSH stuff");
+        Log.e(LOCAL_TAG, "Doing SSHrampSession stuff");
 
         String filename = filenames[0];
 

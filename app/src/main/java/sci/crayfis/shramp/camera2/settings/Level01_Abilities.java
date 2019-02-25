@@ -481,11 +481,11 @@ abstract class Level01_Abilities extends Level00_Hardware {
                      * For high speed recording use case, the actual maximum supported
                      * frame rate may be lower than what camera can output, depending on
                      * the destination Surfaces for the image data.
-                     * For example, if the destination surface is from video encoder,
+                     * For example, if the destination surfaces is from video encoder,
                      * the application need check if the video encoder is capable of
                      * supporting the high frame rate for a given video size, or it will end
                      * up with lower recording frame rate.
-                     * If the destination surface is from preview window, the actual preview
+                     * If the destination surfaces is from preview window, the actual preview
                      * frame rate will be bounded by the screen refresh rate.
                      *
                      * The camera device will only support up to 2 high speed simultaneous
@@ -497,9 +497,9 @@ abstract class Level01_Abilities extends Level00_Hardware {
                      *          than 2 surfaces via
                      *          CameraDevice.createConstrainedHighSpeedCaptureSession(List,
                      *                          CameraCaptureSession.StateCallback, Handler).
-                     *          The targeted surfaces must be preview surface
+                     *          The targeted surfaces must be preview surfaces
                      *          (either from SurfaceView or SurfaceTexture) or
-                     *          recording surface(either from MediaRecorder.getSurface() or
+                     *          recording surfaces(either from MediaRecorder.getSurface() or
                      *          MediaCodec.createInputSurface()).
                      *
                      *      The stream sizes are selected from the sizes reported by

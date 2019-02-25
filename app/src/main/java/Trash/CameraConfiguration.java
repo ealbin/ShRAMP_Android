@@ -923,7 +923,7 @@ final class CameraConfiguration {
      * Try to set for minimum aperture (darkest).
      * Try to set for maximum filter density (darkest).
      * Try to set for maximum focal length (blurriest).
-     * Set focal distance to infinity (defocus from near surface).
+     * Set focal distance to infinity (defocus from near surfaces).
      * Try to disable optical stabilization.
      */
     private void configureOptics() {

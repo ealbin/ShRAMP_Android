@@ -1,4 +1,4 @@
-package sci.crayfis.shramp;
+package Trash;
 
 import android.Manifest;
 import android.annotation.TargetApi;
@@ -6,6 +6,9 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.util.Log;
+
+import sci.crayfis.shramp.MaineShRAMP;
+import sci.crayfis.shramp.ui.ChatterBox;
 
 public class CheckPermissions {
     //**********************************************************************************************

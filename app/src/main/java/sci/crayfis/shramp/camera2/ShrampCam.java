@@ -1,4 +1,4 @@
-package sci.crayfis.shramp.camera2.control;
+package sci.crayfis.shramp.camera2;
 
 import android.annotation.TargetApi;
 import android.hardware.camera2.CameraCharacteristics;
@@ -13,7 +13,7 @@ import android.view.Surface;
 import java.util.List;
 
 import Trash.ShrampCamSetup;
-import sci.crayfis.shramp.camera2.capture.ShrampCamCapture;
+import Trash.ShrampCamCapture;
 import sci.crayfis.shramp.camera2.settings.ShrampCamSettings;
 import sci.crayfis.shramp.logging.ShrampLogger;
 
@@ -41,12 +41,9 @@ class ShrampCam extends CameraDevice.StateCallback {
     private CameraDevice           mCameraDevice;
 
 
-    private ShrampCamSetup mShrampCamSetup;
-    private ShrampCamCapture mShrampCamCapture;
+    private ShrampCamSetup         mShrampCamSetup;
+    private ShrampCamCapture       mShrampCamCapture;
     private CaptureRequest.Builder mCaptureRequestBuilder;
-
-    // output surfaces linked with this camera
-    private List<Surface>        mOutputSurfaces;
 
     // time to wait for threads to quit [milliseconds]
     // 0 means wait forever
@@ -149,7 +146,8 @@ class ShrampCam extends CameraDevice.StateCallback {
 
             mCaptureRequestBuilder = shrampCamSettings.getCaptureRequestBuilder();
 
-            ShrampCamControl.Callback.cameraReady(this);
+            // pass configured CaptureRequest.Builder back to manager to complete setup
+            ShrampCamManager.cameraReady(this);
             mLogger.log("return;");
         }
     }
@@ -237,6 +235,8 @@ class ShrampCam extends CameraDevice.StateCallback {
      */
     CameraDevice getCameraDevice() { return mCameraDevice; }
 
+    CaptureRequest.Builder getCaptureRequestBuilder() {return mCaptureRequestBuilder;}
+
     /**
      * Access error code
      * @return int error code
@@ -307,9 +307,9 @@ class ShrampCam extends CameraDevice.StateCallback {
         mLogger.log("Creating capture session");
         if (mCameraDevice != null) {
             try {
-                for (Surface surface : outputSurfaces) {
-                    mCaptureRequestBuilder.addTarget(surface);
-                    //builder.addTarget(surface);
+                for (Surface surfaces : outputSurfaces) {
+                    mCaptureRequestBuilder.addTarget(surfaces);
+                    //builder.addTarget(surfaces);
                 }
                 CaptureRequest captureRequest = mCaptureRequestBuilder.build();
                 //CaptureRequest request = builder.build();

@@ -1,4 +1,4 @@
-package sci.crayfis.shramp;
+package sci.crayfis.shramp.ui;
 
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
@@ -6,6 +6,8 @@ import android.content.DialogInterface;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.util.Log;
+
+import sci.crayfis.shramp.MaineShRAMP;
 
 @TargetApi(Build.VERSION_CODES.LOLLIPOP) // 21
 public class ChatterBox {
@@ -28,7 +30,7 @@ public class ChatterBox {
      * Initialize dialogs class
      * @param maine_shramp connects this context back to the main activity
      */
-    ChatterBox(@NonNull MaineShRAMP maine_shramp) {
+    public ChatterBox(@NonNull MaineShRAMP maine_shramp) {
         final String LOCAL_TAG = TAG.concat("ChatterBox(MaineShRAMP)");
         Log.e(LOCAL_TAG, DIVIDER);
 
