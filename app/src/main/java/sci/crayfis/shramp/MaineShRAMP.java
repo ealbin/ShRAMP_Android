@@ -9,6 +9,8 @@ import android.os.Build;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.os.Bundle;
+import android.system.Os;
+import android.system.StructUtsname;
 import android.widget.TextView;
 
 import java.io.File;
@@ -63,6 +65,35 @@ public final class MaineShRAMP extends Activity implements AsyncResponse {
         // Get build info
         String buildString = BuildString.getIt();
         mLogger.log(buildString);
+
+        StructUtsname uname = Os.uname();
+        String unameString = " \n"
+                + "Machine:   " + uname.machine  + "\n"
+                + "Node name: " + uname.nodename + "\n"
+                + "Release:   " + uname.release  + "\n"
+                + "Sysname:   " + uname.sysname  + "\n"
+                + "Version:   " + uname.version  + "\n";
+        mLogger.log(unameString);
+
+        String buildDetails = " \n"
+                + "Underlying board:        " + Build.BOARD               + "\n"
+                + "Bootloader version:      " + Build.BOOTLOADER          + "\n"
+                + "Brand:                   " + Build.BRAND               + "\n"
+                + "Industrial device:       " + Build.DEVICE              + "\n"
+                + "Build fingerprint:       " + Build.FINGERPRINT         + "\n"
+                + "Hardware:                " + Build.HARDWARE            + "\n"
+                + "Host:                    " + Build.HOST                + "\n"
+                + "Changelist label/number: " + Build.ID                  + "\n"
+                + "Hardware manufacturer:   " + Build.MANUFACTURER        + "\n"
+                + "Model:                   " + Build.MODEL               + "\n"
+                + "Product name:            " + Build.PRODUCT             + "\n"
+                + "Radio firmware version:  " + Build.getRadioVersion()   + "\n"
+                + "Build tags:              " + Build.TAGS                + "\n"
+                + "Build time:              " + Long.toString(Build.TIME) + "\n"
+                + "Build type:              " + Build.TYPE                + "\n"
+                + "User:                    " + Build.USER                + "\n";
+        mLogger.log(buildDetails);
+
 
         // if API 22 or below, user would have granted permissions on start
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {

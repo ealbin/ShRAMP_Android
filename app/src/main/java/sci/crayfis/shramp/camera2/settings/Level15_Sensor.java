@@ -107,7 +107,10 @@ abstract class Level15_Sensor extends Level14_Lens {
             return;
         }
 
-        mSensorExposureTime     = times.getLower();
+        long minDuration = super.mStreamConfigurationMap.getOutputMinFrameDuration(
+                super.mOutputFormat, super.mOutputSize);
+
+        mSensorExposureTime     = minDuration; //times.getUpper() / 10;//times.getLower();
         DecimalFormat df        = new DecimalFormat("#.##");
         mSensorExposureTimeName = df.format(mSensorExposureTime / 1000.) + " [us]";
 

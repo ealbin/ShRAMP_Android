@@ -12,8 +12,12 @@ import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
 import android.os.Bundle;
+import android.os.SystemClock;
+import android.util.Log;
 import android.view.Surface;
 
+import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 import sci.crayfis.shramp.camera2.ShrampCamManager;
@@ -182,7 +186,7 @@ public final class CaptureOverseer extends Activity {
          */
         @Override
         public void onSurfacePrepared(CameraCaptureSession session, Surface surface) {
-            mLogger.log("Surface prepared");
+            Log.e("Tag", "Surface prepared");
             mCameraCaptureSession = session;
             mmSurface             = surface;
         }
@@ -197,7 +201,7 @@ public final class CaptureOverseer extends Activity {
         public void onConfigured(CameraCaptureSession session) {
             mCameraCaptureSession = session;
 
-            mLogger.log("Ready to start repeating request..");
+            Log.e("Tag", "Ready to start repeating request..");
             try {
                 // execution continues in CaptureCallback.onCaptureStarted()
                 mCameraCaptureSession.setRepeatingRequest(mCaptureRequest,
@@ -214,7 +218,7 @@ public final class CaptureOverseer extends Activity {
          */
         @Override
         public void onActive(CameraCaptureSession session) {
-            mLogger.log("Capture session is active and processing requests!");
+            Log.e("Tag", "Capture session is active and processing requests!");
             mCameraCaptureSession = session;
         }
 
@@ -224,7 +228,7 @@ public final class CaptureOverseer extends Activity {
          */
         @Override
         public void onReady(CameraCaptureSession session) {
-            mLogger.log("Session is ready for capture requests");
+            Log.e("Tag", "Session is ready for capture requests");
             mCameraCaptureSession = session;
         }
 
@@ -235,7 +239,7 @@ public final class CaptureOverseer extends Activity {
          */
         @Override
         public void onCaptureQueueEmpty(CameraCaptureSession session) {
-            mLogger.log("Capture queue is empty");
+            Log.e("Tag", "Capture queue is empty");
             mCameraCaptureSession = session;
         }
 
@@ -246,7 +250,7 @@ public final class CaptureOverseer extends Activity {
          */
         @Override
         public void onConfigureFailed(CameraCaptureSession session) {
-            mLogger.log("Capture session configuration failed!");
+            Log.e("Tag", "Capture session configuration failed!");
             mCameraCaptureSession = session;
         }
 
@@ -256,7 +260,7 @@ public final class CaptureOverseer extends Activity {
          */
         @Override
         public void onClosed(CameraCaptureSession session) {
-            mLogger.log("Capture session is closed.");
+            Log.e("Tag", "Capture session is closed.");
             mCameraCaptureSession = session;
         }
 
@@ -276,6 +280,8 @@ public final class CaptureOverseer extends Activity {
         // Class Variables
         //----------------
 
+        private final long CAPTURE_LIMIT = 1000;
+
         private Surface            mmTarget;
 
         private CaptureResult      mmCaptureResult;
@@ -288,6 +294,28 @@ public final class CaptureOverseer extends Activity {
 
         private long mmCaptureCount = 0;
         private final long COUNT_LIMIT = 10;
+
+        private long mmProgressed2ProgressedNanoSec = 0;
+        private long mmStarted2StartedNanoSec       = 0;
+        private long mmCompleted2CompletedNanoSec   = 0;
+        private long mmProgressed2StartedNanoSec    = 0;
+        private long mmStarted2CompletedNanoSec     = 0;
+        private long mmCompleted2ProgressedNanoSec  = 0;
+
+        private List<Long> mmElapsedP2P = new ArrayList<>();
+        private List<Long> mmElapsedS2S = new ArrayList<>();
+        private List<Long> mmElapsedC2C = new ArrayList<>();
+        private List<Long> mmElapsedP2S = new ArrayList<>();
+        private List<Long> mmElapsedS2C = new ArrayList<>();
+        private List<Long> mmElapsedC2P = new ArrayList<>();
+
+        private long       mmLastTimestamp    = 0;
+        private List<Long> mmElapsedTimestamp = new ArrayList<>();
+
+        private List<Long> mmStartTimestamp =  new ArrayList<>();
+        private List<Long> mmCompTimestamp = new ArrayList<>();
+
+        private int progress = 0;
 
         //******************************************************************************************
         // Class Methods
@@ -303,18 +331,36 @@ public final class CaptureOverseer extends Activity {
         @Override
         public void onCaptureProgressed(CameraCaptureSession session, CaptureRequest request,
                                         CaptureResult partialResult) {
+            long time = SystemClock.elapsedRealtimeNanos();
+            mmProgressed2StartedNanoSec = time;
+
+            // remove first element!
+            long elapsed = (time - mmCompleted2ProgressedNanoSec);
+            mmElapsedC2P.add(elapsed);
+            //Log.e("Tag", "Complete-to-Progressed [sec]: " + Double.toString(elapsed*1e-9));
+
             mmCaptureCount += 1;
-            mLogger.log(Long.toString(mmCaptureCount));
+            //Log.e("Tag", Long.toString(mmCaptureCount));
             if (mmCaptureCount <= COUNT_LIMIT) {
-                mLogger.log("Capture making some forward progress, count = " + Long.toString(mmCaptureCount));
+                Log.e("Tag", "Capture making some forward progress, count = " + Long.toString(mmCaptureCount));
                 if (mmCaptureCount == COUNT_LIMIT) {
-                    mLogger.log("Silencing further notifications");
+                    Log.e("Tag", "Silencing further notifications");
                 }
+            }
+
+            if (mmProgressed2ProgressedNanoSec == 0) {
+                mmProgressed2ProgressedNanoSec = time;
+            }
+            else {
+                mmElapsedP2P.add(time - mmProgressed2ProgressedNanoSec);
+                mmProgressed2ProgressedNanoSec = time;
             }
 
             mCameraCaptureSession = session;
             mCaptureRequest       = request;
             mmCaptureResult       = partialResult;
+
+            progress += 1;
         }
 
         /**
@@ -329,17 +375,38 @@ public final class CaptureOverseer extends Activity {
         @Override
         public void onCaptureStarted(CameraCaptureSession session, CaptureRequest request,
                                      long timestamp, long frameNumber) {
+            long time = SystemClock.elapsedRealtimeNanos();
+            mmStarted2CompletedNanoSec = time;
+
+            mmStartTimestamp.add(time - timestamp);
+            mmElapsedP2S.add(time - mmProgressed2StartedNanoSec);
+
             if (mmCaptureCount <= COUNT_LIMIT) {
-                mLogger.log("Capture has started!");
+                Log.e("Tag", "Capture has started!");
                 if (mmCaptureCount == COUNT_LIMIT) {
-                    mLogger.log("Silencing further notifications");
+                    Log.e("Tag", "Silencing further notifications");
                 }
             }
+
+            if (mmStarted2StartedNanoSec == 0) {
+                mmStarted2StartedNanoSec = time;
+            }
+            else {
+                mmElapsedS2S.add(time - mmStarted2StartedNanoSec);
+                mmStarted2StartedNanoSec = time;
+            }
+
+            if (mmLastTimestamp != 0) {
+                mmElapsedTimestamp.add(timestamp - mmLastTimestamp);
+            }
+            mmLastTimestamp = timestamp;
 
             mCameraCaptureSession = session;
             mCaptureRequest       = request;
             mmTimestamp           = timestamp;
             mmFrameNumber         = frameNumber;
+
+            progress += 1;
         }
 
         /**
@@ -352,16 +419,44 @@ public final class CaptureOverseer extends Activity {
         @Override
         public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request,
                                        TotalCaptureResult result) {
+            long time = SystemClock.elapsedRealtimeNanos();
+            mmCompleted2ProgressedNanoSec = time;
+
+            mmCompTimestamp.add(time - mmTimestamp);
+            mmElapsedS2C.add(time - mmStarted2CompletedNanoSec);
+
             if (mmCaptureCount <= COUNT_LIMIT) {
-                mLogger.log("One capture successful");
+                Log.e("Tag","One capture successful");
                 if (mmCaptureCount == COUNT_LIMIT) {
-                    mLogger.log("Silencing further notifications");
+                    Log.e("Tag","Silencing further notifications");
                 }
+            }
+
+            if (mmCompleted2CompletedNanoSec == 0) {
+                mmCompleted2CompletedNanoSec = time;
+            }
+            else {
+                mmElapsedC2C.add(time - mmCompleted2CompletedNanoSec);
+                mmCompleted2CompletedNanoSec = time;
             }
 
             mCameraCaptureSession = session;
             mCaptureRequest       = request;
             mmTotalCaptureResult  = result;
+
+            if (mmCaptureCount == CAPTURE_LIMIT) {
+                try {
+                    session.stopRepeating();
+                }
+                catch (CameraAccessException e) {
+                    mLogger.log("ERROR: Camera Access Exception");
+                }
+            }
+
+            if (progress != 2) {
+                Log.e("Tag", "Dropped, index: " + Long.toString(mmCaptureCount));
+            }
+            progress = 0;
         }
 
         /**
@@ -379,6 +474,125 @@ public final class CaptureOverseer extends Activity {
             mCameraCaptureSession = session;
             mmSequenceId          = sequenceId;
             mmFrameNumber         = frameNumber;
+
+            // remove garbage first and last elements
+            for (int i = 0; i < 4; i++ ) {
+                mmElapsedP2S.remove(0);
+                mmElapsedS2C.remove(0);
+                mmElapsedC2P.remove(0);
+                mmStartTimestamp.remove(0);
+                mmCompTimestamp.remove(0);
+            }
+            long max = 0;
+            long max_index = 0;
+            long index = 0;
+            long min = -1;
+            for (long val : mmElapsedC2P) {
+                if (val > max) {
+                    max = val;
+                    max_index = index;
+                }
+                if (min == -1) {
+                    min = val;
+                }
+                if (val < min) {
+                    min = val;
+                }
+                index += 1;
+            }
+            Log.e("Tag", " \n max val @ index: " + Long.toString(max) + " @ " + Long.toString(max_index));
+            Log.e("Tag", " \n min val: " + Long.toString(min));
+
+            double p2pFpsAve = getAve(mmElapsedP2P);
+            double s2sFpsAve = getAve(mmElapsedS2S);
+            double c2cFpsAve = getAve(mmElapsedC2C);
+            double p2sFpsAve = getAve(mmElapsedP2S);
+            double s2cFpsAve = getAve(mmElapsedS2C);
+            double c2pFpsAve = getAve(mmElapsedC2P);
+            double timestampFpsAve = getAve(mmElapsedTimestamp);
+            double startTimeAve = getAve(mmStartTimestamp);
+            double compTimeAve = getAve(mmCompTimestamp);
+
+            //
+
+            double p2pFpsStdDev = getStdDev(mmElapsedP2P, p2pFpsAve) * 1e-9;
+            double s2sFpsStdDev = getStdDev(mmElapsedS2S, s2sFpsAve) * 1e-9;
+            double c2cFpsStdDev = getStdDev(mmElapsedC2C, c2cFpsAve) * 1e-9;
+            double p2sFpsStdDev = getStdDev(mmElapsedP2S, p2sFpsAve) * 1e-9;
+            double s2cFpsStdDev = getStdDev(mmElapsedS2C, s2cFpsAve) * 1e-9;
+            double c2pFpsStdDev = getStdDev(mmElapsedC2P, c2pFpsAve) * 1e-9;
+            double timestampFpsStdDev = getStdDev(mmElapsedTimestamp, timestampFpsAve) * 1e-9;
+            double startTimeStdDev = getStdDev(mmStartTimestamp, startTimeAve);
+            double compTimeStdDev = getStdDev(mmCompTimestamp, compTimeAve);
+
+            //
+
+            p2pFpsAve *= 1e-9;
+            s2sFpsAve *= 1e-9;
+            c2cFpsAve *= 1e-9;
+            p2sFpsAve *= 1e-9;
+            s2cFpsAve *= 1e-9;
+            c2pFpsAve *= 1e-9;
+            timestampFpsAve *= 1e-9;
+
+            double p2pFpsError = (1. / (p2pFpsAve * p2pFpsAve)) * p2pFpsStdDev;
+            double s2sFpsError = (1. / (s2sFpsAve * s2sFpsAve)) * s2sFpsStdDev;
+            double c2cFpsError = (1. / (c2cFpsAve * c2cFpsAve)) * c2cFpsStdDev;
+            double p2sFpsError = (1. / (p2sFpsAve * p2sFpsAve)) * p2sFpsStdDev;
+            double s2cFpsError = (1. / (s2cFpsAve * s2cFpsAve)) * s2cFpsStdDev;
+            double c2pFpsError = (1. / (c2pFpsAve * c2pFpsAve)) * c2pFpsStdDev;
+            double timestampError = (1. / (timestampFpsAve * timestampFpsAve)) * timestampFpsStdDev;
+
+            p2pFpsAve = 1. / p2pFpsAve;
+            s2sFpsAve = 1. / s2sFpsAve;
+            c2cFpsAve = 1. / c2cFpsAve;
+            p2sFpsAve = 1. / p2sFpsAve;
+            s2cFpsAve = 1. / s2cFpsAve;
+            c2pFpsAve = 1. / c2pFpsAve;
+            timestampFpsAve = 1. / timestampFpsAve;
+
+
+            DecimalFormat df = new DecimalFormat("#.##");
+
+            String statistics = " \n"
+                    + "Capture completed, statistics: \n"
+                    + "--------------------------------------------------------------- \n"
+                    + "\t Progressed-to-Progressed FPS: " + df.format(p2pFpsAve) + " +/- " + df.format(p2pFpsError) + "\n"
+                    + "\t Started-to-Started FPS:       " + df.format(s2sFpsAve) + " +/- " + df.format(s2sFpsError) + "\n"
+                    + "\t Completed-to-Completed FPS:   " + df.format(c2cFpsAve) + " +/- " + df.format(c2cFpsError) + "\n"
+                    + "\t Timestamp-to-Timestamp FPS:   " + df.format(timestampFpsAve) + " +/- " + df.format(timestampError) + "\n"
+                    + "\n"
+                    + "\t Progressed-to-Started FPS:   " + df.format(p2sFpsAve) + " +/- " + df.format(p2sFpsError) + "\n"
+                    + "\t Started-to-Completed FPS:    " + df.format(s2cFpsAve) + " +/- " + df.format(s2cFpsError) + "\n"
+                    + "\t Completed-to-Progressed FPS: " + df.format(c2pFpsAve) + " +/- " + df.format(c2pFpsError) + "\n"
+                    + "\n"
+                    + "\t Started - Timestamp [sec]:   " + df.format(startTimeAve) + " +/- " + df.format(startTimeStdDev) + "\n"
+                    + "\t Completed - Timestamp [sec]: " + df.format(compTimeAve) + " +/- " + df.format(compTimeStdDev) + "\n";
+
+            //mLogger.log(statistics);
+            Log.e("tag", statistics);
+
+            session.close();
+            CameraManager    cameraManager    = CaptureOverseer.getCameraManager();
+            ShrampCamManager shrampCamManager = ShrampCamManager.getInstance(cameraManager);
+            assert shrampCamManager != null;
+            shrampCamManager.closeBackCamera();
+        }
+
+        private double getAve(List<Long> list) {
+            long sum = 0;
+            for (long val : list) {
+                sum += val;
+            }
+            return sum / (double) list.size();
+        }
+
+        private double getStdDev(List<Long> list, double mean) {
+            double sum = 0.;
+            for (long val : list) {
+                sum += (val - mean) * (val - mean);
+            }
+            return Math.sqrt(sum / (double) list.size());
         }
 
         /**
@@ -390,7 +604,7 @@ public final class CaptureOverseer extends Activity {
          */
         @Override
         public void onCaptureSequenceAborted(CameraCaptureSession session, int sequenceId) {
-            mLogger.log("Capture sequence has been aborted");
+            Log.e("Tag", "Capture sequence has been aborted");
             mCameraCaptureSession = session;
             mmSequenceId          = sequenceId;
         }
@@ -407,7 +621,7 @@ public final class CaptureOverseer extends Activity {
         @Override
         public void onCaptureBufferLost(CameraCaptureSession session, CaptureRequest request,
                                         Surface target, long frameNumber) {
-            mLogger.log("A capture buffer has been lost and not sent to its destination surface");
+            Log.e("Tag", "A capture buffer has been lost and not sent to its destination surface");
             mCameraCaptureSession = session;
             mCaptureRequest       = request;
             mmTarget              = target;
@@ -425,7 +639,7 @@ public final class CaptureOverseer extends Activity {
         @Override
         public void onCaptureFailed(CameraCaptureSession session, CaptureRequest request,
                                     CaptureFailure failure) {
-            mLogger.log("Camera device failed to produce a CaptureResult");
+            Log.e("Tag", "Camera device failed to produce a CaptureResult");
             mCameraCaptureSession = session;
             mCaptureRequest       = request;
             mmCaptureFailure      = failure;

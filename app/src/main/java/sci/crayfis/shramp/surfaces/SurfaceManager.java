@@ -3,6 +3,7 @@ package sci.crayfis.shramp.surfaces;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.graphics.SurfaceTexture;
+import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
 
@@ -138,14 +139,6 @@ public class SurfaceManager {
         @Override
         public void onSurfaceTextureUpdated(SurfaceTexture arg0) {
             // TODO (maybe no action?)
-            mmUpdateCount += 1;
-            if (mmUpdateCount <= UPDATE_LIMIT) {
-                mLogger.log("TextureView has been updated, count = " + Long.toString(mmUpdateCount));
-                if (mmUpdateCount == UPDATE_LIMIT) {
-                    mLogger.log("Silencing further updates");
-                }
-                mLogger.log("return;");
-            }
         }
     }
 
