@@ -175,7 +175,7 @@ abstract class Level11_Tonemap extends Level10_Color {
          * Full capability - Present on all camera devices that report being HARDWARE_LEVEL_FULL
          * devices in the android.info.supportedHardwareLevel key
          */
-        if (mTonemapMode == null || mTonemapMode != CameraMetadata.TONEMAP_MODE_CONTRAST_CURVE) {
+        if (this.mTonemapMode == null || mTonemapMode != CameraMetadata.TONEMAP_MODE_CONTRAST_CURVE) {
             mTonemapCurve     = null;
             mTonemapCurveName = "Not supported";
             return;

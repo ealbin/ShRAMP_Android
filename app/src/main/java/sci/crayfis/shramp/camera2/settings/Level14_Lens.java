@@ -122,8 +122,8 @@ abstract class Level14_Lens extends Level13_JPEG {
         }
 
         mLensAperture     = minAperture;
-        DecimalFormat df  = new DecimalFormat("#.##");
-        mLensApertureName = df.format(mLensAperture) + " [f/N]";
+        DecimalFormat df       = new DecimalFormat("#.##");
+        mLensApertureName = df.format(this.mLensAperture) + " [f/N]";
 
         super.mCaptureRequestBuilder.set(key, mLensAperture);
     }
@@ -186,8 +186,8 @@ abstract class Level14_Lens extends Level13_JPEG {
         }
 
         mLensFilterDensity      = maxDensity;
-        DecimalFormat df        = new DecimalFormat("#.##");
-        mLensFilterDensityName  = df.format(mLensFilterDensity) + " [EV]";
+        DecimalFormat df             = new DecimalFormat("#.##");
+        mLensFilterDensityName  = df.format(this.mLensFilterDensity) + " [EV]";
 
         super.mCaptureRequestBuilder.set(key, mLensFilterDensity);
     }
@@ -246,8 +246,8 @@ abstract class Level14_Lens extends Level13_JPEG {
         }
 
         mLensFocalLength     = maxFocalLength;
-        DecimalFormat df     = new DecimalFormat("#.##");
-        mLensFocalLengthName = df.format(mLensFocalLength) + " [mm]";
+        DecimalFormat df          = new DecimalFormat("#.##");
+        mLensFocalLengthName = df.format(this.mLensFocalLength) + " [mm]";
 
         super.mCaptureRequestBuilder.set(key, mLensFocalLength);
     }
@@ -293,7 +293,7 @@ abstract class Level14_Lens extends Level13_JPEG {
         float focusInfinity = 0.f;
 
         mLensFocusDistance     = focusInfinity;
-        DecimalFormat df       = new DecimalFormat("#.##");
+        DecimalFormat df            = new DecimalFormat("#.##");
         mLensFocusDistanceName = "Infinity";
 
         super.mCaptureRequestBuilder.set(key, mLensFocusDistance);

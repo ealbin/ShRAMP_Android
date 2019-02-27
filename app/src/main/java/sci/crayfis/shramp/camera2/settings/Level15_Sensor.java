@@ -99,6 +99,8 @@ abstract class Level15_Sensor extends Level14_Lens {
             return;
         }
 
+        /*
+        // Unnecessary, match exposure time to frame-duration for maximum duty
         Range<Long> times = super.mCameraCharacteristics.get(
                             CameraCharacteristics.SENSOR_INFO_EXPOSURE_TIME_RANGE);
         if (times == null) {
@@ -106,13 +108,15 @@ abstract class Level15_Sensor extends Level14_Lens {
             mSensorExposureTimeName = "Not supported";
             return;
         }
+        */
 
+        // Set exposure time to frame duration for maximal duty cycle
         long minDuration = super.mStreamConfigurationMap.getOutputMinFrameDuration(
                 super.mOutputFormat, super.mOutputSize);
 
-        mSensorExposureTime     = minDuration; //times.getUpper() / 10;//times.getLower();
-        DecimalFormat df        = new DecimalFormat("#.##");
-        mSensorExposureTimeName = df.format(mSensorExposureTime / 1000.) + " [us]";
+        mSensorExposureTime     = minDuration;
+        DecimalFormat df             = new DecimalFormat("#.##");
+        mSensorExposureTimeName = df.format(this.mSensorExposureTime / 1000.) + " [us]";
 
         super.mCaptureRequestBuilder.set(key, mSensorExposureTime);
     }
@@ -223,8 +227,8 @@ abstract class Level15_Sensor extends Level14_Lens {
                            super.mOutputFormat, super.mOutputSize);
 
         mSensorFrameDuration     = minDuration;
-        DecimalFormat df         = new DecimalFormat("#.##");
-        mSensorFrameDurationName = df.format(mSensorFrameDuration / 1000. / 1000.) + " [ms]";
+        DecimalFormat df              = new DecimalFormat("#.##");
+        mSensorFrameDurationName = df.format(this.mSensorFrameDuration / 1000. / 1000.) + " [ms]";
     }
 
     //----------------------------------------------------------------------------------------------
@@ -288,7 +292,7 @@ abstract class Level15_Sensor extends Level14_Lens {
         }
         else {
             mSensorAnalogSensitivity     = maxAnalogSensitivity;
-            mSensorAnalogSensitivityName = "ISO " + Integer.toString(mSensorAnalogSensitivity);
+            mSensorAnalogSensitivityName = "ISO " + Integer.toString(this.mSensorAnalogSensitivity);
         }
 
         Range<Integer> sensitivityRange = super.mCameraCharacteristics.get(
@@ -299,10 +303,10 @@ abstract class Level15_Sensor extends Level14_Lens {
         }
         else {
             mSensorSensitivity     = sensitivityRange.getUpper();
-            mSensorSensitivityName = "ISO " + Integer.toString(mSensorSensitivity);
+            mSensorSensitivityName = "ISO " + Integer.toString(this.mSensorSensitivity);
         }
 
-        if (mSensorSensitivity == null || mSensorAnalogSensitivity == null) {
+        if (this.mSensorSensitivity == null || mSensorAnalogSensitivity == null) {
             return;
         }
 

@@ -57,7 +57,7 @@ public final class ShrampCamSettings extends Level17_Misc{
     public void logSettings() {
         List<String> stringList = super.getString();
         for (String string : stringList) {
-            mLogger.log(" \n\n" + string + " \n");
+            ShrampCamSettings.mLogger.log(" \n\n" + string + " \n");
         }
     }
 
@@ -68,42 +68,42 @@ public final class ShrampCamSettings extends Level17_Misc{
      */
     public void keyDump() {
 
-         mLogger.log(" \n\nCameraCharacteristics.getKeys(): \n\n");
-         List<CameraCharacteristics.Key<?>> characteristicKeys = mCameraCharacteristics.getKeys();
+         ShrampCamSettings.mLogger.log(" \n\nCameraCharacteristics.getKeys(): \n\n");
+         List<CameraCharacteristics.Key<?>> characteristicKeys = super.mCameraCharacteristics.getKeys();
          for (CameraCharacteristics.Key key : characteristicKeys) {
-            mLogger.log(key.toString());
+            ShrampCamSettings.mLogger.log(key.toString());
          }
 
-         mLogger.log(" \n\nCameraCharacteristics.getAvailableCaptureRequestKeys(): \n\n");
-         List<CaptureRequest.Key<?>> requestKeys  = mCameraCharacteristics.getAvailableCaptureRequestKeys();
+         ShrampCamSettings.mLogger.log(" \n\nCameraCharacteristics.getAvailableCaptureRequestKeys(): \n\n");
+         List<CaptureRequest.Key<?>> requestKeys  = super.mCameraCharacteristics.getAvailableCaptureRequestKeys();
          for (CaptureRequest.Key key : requestKeys) {
-            mLogger.log(key.toString());
+            ShrampCamSettings.mLogger.log(key.toString());
          }
 
-         mLogger.log(" \n\nCameraCharacteristics.getAvailableSessionKeys(): \n\n");
-         List<CaptureRequest.Key<?>> sessionKeys  = mCameraCharacteristics.getAvailableSessionKeys();
+         ShrampCamSettings.mLogger.log(" \n\nCameraCharacteristics.getAvailableSessionKeys(): \n\n");
+         List<CaptureRequest.Key<?>> sessionKeys  = super.mCameraCharacteristics.getAvailableSessionKeys();
          for (CaptureRequest.Key key : sessionKeys) {
-            mLogger.log(key.toString());
+            ShrampCamSettings.mLogger.log(key.toString());
          }
 
-         mLogger.log(" \n\nCameraCharacteristics.getAvailablePhysicalCameraRequestKeys(): \n\n");
-         List<CaptureRequest.Key<?>> physicalKeys = mCameraCharacteristics.getAvailablePhysicalCameraRequestKeys();
+         ShrampCamSettings.mLogger.log(" \n\nCameraCharacteristics.getAvailablePhysicalCameraRequestKeys(): \n\n");
+         List<CaptureRequest.Key<?>> physicalKeys = super.mCameraCharacteristics.getAvailablePhysicalCameraRequestKeys();
          if (physicalKeys != null) {
             for (CaptureRequest.Key key : physicalKeys) {
-                mLogger.log(key.toString());
+                ShrampCamSettings.mLogger.log(key.toString());
             }
          }
 
-         mLogger.log(" \n\nCameraCharacteristics.getPhysicalCameraIds(): \n\n");
-         Set<String> physicalIds = mCameraCharacteristics.getPhysicalCameraIds();
+         ShrampCamSettings.mLogger.log(" \n\nCameraCharacteristics.getPhysicalCameraIds(): \n\n");
+         Set<String> physicalIds = super.mCameraCharacteristics.getPhysicalCameraIds();
          for (String id : physicalIds) {
-                mLogger.log(id);
+                ShrampCamSettings.mLogger.log(id);
          }
 
-         mLogger.log(" \n\nCameraCharacteristics.getAvailableCaptureResultKeys(): \n\n");
-         List<CaptureResult.Key<?>>  resultKeys = mCameraCharacteristics.getAvailableCaptureResultKeys();
+         ShrampCamSettings.mLogger.log(" \n\nCameraCharacteristics.getAvailableCaptureResultKeys(): \n\n");
+         List<CaptureResult.Key<?>>  resultKeys = super.mCameraCharacteristics.getAvailableCaptureResultKeys();
          for (CaptureResult.Key key : resultKeys) {
-             mLogger.log(key.toString());
+             ShrampCamSettings.mLogger.log(key.toString());
          }
     }
 

@@ -159,7 +159,7 @@ abstract class Level17_Misc extends Level16_Statistics {
         // Default
         mReprocessEffectiveExposureFactor = 1.f;
         DecimalFormat df = new DecimalFormat("#.##");
-        mReprocessEffectiveExposureFactorName = df.format(mReprocessEffectiveExposureFactor);
+        mReprocessEffectiveExposureFactorName = df.format(this.mReprocessEffectiveExposureFactor);
 
         super.mCaptureRequestBuilder.set(key, mReprocessEffectiveExposureFactor);
     }

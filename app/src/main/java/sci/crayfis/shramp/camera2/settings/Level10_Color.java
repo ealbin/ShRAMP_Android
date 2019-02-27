@@ -296,7 +296,7 @@ abstract class Level10_Color extends Level09_MiscControls {
             return;
         }
 
-        if (mColorCorrectionMode == CameraMetadata.COLOR_CORRECTION_MODE_TRANSFORM_MATRIX) {
+        if (this.mColorCorrectionMode == CameraMetadata.COLOR_CORRECTION_MODE_TRANSFORM_MATRIX) {
             mColorCorrectionTransform = new ColorSpaceTransform(new int[]{
                                                 1, 1, 0, 1, 0, 1,    // 1/1 , 0/1 , 0/1 = 1 0 0
                                                 0, 1, 1, 1, 0, 1,    // 0/1 , 1/1 , 0/1 = 0 1 0

@@ -3,7 +3,6 @@ package sci.crayfis.shramp.surfaces;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.graphics.SurfaceTexture;
-import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
 
@@ -52,7 +51,7 @@ public class SurfaceManager {
      * In place of a constructor
      * @return single instance of SurfaceManager
      */
-    public static SurfaceManager getInstance() {return mInstance;}
+    public static SurfaceManager getInstance() {return SurfaceManager.mInstance;}
 
     //----------------------------------------------------------------------------------------------
 
@@ -61,9 +60,9 @@ public class SurfaceManager {
      * @param activity source context
      */
     public void openSurfaces(Activity activity) {
-        mLogger.log("Opening TextureView");
-        mTextureViewListener.openSurface(activity);
-        mLogger.log("Would be opening other surfaces now");
+        SurfaceManager.mLogger.log("Opening TextureView");
+        this.mTextureViewListener.openSurface(activity);
+        SurfaceManager.mLogger.log("Would be opening other surfaces now");
         // other surface
         // other surface
     }
@@ -74,17 +73,17 @@ public class SurfaceManager {
      * Called whenever a surface is initialized, once all surfaces check in, notify CaptureOverseer
      */
     private void surfaceReady() {
-        mLogger.log("A surface is ready");
+        SurfaceManager.mLogger.log("A surface is ready");
         boolean isReady = mTextureViewReady; // && mBlankViewReady && ..
         if (isReady) {
-            mLogger.log("All surfaces are ready");
+            SurfaceManager.mLogger.log("All surfaces are ready");
             CaptureOverseer.surfacesReady(mSurfaces);
         }
         else {
-            mLogger.log("Not all surfaces are ready, continuing to wait");
+            SurfaceManager.mLogger.log("Not all surfaces are ready, continuing to wait");
             // otherwise wait for the remaining surfaces to check in..
         }
-        mLogger.log("return;");
+        SurfaceManager.mLogger.log("return;");
     }
 
     //----------------------------------------------------------------------------------------------
@@ -93,9 +92,9 @@ public class SurfaceManager {
      * Handles everything to do with TextureView surface
      */
     private final class TextureViewListener implements TextureView.SurfaceTextureListener{
-        private TextureView mmTextureView;
+        private TextureView mTextureView;
 
-        private long mmUpdateCount = 0;
+        private long mUpdateCount = 0;
         private final long UPDATE_LIMIT = 5;
 
         /**
@@ -103,37 +102,37 @@ public class SurfaceManager {
          * @param activity source context
          */
         private void openSurface(Activity activity) {
-            mLogger.log("TextureView is opening");
-            mmTextureView = new TextureView(activity);
-            mmTextureView.setSurfaceTextureListener(this);
+            SurfaceManager.mLogger.log("TextureView is opening");
+            this.mTextureView = new TextureView(activity);
+            this.mTextureView.setSurfaceTextureListener(this);
             // program continues with onSurfaceTextureAvailable listener below
-            activity.setContentView(mmTextureView);
-            mLogger.log("return;");
+            activity.setContentView(mTextureView);
+            SurfaceManager.mLogger.log("return;");
         }
 
         @Override
         public void onSurfaceTextureAvailable(SurfaceTexture arg0, int arg1, int arg2) {
-            mLogger.log("TextureView is open");
+            SurfaceManager.mLogger.log("TextureView is open");
             // TODO what are arg1 and arg2?
-            mSurfaces.add(new Surface(arg0));
-            mTextureViewReady = true;
-            surfaceReady();
-            mLogger.log("return;");
+            SurfaceManager.mSurfaces.add(new Surface(arg0));
+            SurfaceManager.mTextureViewReady = true;
+            SurfaceManager.mInstance.surfaceReady();
+            SurfaceManager.mLogger.log("return;");
         }
 
         @Override
         public boolean onSurfaceTextureDestroyed(SurfaceTexture arg0) {
             // TODO (maybe no action?)
-            mLogger.log("TextureView has been destroyed");
-            mLogger.log("return false;");
+            SurfaceManager.mLogger.log("TextureView has been destroyed");
+            SurfaceManager.mLogger.log("return false;");
             return false;
         }
 
         @Override
         public void onSurfaceTextureSizeChanged(SurfaceTexture arg0, int arg1,int arg2) {
             // TODO (maybe no action?)
-            mLogger.log("TextureView has changed size");
-            mLogger.log("return;");
+            SurfaceManager.mLogger.log("TextureView has changed size");
+            SurfaceManager.mLogger.log("return;");
         }
 
         @Override

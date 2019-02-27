@@ -185,7 +185,7 @@ abstract class Level08_AutoExposure extends Level07_AutoFocus {
          * If manual exposure control is enabled (by setting android.control.aeMode or
          * android.control.mode to OFF), then this setting has no effect, and the application must
          * ensure it selects exposure times that do not cause banding issues. The
-         * android.statistics.sceneFlicker key can assist the application in this.
+         * android.statistics.sceneFlicker key can assist the application in 
          *
          * This key is available on all devices.
          */
@@ -307,7 +307,7 @@ abstract class Level08_AutoExposure extends Level07_AutoFocus {
          *
          * Max.exposure compensation * android.control.aeCompensationStep >= 2 EV
          *
-         * LEGACY devices may support a smaller range than this.
+         * LEGACY devices may support a smaller range than 
          *
          * This key is available on all devices.
          */

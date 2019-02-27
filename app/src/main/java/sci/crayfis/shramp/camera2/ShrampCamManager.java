@@ -64,9 +64,9 @@ public class ShrampCamManager {
      * Disable default constructor to limit access to getInstance(Context)
      */
     private ShrampCamManager() {
-        mCameraIds             = new TreeMap<>();
-        mCameraCharacteristics = new TreeMap<>();
-        mShrampCameraDevices   = new TreeMap<>();
+        ShrampCamManager.mCameraIds             = new TreeMap<>();
+        ShrampCamManager.mCameraCharacteristics = new TreeMap<>();
+        ShrampCamManager.mShrampCameraDevices   = new TreeMap<>();
     }
 
     /**
@@ -78,22 +78,20 @@ public class ShrampCamManager {
     @Nullable
     public static synchronized ShrampCamManager getInstance(@NonNull CameraManager cameraManager) {
 
-        if (mInstance != null) { return mInstance; }
+        if (ShrampCamManager.mInstance != null) { return ShrampCamManager.mInstance; }
 
-        //mCallback = new Callback();
+        ShrampCamManager.mLogger.log("Creating CameraManager");
+        ShrampCamManager.mInstance      = new ShrampCamManager();
+        ShrampCamManager.mCameraManager = cameraManager;
 
-        mLogger.log("Creating CameraManager");
-        mInstance      = new ShrampCamManager();
-        mCameraManager = cameraManager;
-
-        mLogger.log("Discovering cameras");
+        ShrampCamManager.mLogger.log("Discovering cameras");
         String[] cameraIds;
         try {
-            cameraIds = mCameraManager.getCameraIdList();
+            cameraIds = ShrampCamManager.mCameraManager.getCameraIdList();
         }
         catch (CameraAccessException e) {
             // TODO ERROR
-            mLogger.log("ERROR: Camera Access Exception; return null;");
+            ShrampCamManager.mLogger.log("ERROR: Camera Access Exception; return null;");
             return null;
         }
 
@@ -102,12 +100,12 @@ public class ShrampCamManager {
             Integer               lensFacing;
 
             try {
-                cameraCharacteristics = mCameraManager.getCameraCharacteristics(id);
+                cameraCharacteristics = ShrampCamManager.mCameraManager.getCameraCharacteristics(id);
                 lensFacing            = cameraCharacteristics.get(CameraCharacteristics.LENS_FACING);
 
                 if (lensFacing == null) {
                     // TODO report anomaly
-                    mLogger.log("ERROR: lensFacing == null; continue;");
+                    ShrampCamManager.mLogger.log("ERROR: lensFacing == null; continue;");
                     continue;
                 }
 
@@ -115,38 +113,38 @@ public class ShrampCamManager {
                 switch (lensFacing) {
                     case (CameraCharacteristics.LENS_FACING_FRONT) : {
                         cameraKey = Select.FRONT;
-                        mLogger.log("Found front camera, ID: " + id);
+                        ShrampCamManager.mLogger.log("Found front camera, ID: " + id);
                         break;
                     }
                     case (CameraCharacteristics.LENS_FACING_BACK) : {
                         cameraKey = Select.BACK;
-                        mLogger.log("Found back camera, ID: " + id);
+                        ShrampCamManager.mLogger.log("Found back camera, ID: " + id);
                         break;
                     }
                     case (CameraCharacteristics.LENS_FACING_EXTERNAL) : {
                         cameraKey = Select.EXTERNAL;
-                        mLogger.log("Found external camera, ID: " + id);
+                        ShrampCamManager.mLogger.log("Found external camera, ID: " + id);
                         break;
                     }
                 }
                 if (cameraKey == null) {
                     // TODO report anomally
-                    mLogger.log("ERROR: cameraKey == null; continue;");
+                    ShrampCamManager.mLogger.log("ERROR: cameraKey == null; continue;");
                     continue;
                 }
 
-                mCameraIds.put(cameraKey, id);
-                mCameraCharacteristics.put(cameraKey, cameraCharacteristics);
+                ShrampCamManager.mCameraIds.put(cameraKey, id);
+                ShrampCamManager.mCameraCharacteristics.put(cameraKey, cameraCharacteristics);
             }
             catch (CameraAccessException e) {
                 // TODO ERROR
-                mLogger.log("ERROR: Camera Access Exception; return null;");
+                ShrampCamManager.mLogger.log("ERROR: Camera Access Exception; return null;");
                 return null;
             }
         }
 
-        mLogger.log("return ShrampCamManager;");
-        return mInstance;
+        ShrampCamManager.mLogger.log("return ShrampCamManager;");
+        return ShrampCamManager.mInstance;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -156,8 +154,9 @@ public class ShrampCamManager {
      * @return true if yes, false if no
      */
     public boolean hasFrontCamera() {
-        boolean hasCamera = mCameraCharacteristics.containsKey(Select.FRONT);
-        mLogger.log("return: " + Boolean.toString(hasCamera));
+        boolean hasCamera = ShrampCamManager.mCameraCharacteristics.containsKey(
+                                                                    ShrampCamManager.Select.FRONT);
+        ShrampCamManager.mLogger.log("return: " + Boolean.toString(hasCamera));
         return hasCamera;
     }
 
@@ -166,8 +165,9 @@ public class ShrampCamManager {
      * @return true if yes, false if no
      */
     public boolean hasBackCamera() {
-        boolean hasCamera = mCameraCharacteristics.containsKey(Select.BACK);
-        mLogger.log("return: " + Boolean.toString(hasCamera));
+        boolean hasCamera = ShrampCamManager.mCameraCharacteristics.containsKey(
+                                                                    ShrampCamManager.Select.BACK);
+        ShrampCamManager.mLogger.log("return: " + Boolean.toString(hasCamera));
         return hasCamera;
     }
 
@@ -176,8 +176,9 @@ public class ShrampCamManager {
      * @return true if yes, false if no
      */
     public boolean hasExternalCamera() {
-        boolean hasCamera = mCameraCharacteristics.containsKey(Select.EXTERNAL);
-        mLogger.log("return: " + Boolean.toString(hasCamera));
+        boolean hasCamera = ShrampCamManager.mCameraCharacteristics.containsKey(
+                                                                    ShrampCamManager.Select.EXTERNAL);
+        ShrampCamManager.mLogger.log("return: " + Boolean.toString(hasCamera));
         return hasCamera;
     }
 
@@ -186,11 +187,11 @@ public class ShrampCamManager {
     static void cameraReady(ShrampCam shrampCam) {
         // if multiple cameras, wait for all to check in and collect their builders
         // when ready, send it over to the master manager
-        mLogger.log("All cameras reporting ready");
+        ShrampCamManager.mLogger.log("All cameras reporting ready");
         CameraDevice cameraDevice = shrampCam.getCameraDevice();
         CaptureRequest.Builder captureRequestBuilder = shrampCam.getCaptureRequestBuilder();
         CaptureOverseer.cameraReady(cameraDevice, captureRequestBuilder);
-        mLogger.log("return;");
+        ShrampCamManager.mLogger.log("return;");
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -200,25 +201,26 @@ public class ShrampCamManager {
      */
     public synchronized boolean openFrontCamera() {
 
-        if (!hasFrontCamera()) {
+        if (!this.hasFrontCamera()) {
             // TODO no front camera
-            mLogger.log("ERROR: No front camera; return false;");
+            ShrampCamManager.mLogger.log("ERROR: No front camera; return false;");
             return false;
         }
-        CameraCharacteristics characteristics = mCameraCharacteristics.get(Select.FRONT);
+        CameraCharacteristics characteristics = ShrampCamManager.mCameraCharacteristics.get(
+                                                                    ShrampCamManager.Select.FRONT);
         assert characteristics != null;
 
-        if (mShrampCameraDevices.containsKey(Select.FRONT)) {
+        if (ShrampCamManager.mShrampCameraDevices.containsKey(Select.FRONT)) {
             // TODO: camera already open
-            mLogger.log("Camera already open");
+            ShrampCamManager.mLogger.log("Camera already open");
         }
         else {
-            mLogger.log("Creating CameraDevice");
-            mShrampCameraDevices.put(Select.FRONT,
+            ShrampCamManager.mLogger.log("Creating CameraDevice");
+            ShrampCamManager.mShrampCameraDevices.put(ShrampCamManager.Select.FRONT,
                     new ShrampCam(characteristics, "shramp_front_cam"));
-            openCamera(Select.FRONT);
+            this.openCamera(Select.FRONT);
         }
-        mLogger.log("return true;");
+        ShrampCamManager.mLogger.log("return true;");
         return true;
     }
 
@@ -227,25 +229,26 @@ public class ShrampCamManager {
      */
     public synchronized boolean openBackCamera() {
 
-        if (!hasBackCamera()) {
+        if (!this.hasBackCamera()) {
             // TODO no back camera
-            mLogger.log("ERROR: No back camera; return false;");
+            ShrampCamManager.mLogger.log("ERROR: No back camera; return false;");
             return false;
         }
-        CameraCharacteristics characteristics = mCameraCharacteristics.get(Select.BACK);
+        CameraCharacteristics characteristics = ShrampCamManager.mCameraCharacteristics.get(
+                                                                    ShrampCamManager.Select.BACK);
         assert characteristics != null;
 
-        if (mShrampCameraDevices.containsKey(Select.BACK)) {
+        if (ShrampCamManager.mShrampCameraDevices.containsKey(ShrampCamManager.Select.BACK)) {
             // TODO: camera already open
-            mLogger.log("Camera already open");
+            ShrampCamManager.mLogger.log("Camera already open");
         }
         else {
-            mLogger.log("Creating CameraDevice");
-            mShrampCameraDevices.put(Select.BACK,
+            ShrampCamManager.mLogger.log("Creating CameraDevice");
+            ShrampCamManager.mShrampCameraDevices.put(ShrampCamManager.Select.BACK,
                     new ShrampCam(characteristics, "shramp_back_cam"));
-            openCamera(Select.BACK);
+            this.openCamera(Select.BACK);
         }
-        mLogger.log("return true;");
+        ShrampCamManager.mLogger.log("return true;");
         return true;
     }
 
@@ -254,26 +257,27 @@ public class ShrampCamManager {
      */
     public synchronized boolean openExternalCamera() {
 
-        if (!hasExternalCamera()) {
+        if (!this.hasExternalCamera()) {
             // TODO no external camera
-            mLogger.log("ERROR: No external camera; return false;");
+            ShrampCamManager.mLogger.log("ERROR: No external camera; return false;");
             return false;
         }
-        CameraCharacteristics characteristics = mCameraCharacteristics.get(Select.EXTERNAL);
+        CameraCharacteristics characteristics = ShrampCamManager.mCameraCharacteristics.get(
+                                                                    ShrampCamManager.Select.EXTERNAL);
         assert characteristics != null;
 
-        if (mShrampCameraDevices.containsKey(Select.EXTERNAL)) {
+        if (ShrampCamManager.mShrampCameraDevices.containsKey(ShrampCamManager.Select.EXTERNAL)) {
             // TODO: camera already open
-            mLogger.log("Camera already open");
+            ShrampCamManager.mLogger.log("Camera already open");
         }
         else {
-            mLogger.log("Creating CameraDevice");
-            mShrampCameraDevices.put(Select.EXTERNAL,
+            ShrampCamManager.mLogger.log("Creating CameraDevice");
+            ShrampCamManager.mShrampCameraDevices.put(ShrampCamManager.Select.EXTERNAL,
                     new ShrampCam(characteristics, "shramp_external_cam"));
 
-            openCamera(Select.EXTERNAL);
+            this.openCamera(Select.EXTERNAL);
         }
-        mLogger.log("return true;");
+        ShrampCamManager.mLogger.log("return true;");
         return true;
     }
 
@@ -284,28 +288,28 @@ public class ShrampCamManager {
     private void openCamera(Select cameraKey) {
 
         synchronized (ACTION_LOCK) {
-            mLogger.log("Opening camera now");
-            String                     cameraId   = mCameraIds.get(cameraKey);
-            assert                     cameraId  != null;
-            ShrampCam shrampCam = mShrampCameraDevices.get(cameraKey);
-            assert                     shrampCam != null;
+            ShrampCamManager.mLogger.log("Opening camera now");
+            String    cameraId   = ShrampCamManager.mCameraIds.get(cameraKey);
+            assert    cameraId  != null;
+            ShrampCam shrampCam  = ShrampCamManager.mShrampCameraDevices.get(cameraKey);
+            assert    shrampCam != null;
 
             try {
-                mCameraManager.openCamera(cameraId, shrampCam, shrampCam.getHandler());
+                ShrampCamManager.mCameraManager.openCamera(cameraId, shrampCam, shrampCam.getHandler());
             }
             catch (SecurityException e) {
                 // TODO user hasn't granted permissions
-                mLogger.log("ERROR: Security Exception; return;");
+                ShrampCamManager.mLogger.log("ERROR: Security Exception; return;");
                 return;
             }
             catch (CameraAccessException e) {
                 // TODO ERROR
-                mLogger.log("ERROR: Camera Access Exception; return;");
+                ShrampCamManager.mLogger.log("ERROR: Camera Access Exception; return;");
                 return;
             }
         }
 
-        mLogger.log("return;");
+        ShrampCamManager.mLogger.log("return;");
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -315,9 +319,9 @@ public class ShrampCamManager {
      */
     public synchronized void closeFrontCamera() {
 
-        mLogger.log("Close front camera");
-        closeCamera(Select.FRONT);
-        mLogger.log("return;");
+        ShrampCamManager.mLogger.log("Close front camera");
+        this.closeCamera(Select.FRONT);
+        ShrampCamManager.mLogger.log("return;");
     }
 
     /**
@@ -325,9 +329,9 @@ public class ShrampCamManager {
      */
     public synchronized void closeBackCamera() {
 
-        mLogger.log("Close back camera");
-        closeCamera(Select.BACK);
-        mLogger.log("return;");
+        ShrampCamManager.mLogger.log("Close back camera");
+        this.closeCamera(Select.BACK);
+        ShrampCamManager.mLogger.log("return;");
     }
 
     /**
@@ -335,9 +339,9 @@ public class ShrampCamManager {
      */
     public synchronized void closeExternalCamera() {
 
-        mLogger.log("Close external camera");
-        closeCamera(Select.EXTERNAL);
-        mLogger.log("return;");
+        ShrampCamManager.mLogger.log("Close external camera");
+        this.closeCamera(Select.EXTERNAL);
+        ShrampCamManager.mLogger.log("return;");
     }
 
     /**
@@ -346,28 +350,28 @@ public class ShrampCamManager {
      */
     private void closeCamera(Select cameraKey) {
 
-        if (!mShrampCameraDevices.containsKey(cameraKey)) {
-            mLogger.log("There was no camera to close; return;");
+        if (!ShrampCamManager.mShrampCameraDevices.containsKey(cameraKey)) {
+            ShrampCamManager.mLogger.log("There was no camera to close; return;");
             return;
         }
 
         synchronized (ACTION_LOCK) {
-            mLogger.log("Closing camera now");
+            ShrampCamManager.mLogger.log("Closing camera now");
             try {
-                mShrampCameraDevices.get(cameraKey).close();
+                ShrampCamManager.mShrampCameraDevices.get(cameraKey).close();
                 Thread.sleep(100);
             }
             catch (NullPointerException e) {
-                mLogger.log("ERROR: null pointer exception; return;");
+                ShrampCamManager.mLogger.log("ERROR: null pointer exception; return;");
                 return;
             }
             catch (InterruptedException e) {
-                mLogger.log("ERROR: sleep interrupted exception; return;");
+                ShrampCamManager.mLogger.log("ERROR: sleep interrupted exception; return;");
                 return;
             }
         }
 
-        mLogger.log("return;");
+        ShrampCamManager.mLogger.log("return;");
     }
 
 }
