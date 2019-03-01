@@ -40,10 +40,10 @@ class ShrampCam extends CameraDevice.StateCallback {
     // Setup in onOpen()
     private CameraDevice           mCameraDevice;
 
-
-    private ShrampCamSetup         mShrampCamSetup;
+    private ShrampCamSettings      mShrampCamSettings;
     private ShrampCamCapture       mShrampCamCapture;
     private CaptureRequest.Builder mCaptureRequestBuilder;
+
 
     // time to wait for threads to quit [milliseconds]
     // 0 means wait forever
@@ -110,12 +110,6 @@ class ShrampCam extends CameraDevice.StateCallback {
         ShrampCam.mLogger.log("Thread: " + mName + " started; return;");
     }
 
-    /**
-     * Access Handler for this device
-     * @return Handler
-     */
-    Handler getHandler() { return this.mHandler; }
-
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
@@ -139,15 +133,15 @@ class ShrampCam extends CameraDevice.StateCallback {
 
             ShrampCam.mLogger.log("Camera opened, configuring for capture");
 
-            ShrampCamSettings shrampCamSettings =
+            this.mShrampCamSettings =
                     new ShrampCamSettings(this.mCameraCharacteristics, this.mCameraDevice);
 
-            shrampCamSettings.logSettings();
+            this.mShrampCamSettings.logSettings();
 
             // Optional, key dump all things supported
             //shrampCamSettings.keyDump();
 
-            this.mCaptureRequestBuilder = shrampCamSettings.getCaptureRequestBuilder();
+            this.mCaptureRequestBuilder = this.mShrampCamSettings.getCaptureRequestBuilder();
 
             // pass configured CaptureRequest.Builder back to manager to complete setup
             ShrampCamManager.cameraReady(this);
@@ -240,7 +234,15 @@ class ShrampCam extends CameraDevice.StateCallback {
      */
     CameraDevice getCameraDevice() { return this.mCameraDevice; }
 
+    /**
+     * Access Handler for this device
+     * @return Handler
+     */
+    Handler getHandler() { return this.mHandler; }
+
     CaptureRequest.Builder getCaptureRequestBuilder() {return this.mCaptureRequestBuilder;}
+
+    ShrampCamSettings getShrampCamSettings() {return this.mShrampCamSettings;}
 
     /**
      * Access error code
@@ -276,66 +278,4 @@ class ShrampCam extends CameraDevice.StateCallback {
 
         ShrampCam.mLogger.log("return;");
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    void startCapture(List<Surface> outputSurfaces) {
-        /*
-        CaptureRequest.Builder builder;
-        try {
-             builder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
-             builder.set(CaptureRequest.FLASH_MODE, CameraMetadata.FLASH_MODE_OFF);
-
-        }
-        catch (Exception e) {
-            return;
-        }
-        */
-        /*
-        mLogger.log("Creating capture session");
-        if (mCameraDevice != null) {
-            try {
-                for (Surface surfaces : outputSurfaces) {
-                    mCaptureRequestBuilder.addTarget(surfaces);
-                    //builder.addTarget(surfaces);
-                }
-                CaptureRequest captureRequest = mCaptureRequestBuilder.build();
-                //CaptureRequest request = builder.build();
-
-                mShrampCamCapture = new ShrampCamCapture(captureRequest);
-                //mShrampCamCapture = new ShrampCamCapture(request);
-                mLogger.log(mShrampCamCapture.toString());
-                CameraCaptureSession.StateCallback callback = mShrampCamCapture.getStateCallback();
-
-                mLogger.log("createCaptureSession()");
-                // use same thread/handler as camera device, set handler = null
-                mCameraDevice.createCaptureSession(outputSurfaces, callback, null);
-            }
-            catch (CameraAccessException e ) {
-                mLogger.log("ERROR: Camera Access Exception");
-            }
-        }
-        */
-        mLogger.log("return;");
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
 }

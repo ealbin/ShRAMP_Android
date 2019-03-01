@@ -6,8 +6,10 @@ import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CaptureRequest;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Size;
 
 import java.util.TreeMap;
 
@@ -49,6 +51,8 @@ public class ShrampCamManager {
     private static TreeMap<Select, String>                  mCameraIds;
     private static TreeMap<Select, CameraCharacteristics>   mCameraCharacteristics;
     private static TreeMap<Select, ShrampCam>               mShrampCameraDevices;
+
+    private static ShrampCam mActiveCamera;
 
     // Lock to prevent multiple threads from opening a 2nd camera before closing the first
     private static final Object ACTION_LOCK = new Object();
@@ -188,6 +192,7 @@ public class ShrampCamManager {
         // if multiple cameras, wait for all to check in and collect their builders
         // when ready, send it over to the master manager
         ShrampCamManager.mLogger.log("All cameras reporting ready");
+        ShrampCamManager.mActiveCamera = shrampCam;
         CameraDevice cameraDevice = shrampCam.getCameraDevice();
         CaptureRequest.Builder captureRequestBuilder = shrampCam.getCaptureRequestBuilder();
         CaptureOverseer.cameraReady(cameraDevice, captureRequestBuilder);
@@ -350,6 +355,8 @@ public class ShrampCamManager {
      */
     private void closeCamera(Select cameraKey) {
 
+        ShrampCamManager.mActiveCamera = null;
+
         if (!ShrampCamManager.mShrampCameraDevices.containsKey(cameraKey)) {
             ShrampCamManager.mLogger.log("There was no camera to close; return;");
             return;
@@ -372,6 +379,27 @@ public class ShrampCamManager {
         }
 
         ShrampCamManager.mLogger.log("return;");
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////\
+
+    /**
+     * @return ImageFormat constant int (either YUV_420_888 or RAW_SENSOR)
+     */
+    public static int getImageFormat() {
+        return ShrampCamManager.mActiveCamera.getShrampCamSettings().getOutputFormat();
+    }
+
+    public static int getImageBitsPerPixel() {
+        return ShrampCamManager.mActiveCamera.getShrampCamSettings().getBitsPerPixel();
+    }
+
+    public static Size getImageSize() {
+        return ShrampCamManager.mActiveCamera.getShrampCamSettings().getOutputSize();
+    }
+
+    public static Handler getCameraHandler() {
+        return ShrampCamManager.mActiveCamera.getHandler();
     }
 
 }

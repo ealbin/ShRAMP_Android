@@ -35,6 +35,8 @@ abstract class Level15_Sensor extends Level14_Lens {
     protected int[]   mSensorTestPatternData;
     private   String  mSensorTestPatternDataName;
 
+    // Disable by setting to 0.
+    private Double SET_FRAME_RATE_FPS = 5.;
 
     //**********************************************************************************************
     // Class Methods
@@ -114,7 +116,13 @@ abstract class Level15_Sensor extends Level14_Lens {
         long minDuration = super.mStreamConfigurationMap.getOutputMinFrameDuration(
                 super.mOutputFormat, super.mOutputSize);
 
-        mSensorExposureTime     = minDuration;
+        if (Double.compare(SET_FRAME_RATE_FPS, 0.) == 0) {
+            mSensorExposureTime = minDuration;
+        }
+        else {
+            mSensorExposureTime = Math.round(1e9 / SET_FRAME_RATE_FPS);
+        }
+
         DecimalFormat df             = new DecimalFormat("#.##");
         mSensorExposureTimeName = df.format(this.mSensorExposureTime / 1000.) + " [us]";
 
@@ -226,7 +234,13 @@ abstract class Level15_Sensor extends Level14_Lens {
         long minDuration = super.mStreamConfigurationMap.getOutputMinFrameDuration(
                            super.mOutputFormat, super.mOutputSize);
 
-        mSensorFrameDuration     = minDuration;
+        if (Double.compare(SET_FRAME_RATE_FPS, 0.) == 0) {
+            mSensorFrameDuration = minDuration;
+        }
+        else {
+            mSensorFrameDuration = Math.round(1e9 / SET_FRAME_RATE_FPS);
+        }
+
         DecimalFormat df              = new DecimalFormat("#.##");
         mSensorFrameDurationName = df.format(this.mSensorFrameDuration / 1000. / 1000.) + " [ms]";
     }

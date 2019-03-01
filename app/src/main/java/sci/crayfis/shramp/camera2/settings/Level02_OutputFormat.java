@@ -5,9 +5,20 @@ import android.graphics.ImageFormat;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.util.Log;
 import android.util.Size;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.SortedSet;
+
+import sci.crayfis.shramp.surfaces.SurfaceManager;
+import sci.crayfis.shramp.util.SizeSortedSet;
 
 @TargetApi(21)
 abstract class Level02_OutputFormat extends Level01_Abilities {
@@ -34,9 +45,9 @@ abstract class Level02_OutputFormat extends Level01_Abilities {
      */
     protected Level02_OutputFormat(@NonNull CameraCharacteristics characteristics) {
         super(characteristics);
-        getStreamConfigurationMap();
-        getOutputFormat();
-        getOutputSize();
+        setStreamConfigurationMap();
+        setOutputFormat();
+        setOutputSize();
     }
 
     //----------------------------------------------------------------------------------------------
@@ -49,7 +60,7 @@ abstract class Level02_OutputFormat extends Level01_Abilities {
     /**
      *
      */
-    private void getStreamConfigurationMap() {
+    private void setStreamConfigurationMap() {
         CameraCharacteristics.Key key = CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP;
         /*
          * Added in API 21
@@ -97,7 +108,7 @@ abstract class Level02_OutputFormat extends Level01_Abilities {
     /**
      *
      */
-    private void getOutputFormat() {
+    private void setOutputFormat() {
        // Default
         mOutputFormat     = ImageFormat.YUV_420_888;
         mOutputFormatName = "YUV_420_888";
@@ -151,24 +162,33 @@ abstract class Level02_OutputFormat extends Level01_Abilities {
     /**
      *
      */
-    private void getOutputSize() {
-        Size[] outputSizes = (Size[]) mStreamConfigurationMap.getOutputSizes(mOutputFormat);
+    private void setOutputSize() {
 
-        Size maxSize = null;
-        for (Size size : outputSizes) {
-            if (maxSize == null) {
-                maxSize = size;
-                continue;
-            }
-            long outputArea = maxSize.getWidth() * maxSize.getHeight();
-            long sizeArea   =    size.getWidth() *        size.getHeight();
-            if (sizeArea > outputArea) {
-                maxSize = size;
+        // Find the largest output size supported by all output surfaces
+        SizeSortedSet outputSizes = new SizeSortedSet();
+
+        Size[] streamOutputSizes = (Size[]) mStreamConfigurationMap.getOutputSizes(mOutputFormat);
+        Collections.addAll(outputSizes, streamOutputSizes);
+
+        List<Class> outputClasses = SurfaceManager.getOutputSurfaceClasses();
+        for (Class klass : outputClasses) {
+            Size[] classOutputSizes = (Size[]) mStreamConfigurationMap.getOutputSizes(klass);
+            assert classOutputSizes != null;
+            for (Size s : classOutputSizes) {
+                if (!outputSizes.contains(s)) {
+                    outputSizes.remove(s);
+                }
             }
         }
 
-        mOutputSize = maxSize;
+        mOutputSize = outputSizes.last();
     }
+
+    //----------------------------------------------------------------------------------------------
+
+    public int  getOutputFormat() { return this.mOutputFormat; }
+    public int  getBitsPerPixel() { return this.mBitsPerPixel; }
+    public Size getOutputSize()   { return this.mOutputSize;   }
 
     //----------------------------------------------------------------------------------------------
 
