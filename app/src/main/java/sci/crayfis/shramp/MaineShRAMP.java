@@ -56,8 +56,8 @@ public final class MaineShRAMP extends Activity implements AsyncResponse {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        this.mNextActivity = new Intent(this, CaptureOverseer.class);
-        this.mFailActivity = new Intent(this, FailManager.class);
+       mNextActivity = new Intent(this, CaptureOverseer.class);
+       mFailActivity = new Intent(this, FailManager.class);
 
         MaineShRAMP.mLogger.log("Welcome to the Shower Reconstruction Application for Mobile Phones");
         MaineShRAMP.mLogger.log("or \"ShRAMP\" for short");

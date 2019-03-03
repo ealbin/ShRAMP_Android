@@ -103,7 +103,7 @@ public class SurfaceManager {
         SurfaceManager.mLogger.log("Opening TextureView");
 
         if (SurfaceManager.mEnableTextureViewOutput) {
-            this.mTextureViewListener.openSurface(activity);
+           mTextureViewListener.openSurface(activity);
         }
         // other surface
         // other surface
@@ -119,7 +119,7 @@ public class SurfaceManager {
         SurfaceManager.mLogger.log("Opening ImageReader");
 
         if (SurfaceManager.mEnableImageReaderOutput) {
-            this.mImageReaderListener.openSurface(imageFormat, bitsPerPixel, imageSize);
+           mImageReaderListener.openSurface(imageFormat, bitsPerPixel, imageSize);
         }
         // other surface
         // other surface
@@ -171,8 +171,8 @@ public class SurfaceManager {
          */
         private void openSurface(Activity activity) {
             SurfaceManager.mLogger.log("TextureView is opening");
-            this.mTextureView = new TextureView(activity);
-            this.mTextureView.setSurfaceTextureListener(this);
+           mTextureView = new TextureView(activity);
+           mTextureView.setSurfaceTextureListener(this);
             // program continues with onSurfaceTextureAvailable listener below
             activity.setContentView(mTextureView);
             SurfaceManager.mLogger.log("return;");
@@ -240,7 +240,7 @@ public class SurfaceManager {
             mBitsPerPixel = bitsPerPixel;
             mImageSize    = imageSize;
 
-            this.mImageReader = ImageReader.newInstance(
+           mImageReader = ImageReader.newInstance(
                     imageSize.getWidth(), imageSize.getHeight(), imageFormat, ImageReaderListener.MAX_IMAGES);
 
             startHandler();
@@ -255,9 +255,9 @@ public class SurfaceManager {
         private void startHandler() {
             String name = "ImageReaderListener";
             SurfaceManager.mLogger.log("Starting thread: " + name);
-            this.mHandlerThread = new HandlerThread(name);
-            this.mHandlerThread.start();  // must start before calling .getLooper()
-            this.mHandler       = new Handler(this.mHandlerThread.getLooper());
+           mHandlerThread = new HandlerThread(name);
+           mHandlerThread.start();  // must start before calling .getLooper()
+           mHandler       = new Handler(this.mHandlerThread.getLooper());
             SurfaceManager.mLogger.log("Thread: " + name + " started; return;");
         }
 

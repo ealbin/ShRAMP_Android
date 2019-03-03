@@ -186,9 +186,9 @@ abstract class Level02_OutputFormat extends Level01_Abilities {
 
     //----------------------------------------------------------------------------------------------
 
-    public int  getOutputFormat() { return this.mOutputFormat; }
-    public int  getBitsPerPixel() { return this.mBitsPerPixel; }
-    public Size getOutputSize()   { return this.mOutputSize;   }
+    public int  getOutputFormat() { returnmOutputFormat; }
+    public int  getBitsPerPixel() { returnmBitsPerPixel; }
+    public Size getOutputSize()   { returnmOutputSize;   }
 
     //----------------------------------------------------------------------------------------------
 

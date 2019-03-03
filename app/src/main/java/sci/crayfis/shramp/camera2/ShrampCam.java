@@ -87,12 +87,12 @@ class ShrampCam extends CameraDevice.StateCallback {
               @NonNull String name, int priority) {
         super();
 
-        this.mName     = name;
-        this.mPriority = priority;
-        this.mCameraCharacteristics = characteristics;
+       mName     = name;
+       mPriority = priority;
+       mCameraCharacteristics = characteristics;
 
         ShrampCam.mLogger.log("Initializing callback and starting background thread");
-        this.startHandler();
+       startHandler();
 
         ShrampCam.mLogger.log("return;");
     }
@@ -102,10 +102,10 @@ class ShrampCam extends CameraDevice.StateCallback {
      */
     void startHandler() {
 
-        ShrampCam.mLogger.log("Starting thread: " + this.mName);
-        this.mHandlerThread = new HandlerThread(this.mName, this.mPriority);
-        this.mHandlerThread.start();  // must start before calling .getLooper()
-        this.mHandler       = new Handler(this.mHandlerThread.getLooper());
+        ShrampCam.mLogger.log("Starting thread: " +mName);
+       mHandlerThread = new HandlerThread(this.mName,mPriority);
+       mHandlerThread.start();  // must start before calling .getLooper()
+       mHandler       = new Handler(this.mHandlerThread.getLooper());
 
         ShrampCam.mLogger.log("Thread: " + mName + " started; return;");
     }
@@ -116,7 +116,7 @@ class ShrampCam extends CameraDevice.StateCallback {
      * Is the camera currently open?
      * @return true if yes, false if no
      */
-    boolean isCameraOpen() { return this.mCameraDevice == null; }
+    boolean isCameraOpen() { returnmCameraDevice == null; }
 
     /**
      * Actions when camera is opened.
@@ -128,20 +128,20 @@ class ShrampCam extends CameraDevice.StateCallback {
         //super.onOpened(camera); method is abstract
         synchronized (LOCK) {
 
-            this.mError        = ShrampCam.NO_ERROR;
-            this.mCameraDevice = camera;
+           mError        = ShrampCam.NO_ERROR;
+           mCameraDevice = camera;
 
             ShrampCam.mLogger.log("Camera opened, configuring for capture");
 
-            this.mShrampCamSettings =
-                    new ShrampCamSettings(this.mCameraCharacteristics, this.mCameraDevice);
+           mShrampCamSettings =
+                    new ShrampCamSettings(this.mCameraCharacteristics,mCameraDevice);
 
-            this.mShrampCamSettings.logSettings();
+           mShrampCamSettings.logSettings();
 
             // Optional, key dump all things supported
             //shrampCamSettings.keyDump();
 
-            this.mCaptureRequestBuilder = this.mShrampCamSettings.getCaptureRequestBuilder();
+           mCaptureRequestBuilder =mShrampCamSettings.getCaptureRequestBuilder();
 
             // pass configured CaptureRequest.Builder back to manager to complete setup
             ShrampCamManager.cameraReady(this);
@@ -158,7 +158,7 @@ class ShrampCam extends CameraDevice.StateCallback {
     public void onClosed(@NonNull CameraDevice camera) {
         super.onClosed(camera);
         synchronized (LOCK) {
-            this.mCameraDevice = camera;
+           mCameraDevice = camera;
             ShrampCam.mLogger.log("No additional action defined; return;");
         }
     }
@@ -172,10 +172,10 @@ class ShrampCam extends CameraDevice.StateCallback {
     public void onDisconnected(@NonNull CameraDevice camera) {
         //super.onDisconnected(camera); method is abstract
         synchronized (LOCK) {
-            this.mCameraDevice = camera;
+           mCameraDevice = camera;
 
             ShrampCam.mLogger.log("Disconnected, closing");
-            this.close();
+           close();
             ShrampCam.mLogger.log("return;");
         }
     }
@@ -190,8 +190,8 @@ class ShrampCam extends CameraDevice.StateCallback {
         //super.onError(camera, error); method is abstract
         synchronized (LOCK) {
 
-            this.mCameraDevice = camera;
-            this.mError = error;
+           mCameraDevice = camera;
+           mError = error;
 
             switch (this.mError) {
                 case (ShrampCam.ERROR_CAMERA_DEVICE): {
@@ -221,7 +221,7 @@ class ShrampCam extends CameraDevice.StateCallback {
             }
 
             ShrampCam.mLogger.log("Fatal error, closing");
-            this.close();
+           close();
             ShrampCam.mLogger.log("return;");
         }
     }
@@ -232,23 +232,23 @@ class ShrampCam extends CameraDevice.StateCallback {
      * Access CameraDevice
      * @return CameraDevice
      */
-    CameraDevice getCameraDevice() { return this.mCameraDevice; }
+    CameraDevice getCameraDevice() { returnmCameraDevice; }
 
     /**
      * Access Handler for this device
      * @return Handler
      */
-    Handler getHandler() { return this.mHandler; }
+    Handler getHandler() { returnmHandler; }
 
-    CaptureRequest.Builder getCaptureRequestBuilder() {return this.mCaptureRequestBuilder;}
+    CaptureRequest.Builder getCaptureRequestBuilder() {returnmCaptureRequestBuilder;}
 
-    ShrampCamSettings getShrampCamSettings() {return this.mShrampCamSettings;}
+    ShrampCamSettings getShrampCamSettings() {returnmShrampCamSettings;}
 
     /**
      * Access error code
      * @return int error code
      */
-    int getErrorCode() { return this.mError; }
+    int getErrorCode() { returnmError; }
 
     ////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -259,22 +259,22 @@ class ShrampCam extends CameraDevice.StateCallback {
 
         ShrampCam.mLogger.log("Closing camera device");
         if (this.mCameraDevice != null) {
-            this.mShrampCamCapture = null;
-            this.mCameraDevice.close();
-            this.mCameraDevice = null;
+           mShrampCamCapture = null;
+           mCameraDevice.close();
+           mCameraDevice = null;
         }
 
-        ShrampCam.mLogger.log("Ending " + this.mName + " thread");
-        this.mHandlerThread.quitSafely();
+        ShrampCam.mLogger.log("Ending " +mName + " thread");
+       mHandlerThread.quitSafely();
         try {
-            this.mHandlerThread.join(ShrampCam.JOIN_MAX_WAIT_IN_MS);
+           mHandlerThread.join(ShrampCam.JOIN_MAX_WAIT_IN_MS);
         }
         catch (InterruptedException e) {
             // TODO ERROR
             ShrampCam.mLogger.log("ERROR: Interrupted Exception");
         }
-        this.mHandlerThread = null;
-        this.mHandler       = null;
+       mHandlerThread = null;
+       mHandler       = null;
 
         ShrampCam.mLogger.log("return;");
     }

@@ -223,7 +223,7 @@ public class ShrampCamManager {
             ShrampCamManager.mLogger.log("Creating CameraDevice");
             ShrampCamManager.mShrampCameraDevices.put(ShrampCamManager.Select.FRONT,
                     new ShrampCam(characteristics, "shramp_front_cam"));
-            this.openCamera(Select.FRONT);
+           openCamera(Select.FRONT);
         }
         ShrampCamManager.mLogger.log("return true;");
         return true;
@@ -251,7 +251,7 @@ public class ShrampCamManager {
             ShrampCamManager.mLogger.log("Creating CameraDevice");
             ShrampCamManager.mShrampCameraDevices.put(ShrampCamManager.Select.BACK,
                     new ShrampCam(characteristics, "shramp_back_cam"));
-            this.openCamera(Select.BACK);
+           openCamera(Select.BACK);
         }
         ShrampCamManager.mLogger.log("return true;");
         return true;
@@ -280,7 +280,7 @@ public class ShrampCamManager {
             ShrampCamManager.mShrampCameraDevices.put(ShrampCamManager.Select.EXTERNAL,
                     new ShrampCam(characteristics, "shramp_external_cam"));
 
-            this.openCamera(Select.EXTERNAL);
+           openCamera(Select.EXTERNAL);
         }
         ShrampCamManager.mLogger.log("return true;");
         return true;
@@ -325,7 +325,7 @@ public class ShrampCamManager {
     public synchronized void closeFrontCamera() {
 
         ShrampCamManager.mLogger.log("Close front camera");
-        this.closeCamera(Select.FRONT);
+       closeCamera(Select.FRONT);
         ShrampCamManager.mLogger.log("return;");
     }
 
@@ -335,7 +335,7 @@ public class ShrampCamManager {
     public synchronized void closeBackCamera() {
 
         ShrampCamManager.mLogger.log("Close back camera");
-        this.closeCamera(Select.BACK);
+       closeCamera(Select.BACK);
         ShrampCamManager.mLogger.log("return;");
     }
 
@@ -345,7 +345,7 @@ public class ShrampCamManager {
     public synchronized void closeExternalCamera() {
 
         ShrampCamManager.mLogger.log("Close external camera");
-        this.closeCamera(Select.EXTERNAL);
+       closeCamera(Select.EXTERNAL);
         ShrampCamManager.mLogger.log("return;");
     }
 

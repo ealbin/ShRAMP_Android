@@ -122,7 +122,7 @@ public final class CaptureOverseer extends Activity {
 
         // For static access of CameraManager
         CaptureOverseer.mInstance = this;
-        this.mCameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
+       mCameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
 
         // Inner class capture session callbacks
         CaptureOverseer.mStateCallback   = new StateCallback();
@@ -239,7 +239,7 @@ public final class CaptureOverseer extends Activity {
             super.onSurfacePrepared(session, surface);
             Log.e("Tag", "Surface prepared");
             CaptureOverseer.mCameraCaptureSession = session;
-            this.mSurface = surface;
+           mSurface = surface;
         }
 
         /**
@@ -398,7 +398,7 @@ public final class CaptureOverseer extends Activity {
             super.onCaptureProgressed(session, request, partialResult);
             CaptureOverseer.mCameraCaptureSession = session;
             CaptureOverseer.mCaptureRequest       = request;
-            this.mCaptureResult = partialResult;
+           mCaptureResult = partialResult;
         }
 
         /**
@@ -416,8 +416,8 @@ public final class CaptureOverseer extends Activity {
             super.onCaptureStarted(session, request, timestamp, frameNumber);
             CaptureOverseer.mCameraCaptureSession = session;
             CaptureOverseer.mCaptureRequest       = request;
-            this.mTimestamp   = timestamp;
-            this.mFrameNumber = frameNumber;
+           mTimestamp   = timestamp;
+           mFrameNumber = frameNumber;
         }
 
         /**
@@ -433,7 +433,7 @@ public final class CaptureOverseer extends Activity {
             super.onCaptureCompleted(session, request, result);
             CaptureOverseer.mCameraCaptureSession = session;
             CaptureOverseer.mCaptureRequest       = request;
-            this.mTotalCaptureResult = result;
+           mTotalCaptureResult = result;
 
             long timestamp = result.get(CaptureResult.SENSOR_TIMESTAMP);
             long exposure  = result.get(CaptureResult.SENSOR_EXPOSURE_TIME);
@@ -486,8 +486,8 @@ public final class CaptureOverseer extends Activity {
             super.onCaptureSequenceCompleted(session, sequenceId, frameNumber);
             CaptureOverseer.mLogger.log("Capture sequence completed");
             CaptureOverseer.mCameraCaptureSession = session;
-            this.mSequenceId  = sequenceId;
-            this.mFrameNumber = frameNumber;
+           mSequenceId  = sequenceId;
+           mFrameNumber = frameNumber;
 
             // TODO: dump mTotalCaptureResult info
 
@@ -528,7 +528,7 @@ public final class CaptureOverseer extends Activity {
             super.onCaptureSequenceAborted(session, sequenceId);
             Log.e("Tag", "Capture sequence has been aborted");
             CaptureOverseer.mCameraCaptureSession = session;
-            this.mSequenceId = sequenceId;
+           mSequenceId = sequenceId;
         }
 
 
@@ -547,8 +547,8 @@ public final class CaptureOverseer extends Activity {
             Log.e("Tag", "A capture buffer has been lost and not sent to its destination surface");
             CaptureOverseer.mCameraCaptureSession = session;
             CaptureOverseer.mCaptureRequest       = request;
-            this.mTarget      = target;
-            this.mFrameNumber = frameNumber;
+           mTarget      = target;
+           mFrameNumber = frameNumber;
         }
 
 
@@ -579,7 +579,7 @@ public final class CaptureOverseer extends Activity {
             Log.e("Tag", errInfo);
             CaptureOverseer.mCameraCaptureSession = session;
             CaptureOverseer.mCaptureRequest       = request;
-            this.mCaptureFailure = failure;
+           mCaptureFailure = failure;
 
             // End exposure block after EXPOSURE_DURATION_NANOS time
             if (SystemClock.elapsedRealtimeNanos() >= CaptureOverseer.mFinishEpoch) {
