@@ -203,7 +203,7 @@ public class DataManager {
                     long time = SystemClock.elapsedRealtimeNanos();
                     DecimalFormat df = new DecimalFormat("#.##");
                     String fps = df.format(1e9 / (double) (time - elapsedTime));
-                    Log.e(Thread.currentThread().getName(), "wrote file, priority: " + Integer.toString(this.getPriority()) + ", fps: " + fps);
+                    Log.e(Thread.currentThread().getName(), "wrote file: " + mFilename + ", priority: " + Integer.toString(this.getPriority()) + ", fps: " + fps);
                 } catch (FileNotFoundException e) {
                     // TODO: big uh oh
                     DataManager.mLogger.log("ERROR: File Not Found Exception");

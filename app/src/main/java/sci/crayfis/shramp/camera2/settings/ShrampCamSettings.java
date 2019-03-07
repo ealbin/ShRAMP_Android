@@ -3,10 +3,12 @@ package sci.crayfis.shramp.camera2.settings;
 import android.annotation.TargetApi;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
+import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.support.annotation.NonNull;
 
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Set;
 
@@ -47,6 +49,29 @@ public final class ShrampCamSettings extends Level17_Misc{
      */
     public CaptureRequest.Builder getCaptureRequestBuilder() {
         return super.mCaptureRequestBuilder;
+    }
+
+    public CaptureRequest.Builder updateExposure(CaptureRequest.Builder builder,
+                                                 long exposureNanos) {
+        super.mCaptureRequestBuilder = builder;
+
+        if (super.mControlMode != CameraMetadata.CONTROL_MODE_OFF
+                || ( super.mControlAeMode != null
+                && super.mControlAeMode != CameraMetadata.CONTROL_AE_MODE_OFF)) {
+            return builder;
+        }
+
+        if (super.mRequestKeys.contains(CaptureRequest.SENSOR_EXPOSURE_TIME)) {
+            super.mSensorExposureTime = exposureNanos;
+            builder.set(CaptureRequest.SENSOR_EXPOSURE_TIME, exposureNanos);
+        }
+
+        if (super.mRequestKeys.contains(CaptureRequest.SENSOR_FRAME_DURATION)) {
+            super.mSensorFrameDuration = exposureNanos;
+            builder.set(CaptureRequest.SENSOR_FRAME_DURATION, exposureNanos);
+        }
+
+        return builder;
     }
 
     //----------------------------------------------------------------------------------------------

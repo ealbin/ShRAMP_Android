@@ -28,7 +28,6 @@ abstract class Level17_Misc extends Level16_Statistics {
     protected Rect    mScalarCropRegion;
     private   String  mScalarCropRegionName;
 
-
     //**********************************************************************************************
     // Class Methods
     //--------------

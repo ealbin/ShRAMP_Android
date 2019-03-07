@@ -35,6 +35,12 @@ abstract class Level02_OutputFormat extends Level01_Abilities {
 
     protected Size                   mOutputSize;
 
+
+    // RAW_SENSOR is offered on some smartphones, but fps performance doesn't push past ~10-15 fps
+    // using ImageReader, and RAW_SENSOR doesn't work directly with Renderscript Allocation..
+    // So for those reasons, (and YUV is supported on all cameras), RAW_SENSOR can be disabled
+    private static final boolean ALLOW_RAW_SENSOR = true;
+
     //**********************************************************************************************
     // Class Methods
     //--------------
@@ -112,6 +118,7 @@ abstract class Level02_OutputFormat extends Level01_Abilities {
        // Default
         mOutputFormat     = ImageFormat.YUV_420_888;
         mOutputFormatName = "YUV_420_888";
+
         /*
          * Added in API 19
          *
@@ -138,7 +145,7 @@ abstract class Level02_OutputFormat extends Level01_Abilities {
          * a ImageReader object.
          */
 
-        if (super.mIsRawAble) {
+        if (ALLOW_RAW_SENSOR && super.mIsRawAble) {
             mOutputFormat     = ImageFormat.RAW_SENSOR;
             mOutputFormatName = "RAW_SENSOR";
             /*
@@ -152,6 +159,9 @@ abstract class Level02_OutputFormat extends Level01_Abilities {
              * interpret a raw sensor image must be queried from the CameraDevice which produced
              * the image.
              */
+        }
+        if (!ALLOW_RAW_SENSOR && super.mIsRawAble) {
+            mOutputFormatName += " (RAW_SENSOR DISABLED)";
         }
 
         mBitsPerPixel =  ImageFormat.getBitsPerPixel(mOutputFormat);
@@ -186,9 +196,9 @@ abstract class Level02_OutputFormat extends Level01_Abilities {
 
     //----------------------------------------------------------------------------------------------
 
-    public int  getOutputFormat() { returnmOutputFormat; }
-    public int  getBitsPerPixel() { returnmBitsPerPixel; }
-    public Size getOutputSize()   { returnmOutputSize;   }
+    public int  getOutputFormat() { return mOutputFormat; }
+    public int  getBitsPerPixel() { return mBitsPerPixel; }
+    public Size getOutputSize()   { return mOutputSize;   }
 
     //----------------------------------------------------------------------------------------------
 

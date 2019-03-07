@@ -6,21 +6,19 @@ import android.graphics.SurfaceTexture;
 import android.media.Image;
 import android.media.ImageReader;
 import android.os.Handler;
-import android.os.HandlerThread;
-import android.os.SystemClock;
-import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
 import android.view.TextureView;
 
+import android.os.Process;
+
 import java.nio.ByteBuffer;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 import sci.crayfis.shramp.CaptureOverseer;
 import sci.crayfis.shramp.logging.ShrampLogger;
-import sci.crayfis.shramp.util.DataManager;
+import sci.crayfis.shramp.util.HandlerManager;
 
 @TargetApi(21)
 public class SurfaceManager {
@@ -29,29 +27,25 @@ public class SurfaceManager {
     // Class Variables
     //----------------
 
+    // Flags to signify use of a surface (enable/disable output surface here)
+    private static final boolean mEnableTextureViewOutput = true;
+    private static final boolean mEnableImageReaderOutput = false;
+
+    //..............................................................................................
+
     // Single instance of SurfaceManager
     private static final SurfaceManager mInstance = new SurfaceManager();
 
     // List of surfaces being used as output
     private static final List<Surface> mSurfaces = new ArrayList<>();
 
-    // Flags to signify use of a surface (enable/disable output surface here)
-    private static final boolean mEnableTextureViewOutput = true;
-    private static final boolean mEnableImageReaderOutput = true;
-
-    // Flags to signify a surface is ready
-    private static Boolean mTextureViewReady = false;
-    private static Boolean mImageReaderReady = false;
-    // other surface
-    // other surface
+    //..............................................................................................
 
     // TextureView Listener (inner class)
     private TextureViewListener mTextureViewListener = new TextureViewListener();
     private ImageReaderListener mImageReaderListener = new ImageReaderListener();
-    // other surface inner class
-    // other surface inner class
 
-    private static final Object SAVE_LOCK = new Object();
+    //..............................................................................................
 
     // logging
     private static final ShrampLogger mLogger = new ShrampLogger(ShrampLogger.DEFAULT_STREAM);
@@ -69,24 +63,22 @@ public class SurfaceManager {
      * In place of a constructor
      * @return single instance of SurfaceManager
      */
-    public synchronized static SurfaceManager getInstance() {return SurfaceManager.mInstance;}
+    public static SurfaceManager getInstance() {return mInstance;}
 
     /**
-     * Activate/Deactivate output classes here
+     *
      * @return
      */
     public static List<Class> getOutputSurfaceClasses() {
         List<Class> classList = new ArrayList<>();
 
-        // Enable TextureView
-        if (SurfaceManager.mEnableTextureViewOutput) {
+        if (mEnableTextureViewOutput) {
             // TextureView itself isn't known to StreamConfigurationMap
             // but TextureView uses SurfaceTexture, which is known
             classList.add(SurfaceTexture.class);
         }
 
-        // Enable ImageReader
-        if (SurfaceManager.mEnableImageReaderOutput) {
+        if (mEnableImageReaderOutput) {
             classList.add(ImageReader.class);
         }
 
@@ -95,63 +87,22 @@ public class SurfaceManager {
 
     //----------------------------------------------------------------------------------------------
 
-    /**
-     * Set up surfaces for output operation (executed in main thread)
-     * @param activity
-     */
-    public synchronized void openUiSurfaces(Activity activity) {
-        SurfaceManager.mLogger.log("Opening TextureView");
+    public void openSurfaces(Activity activity, int imageFormat, int bitsPerPixel, Size imageSize) {
 
-        if (SurfaceManager.mEnableTextureViewOutput) {
-           mTextureViewListener.openSurface(activity);
+        mLogger.log("Opening TextureView");
+        if (mEnableTextureViewOutput) {
+            mTextureViewListener.openSurface(activity);
         }
-        // other surface
-        // other surface
-    }
 
-    /**
-     * Set up surfaces for output operation (executed in camera thread)
-     * @param imageFormat
-     * @param bitsPerPixel
-     * @param imageSize
-     */
-    public synchronized void openImageSurfaces(int imageFormat, int bitsPerPixel, Size imageSize) {
-        SurfaceManager.mLogger.log("Opening ImageReader");
-
-        if (SurfaceManager.mEnableImageReaderOutput) {
-           mImageReaderListener.openSurface(imageFormat, bitsPerPixel, imageSize);
+        mLogger.log("Opening ImageReader");
+        if (mEnableImageReaderOutput) {
+            mImageReaderListener.openSurface(activity, imageFormat, bitsPerPixel, imageSize);
         }
-        // other surface
-        // other surface
-    }
 
+        CaptureOverseer.surfacesReady(mSurfaces);
+    }
 
     //----------------------------------------------------------------------------------------------
-
-    /**
-     * Called whenever a surface is initialized, once all surfaces check in, notify CaptureOverseer
-     */
-    private synchronized void surfaceReady() {
-        SurfaceManager.mLogger.log("A surface is ready");
-
-        boolean isReady = true;
-        if (SurfaceManager.mEnableTextureViewOutput) {
-            isReady = isReady && SurfaceManager.mTextureViewReady;
-        }
-        if (SurfaceManager.mEnableImageReaderOutput) {
-            isReady = isReady && SurfaceManager.mImageReaderReady;
-        }
-
-        if (isReady) {
-            SurfaceManager.mLogger.log("All surfaces are ready");
-            CaptureOverseer.surfacesReady(mSurfaces);
-        }
-        else {
-            SurfaceManager.mLogger.log("Not all surfaces are ready, continuing to wait");
-            // otherwise wait for the remaining surfaces to check in..
-        }
-        SurfaceManager.mLogger.log("return;");
-    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // TextureViewListener /////////////////////////////////////////////////////////////////////////
@@ -160,51 +111,52 @@ public class SurfaceManager {
      * Handles everything to do with TextureView surface
      */
     private final class TextureViewListener implements TextureView.SurfaceTextureListener{
-        private TextureView mTextureView;
 
-        private long mUpdateCount = 0;
-        private final long UPDATE_LIMIT = 5;
+        private Handler     nHandler;
+        private TextureView nTextureView;
 
         /**
          * Create surface
          * @param activity source context
          */
         private void openSurface(Activity activity) {
-            SurfaceManager.mLogger.log("TextureView is opening");
-           mTextureView = new TextureView(activity);
-           mTextureView.setSurfaceTextureListener(this);
+            mLogger.log("TextureView is opening");
+            nHandler     = new Handler(activity.getMainLooper());
+            nTextureView = new TextureView(activity);
+            nTextureView.setSurfaceTextureListener(this);
+
             // program continues with onSurfaceTextureAvailable listener below
-            activity.setContentView(mTextureView);
-            SurfaceManager.mLogger.log("return;");
+            activity.setContentView(nTextureView);
+            mLogger.log("return;");
         }
 
         @Override
         public void onSurfaceTextureAvailable(SurfaceTexture arg0, int arg1, int arg2) {
-            SurfaceManager.mLogger.log("TextureView is open");
+            mLogger.log("TextureView is open");
             // TODO what are arg1 and arg2?
-            SurfaceManager.mSurfaces.add(new Surface(arg0));
-            SurfaceManager.mTextureViewReady = true;
-            SurfaceManager.mLogger.log("return;");
+            mSurfaces.add(new Surface(arg0));
+            mLogger.log("return;");
         }
 
         @Override
         public boolean onSurfaceTextureDestroyed(SurfaceTexture arg0) {
             // TODO (maybe no action?)
-            SurfaceManager.mLogger.log("TextureView has been destroyed");
-            SurfaceManager.mLogger.log("return false;");
+            mLogger.log("TextureView has been destroyed");
+            mLogger.log("return false;");
             return false;
         }
 
         @Override
         public void onSurfaceTextureSizeChanged(SurfaceTexture arg0, int arg1,int arg2) {
             // TODO (maybe no action?)
-            SurfaceManager.mLogger.log("TextureView has changed size");
-            SurfaceManager.mLogger.log("return;");
+            mLogger.log("TextureView has changed size");
+            mLogger.log("return;");
         }
 
         @Override
         public void onSurfaceTextureUpdated(SurfaceTexture arg0) {
-            // TODO (maybe no action?)
+            // TODO: (maybe no action?)
+            // TODO: could measure fps
         }
     }
 
@@ -215,87 +167,111 @@ public class SurfaceManager {
      * Handles everything to do with ImageReader surface
      */
     private final class ImageReaderListener implements ImageReader.OnImageAvailableListener {
-
+        // ImageReader max simultaneous image access
         private static final int MAX_IMAGES = 1;
-        private ImageReader mImageReader;
 
-        private Handler mHandler;
-        private HandlerThread mHandlerThread;
+        private Handler     nHandler;
+        private ImageReader nImageReader;
 
-        private int  mImageFormat;
-        private int  mBitsPerPixel;
-        private Size mImageSize;
-
-        private long elapsedTime = SystemClock.elapsedRealtimeNanos();
+        /**
+         * Do nothing constructor
+         */
+        private ImageReaderListener() {
+            super();
+        }
 
         /**
          * Create surface
-         * @param imageFormat ImageFormat const int (either YUV_420_888 or RAW_SENSOR)
+         *
+         * @param imageFormat  ImageFormat const int (either YUV_420_888 or RAW_SENSOR)
          * @param bitsPerPixel bits per pixel
-         * @param imageSize image size in pixels
+         * @param imageSize    image size in pixels
          */
-        private void openSurface(int imageFormat, int bitsPerPixel, Size imageSize) {
-            SurfaceManager.mLogger.log("ImageReader is opening");
-            mImageFormat  = imageFormat;
-            mBitsPerPixel = bitsPerPixel;
-            mImageSize    = imageSize;
+        private void openSurface(Activity activity, int imageFormat, int bitsPerPixel, Size imageSize) {
+            mLogger.log("ImageReader is opening");
 
-           mImageReader = ImageReader.newInstance(
-                    imageSize.getWidth(), imageSize.getHeight(), imageFormat, ImageReaderListener.MAX_IMAGES);
+            nHandler = HandlerManager.newHandler("ImageReader", Process.THREAD_PRIORITY_VIDEO);
 
-            startHandler();
-            mImageReader.setOnImageAvailableListener(this, mHandler);
-            SurfaceManager.mSurfaces.add(this.mImageReader.getSurface());
-            SurfaceManager.mImageReaderReady = true;
-            SurfaceManager.mInstance.surfaceReady();
+            nImageReader = ImageReader.newInstance(imageSize.getWidth(), imageSize.getHeight(),
+                                                   imageFormat, MAX_IMAGES);
+            nImageReader.setOnImageAvailableListener(this, nHandler);
+            mSurfaces.add(nImageReader.getSurface());
 
-            SurfaceManager.mLogger.log("return;");
+            mLogger.log("return;");
         }
-
-        private void startHandler() {
-            String name = "ImageReaderListener";
-            SurfaceManager.mLogger.log("Starting thread: " + name);
-           mHandlerThread = new HandlerThread(name);
-           mHandlerThread.start();  // must start before calling .getLooper()
-           mHandler       = new Handler(this.mHandlerThread.getLooper());
-            SurfaceManager.mLogger.log("Thread: " + name + " started; return;");
-        }
-
 
         @Override
         public void onImageAvailable(ImageReader reader) {
-            synchronized (SurfaceManager.SAVE_LOCK)
-            {
-                Image image = null;
-                try {
-                    image = reader.acquireNextImage();
+            Image image = null;
+            try {
+                image = reader.acquireNextImage();
 
-                    long time = SystemClock.elapsedRealtimeNanos();
-                    DecimalFormat df = new DecimalFormat("##.#");
-                    String fps = df.format(1e9 / (double)(time - elapsedTime));
-                    elapsedTime = time;
-                    Log.e(Thread.currentThread().getName(),"reading image, realtime fps: " + fps);
-                    // RAW_SENSOR has 1 plane, YUV has 3 but the luminosity (Y) is plane 1
-                    ByteBuffer buffer = image.getPlanes()[0].getBuffer();
-                    byte[] data = new byte[buffer.capacity()];
-                    buffer.get(data);
+                // RAW_SENSOR has 1 plane, YUV has 3 but the luminosity (Y) is plane 1
+                ByteBuffer imageBytes = image.getPlanes()[0].getBuffer();
+                image.close();
 
-                    DataManager.saveData(image.getTimestamp(), data);
-                }
-                catch (IllegalStateException e) {
-                    // TODO: handle this -- with save lock shouldn't ever happen
-                    SurfaceManager.mLogger.log("ERROR: Illegal State Exception");
-                }
-                finally {
-                    if (image != null) {
-                        // purge image from reader
-                        image.close();
-                    }
+                CaptureOverseer.processImage(imageBytes);
+            }
+            catch (IllegalStateException e) {
+                // TODO: handle this -- with synchronized shouldn't ever happen
+                SurfaceManager.mLogger.log("ERROR: Illegal State Exception");
+                if (image != null) {
+                    image.close();
                 }
             }
         }
 
-    }
 
-    // private final class SomethingListener ...
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        public void done() {
+            //super.doStatistics();
+            /*
+            Element doubleElement = Element.F64(mRenderScript);
+            Type sumType = new Type.Builder(mRenderScript, doubleElement).setX(mImageSize.getWidth()).setY(mImageSize.getHeight()).create();
+            Allocation output = Allocation.createTyped(mRenderScript, sumType, Allocation.USAGE_SCRIPT);
+
+            double[] outarray = new double[mImageSize.getWidth() * mImageSize.getHeight()];
+            mTimeValSumScript.forEach_getOutput(output);
+            output.copyTo(outarray);
+
+            String dump = "";
+            for (int i = 1; i < 1001; i++) {
+                dump += " " + df.format(outarray[i-1]);
+                if (i % 10 == 0) { dump += "\n";}
+            }
+            mLogger.log("Value dump: \n" + dump);
+
+            double mean = 0.;
+            for (double val : outarray) {
+                mean += val;
+            }
+            mean /= mImageSize.getWidth() * mImageSize.getHeight();
+
+            mLogger.log("Average value: " + df.format(mean));
+        }
+
+        */
+        }
+    }
 }
+
+
+//private long elapsedTime = SystemClock.elapsedRealtimeNanos();
+
+//private DecimalFormat df = new DecimalFormat("##.#");
+

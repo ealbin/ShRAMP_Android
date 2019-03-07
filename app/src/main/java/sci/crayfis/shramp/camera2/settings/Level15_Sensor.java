@@ -35,8 +35,8 @@ abstract class Level15_Sensor extends Level14_Lens {
     protected int[]   mSensorTestPatternData;
     private   String  mSensorTestPatternDataName;
 
-    // Disable by setting to 0.
-    private Double SET_FRAME_RATE_FPS = 5.;
+    // Frame rate override, disable override by setting to 0.
+    private Double SET_FRAME_RATE_FPS = 0.;
 
     //**********************************************************************************************
     // Class Methods

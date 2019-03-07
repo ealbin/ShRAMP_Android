@@ -223,25 +223,6 @@ public final class MaineShRAMP extends Activity implements AsyncResponse {
     }
     */
 
-    // ---------- CAMERA STUFF ------------------
-    //public String filename = Environment.getExternalStorageDirectory()+"/ShRAMP_PIC.jpg";
-    //public final File file = new File(filename);
-
-/*
-    public void createStillSession() {
-        final String LOCAL_TAG = TAG.concat(".createStillSession()");
-        Log.e(LOCAL_TAG, "Trying to capture still");
-
-            image_reader = ImageReader.newInstance(image_dimensions[0].getWidth(), image_dimensions[0].getHeight(), image_format, 1);
-            capture_request_builder.addTarget(image_reader.getSurface());
-            List<Surface> output_surfaces = new ArrayList<Surface>(1);
-            output_surfaces.add(image_reader.getSurface());
-            ImageReader.OnImageAvailableListener reader_listener =
-                    new ImageReader.OnImageAvailableListener() {
-                final String LOCAL_TAG = TAG.concat(".createStillSession.ImageReader.OnImageAvailableListener()");
-
-  */
-
 
     // SSHrampSession is an AsyncTask, holding this reference allows main to
     // see the result when it finishes.

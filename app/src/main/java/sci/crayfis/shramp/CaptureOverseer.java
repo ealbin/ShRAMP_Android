@@ -3,27 +3,20 @@ package sci.crayfis.shramp;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
-import android.hardware.camera2.CameraAccessException;
-import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
-import android.hardware.camera2.CaptureFailure;
-import android.hardware.camera2.CaptureRequest;
-import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
 import android.os.Bundle;
-import android.os.SystemClock;
-import android.util.Log;
+import android.os.Handler;
 import android.util.Size;
 import android.view.Surface;
 
-import java.text.DecimalFormat;
-import java.util.Calendar;
+import java.nio.ByteBuffer;
 import java.util.List;
-import java.util.Locale;
-import java.util.TimeZone;
 
+import sci.crayfis.shramp.analysis.ImageProcessor;
 import sci.crayfis.shramp.camera2.ShrampCamManager;
+import sci.crayfis.shramp.camera2.capture.CaptureManager;
 import sci.crayfis.shramp.logging.ShrampLogger;
 import sci.crayfis.shramp.surfaces.SurfaceManager;
 import sci.crayfis.shramp.util.DataManager;
@@ -46,41 +39,19 @@ public final class CaptureOverseer extends Activity {
     private static CaptureOverseer mInstance;
 
     // Built and configured by a ShrampCam via the ShrampCamManager
-    private static CameraDevice           mCameraDevice;
-    private static CaptureRequest         mCaptureRequest;
-    private static CaptureRequest.Builder mCaptureRequestBuilder;
+    private static CameraDevice mCameraDevice;
 
-    // List of output target surfaces provided by SurfaceManager
-    private static List<Surface>  mSurfaces;
+    private static ImageProcessor mImageProcessor;
+
+    private static CaptureManager mCaptureManager;
 
     //..............................................................................................
-
-    // Exposure block time window [nano seconds]
-    private static long EXPOSURE_DURATION_NANOS = (long) (10 * 1e9);
-    private static long mFinishEpoch;
 
     // Date epoch for data folder
     private static String mDateEpoch;
 
     // Full path of data folder
     private static String mDataPath;
-
-    // Nanosecond reference epoch for capture filenames
-    private static long mNanoEpoch;
-
-    // Inner class StateCallback to handle CameraCaptureSession.StateCallback
-    private static StateCallback mStateCallback;
-
-    // Session is created by the system from a CameraDevice,
-    // and returned via inner class, StateCallback.onConfigured()
-    private static CameraCaptureSession mCameraCaptureSession;
-
-    //..............................................................................................
-
-    // Inner class CaptureCallback to handle CameraCaptureSession.CaptureCallback
-    private static CaptureCallback mCaptureCallback;
-
-    //..............................................................................................
 
     // Android rules, cannot be static (formally, that's a potential memory leak)
     private CameraManager mCameraManager;
@@ -121,25 +92,18 @@ public final class CaptureOverseer extends Activity {
         DataManager.clean();
 
         // For static access of CameraManager
-        CaptureOverseer.mInstance = this;
-       mCameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
-
-        // Inner class capture session callbacks
-        CaptureOverseer.mStateCallback   = new StateCallback();
-        CaptureOverseer.mCaptureCallback = new CaptureCallback();
-
-        // Open UI surfaces while still on main thread
-        // Execution continues in uiSurfacesReady()
-        SurfaceManager.getInstance().openUiSurfaces(CaptureOverseer.mInstance);
+        mInstance = this;
+        mCameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
 
         // Turning control over to the ShrampCamManager to set up the camera
-        CameraManager    cameraManager    = CaptureOverseer.getCameraManager();
+        CameraManager    cameraManager    = getCameraManager();
         ShrampCamManager shrampCamManager = ShrampCamManager.getInstance(cameraManager);
         assert shrampCamManager != null;
 
+        // TODO: update camera manager etc
         // shrampCamManager.openXxxxCamera() opens a camera (returns true if successful).
         // When the camera opens, execution will continue in cameraReady()
-        // NOTE: subsequent execution will be on the camera's thread
+        // NOTE: execution of cameraReady() will be on the camera's thread
         mWhichCamera = WhichCamera.BACK;
         if (!shrampCamManager.openBackCamera()) {
             mLogger.log("WARNING: BACK CAMERA DID NOT OPEN, TRYING FRONT");
@@ -153,207 +117,90 @@ public final class CaptureOverseer extends Activity {
             }
         }
 
-        CaptureOverseer.mLogger.log("return;");
+        mLogger.log("return;");
     }
 
     /**
      * Camera is ready for capture, create surfaces to output to.
      * Execution continues surfacesReady()
      * @param cameraDevice configured and ready for capture
-     * @param captureRequestBuilder associated camera capture request builder
      */
-    public static void cameraReady(CameraDevice cameraDevice,
-                                   CaptureRequest.Builder captureRequestBuilder) {
-        CaptureOverseer.mLogger.log("Camera ready, setting up surfaces");
+    public static void cameraReady(CameraDevice cameraDevice) {
+        mLogger.log("Camera ready, setting up surfaces");
 
-        CaptureOverseer.mCameraDevice          = cameraDevice;
-        CaptureOverseer.mCaptureRequestBuilder = captureRequestBuilder;
+        mCameraDevice = cameraDevice;
 
-        int imageFormat  = ShrampCamManager.getImageFormat();
-        int bitsPerPixel = ShrampCamManager.getImageBitsPerPixel();
-        Size imageSize   = ShrampCamManager.getImageSize();
+        final int imageFormat  = ShrampCamManager.getImageFormat();
+        final int bitsPerPixel = ShrampCamManager.getImageBitsPerPixel();
+        final Size imageSize   = ShrampCamManager.getImageSize();
+
+        // Set image processor
+        mImageProcessor = new ImageProcessor(mInstance, imageFormat, bitsPerPixel, imageSize);
+
+        final Runnable openSurfaces = new Runnable() {
+            @Override
+            public void run() {
+                SurfaceManager.getInstance().openSurfaces(mInstance, imageFormat,
+                                                          bitsPerPixel, imageSize);
+            }
+        };
 
         // Turning control over to the SurfaceManager to set up output surfaces.
         // Execution continues in surfacesReady()
-        CaptureOverseer.mLogger.log("Setting up surfaces");
-        SurfaceManager.getInstance().openImageSurfaces(imageFormat, bitsPerPixel, imageSize);
-        CaptureOverseer.mLogger.log("return;");
+        // Open surfaces on the activity thread
+        new Handler().post(openSurfaces);
+        mLogger.log("return;");
     }
 
     /**
      * After surfaces have been successfully configured, prepare camera.
-     * Execution continues in innerclass StateCallback.onConfigured()
+     * Execution continues in CaptureManager
      * @param surfaces surfaces ready for output
      */
     public static void surfacesReady(List<Surface> surfaces) {
-        mSurfaces = surfaces;
         mLogger.log("All surfaces are ready, finishing capture request");
 
-        for (Surface surface : mSurfaces) {
-            CaptureOverseer.mCaptureRequestBuilder.addTarget(surface);
-        }
-        CaptureOverseer.mLogger.log("Building capture request");
-        CaptureOverseer.mCaptureRequest = CaptureOverseer.mCaptureRequestBuilder.build();
-
-        try {
-            CaptureOverseer.mLogger.log("Creating capture session");
-            // Execution continues in inner class StateCallback.onConfigured()
-            CaptureOverseer.mCameraDevice.createCaptureSession(
-                    CaptureOverseer.mSurfaces, CaptureOverseer.mStateCallback,
-                    ShrampCamManager.getCameraHandler());
-        }
-        catch (CameraAccessException e) {
-            CaptureOverseer.mLogger.log("ERROR: Camera Access Exception");
-        }
-        CaptureOverseer.mLogger.log("return;");
+        // Begin data taking
+        mCaptureManager = new CaptureManager(mCameraDevice, surfaces);
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    // implementation of inner class CameraCaptureSession.StateCallback
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    //----------------------------------------------------------------------------------------------
 
-    /**
-     * Implements the state callbacks for a CameraCaptureSession.
-     * Works in conjunction with CaptureCallback below.
-     */
-    private static final class StateCallback extends CameraCaptureSession.StateCallback {
-
-        //******************************************************************************************
-        // Class Variables
-        //----------------
-
-        // Updated with each surface as it is being prepared for capture
-        private Surface mSurface;
-
-        //******************************************************************************************
-        // Class Methods
-        //--------------
-
-        /**
-         * This method is called when the buffer pre-allocation for an output Surface is complete.
-         * @param session
-         * @param surface
-         */
-        @Override
-        public void onSurfacePrepared(CameraCaptureSession session, Surface surface) {
-            super.onSurfacePrepared(session, surface);
-            Log.e("Tag", "Surface prepared");
-            CaptureOverseer.mCameraCaptureSession = session;
-           mSurface = surface;
-        }
-
-        /**
-         * This method is called when the camera device has finished configuring itself,
-         * and the session can start processing capture requests.
-         * (Required)
-         * @param session
-         */
-        @Override
-        public void onConfigured(CameraCaptureSession session) {
-            //super.onConfigured(session); is abstract
-            Log.e("Tag", "Ready to start repeating request..");
-
-            CaptureOverseer.mCameraCaptureSession = session;
-
-            // Make sure time zone is Pacific Standard Time (no daylight savings)
-            TimeZone pst = TimeZone.getTimeZone("Etc/GMT+8");
-            if (pst.useDaylightTime()) {
-                // TODO: quit
-                mLogger.log("ERROR: Using daylight savings time");
-            }
-            TimeZone.setDefault(pst);
-
-            // Get time
-            Calendar calendar = Calendar.getInstance(pst, Locale.US);
-            int year          = calendar.get(Calendar.YEAR);
-            int month         = calendar.get(Calendar.MONDAY);
-            int day           = calendar.get(Calendar.DAY_OF_MONTH);
-            int hour          = calendar.get(Calendar.HOUR_OF_DAY);
-            int minute        = calendar.get(Calendar.MINUTE);
-            int second        = calendar.get(Calendar.SECOND);
-            int millisecond   = calendar.get(Calendar.MILLISECOND);
-
-            CaptureOverseer.mDateEpoch = Integer.toString(year)   + "-"
-                    + Integer.toString(month)  + "-"
-                    + Integer.toString(day)    + "-"
-                    + Integer.toString(hour)   + "-"
-                    + Integer.toString(minute) + "-"
-                    + Integer.toString(second) + "-"
-                    + Integer.toString(millisecond);
-            CaptureOverseer.mDataPath = DataManager.createDataDirectory(CaptureOverseer.mDateEpoch);
-
-            CaptureOverseer.mNanoEpoch   = SystemClock.elapsedRealtimeNanos();
-            CaptureOverseer.mFinishEpoch = CaptureOverseer.mNanoEpoch + EXPOSURE_DURATION_NANOS;
-
-            try {
-                // Execution continues in CaptureCallback.onCaptureStarted()
-                // Handler is implicitly the camera's thread
-                CaptureOverseer.mCameraCaptureSession.setRepeatingRequest(
-                        CaptureOverseer.mCaptureRequest, CaptureOverseer.mCaptureCallback, null);
-            }
-            catch (CameraAccessException e) {
-                CaptureOverseer.mLogger.log("ERROR: Camera Access Exception");
-            }
-        }
-
-        /**
-         * This method is called when the session starts actively processing capture requests.
-         * @param session
-         */
-        @Override
-        public void onActive(CameraCaptureSession session) {
-            super.onActive(session);
-            Log.e("Tag", "Capture session is active and processing requests!");
-            CaptureOverseer.mCameraCaptureSession = session;
-        }
-
-        /**
-         * This method is called every time the session has no more capture requests to process.
-         * @param session
-         */
-        @Override
-        public void onReady(CameraCaptureSession session) {
-            super.onReady(session);
-            Log.e("Tag", "Session is ready for capture requests");
-            CaptureOverseer.mCameraCaptureSession = session;
-        }
-
-        /**
-         * This method is called when camera device's input capture queue becomes empty,
-         * and is ready to accept the next request.
-         * @param session
-         */
-        @Override
-        public void onCaptureQueueEmpty(CameraCaptureSession session) {
-            super.onCaptureQueueEmpty(session);
-            Log.e("Tag", "Capture queue is empty");
-            CaptureOverseer.mCameraCaptureSession = session;
-        }
-
-        /**
-         * This method is called if the session cannot be configured as requested.
-         * (Required)
-         * @param session
-         */
-        @Override
-        public void onConfigureFailed(CameraCaptureSession session) {
-            //super.onConfigureFailed(session); is abstract
-            Log.e("Tag", "Capture session configuration failed!");
-            CaptureOverseer.mCameraCaptureSession = session;
-        }
-
-        /**
-         * This method is called when the session is closed.
-         * @param session
-         */
-        @Override
-        public void onClosed(CameraCaptureSession session) {
-            super.onClosed(session);
-            Log.e("Tag", "Capture session is closed.");
-            CaptureOverseer.mCameraCaptureSession = session;
-        }
-
+    public static void processImage(TotalCaptureResult result) {
+        mImageProcessor.processImage(result);
     }
+
+    public static void processImage(ByteBuffer imageBytes) {
+        mImageProcessor.processImage(imageBytes);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // implementation of inner class CameraCaptureSession.CaptureCallback
@@ -363,12 +210,12 @@ public final class CaptureOverseer extends Activity {
      * Implements the capture callbacks for a CameraCaptureSession.
      * Works in conjunction with StateCallback above.
      */
-    private static final class CaptureCallback extends CameraCaptureSession.CaptureCallback {
+    //private static final class CaptureCallback extends CameraCaptureSession.CaptureCallback {
 
         //******************************************************************************************
         // Class Variables
         //----------------
-
+        /*
         private Surface mTarget;
 
         private CaptureResult      mCaptureResult;
@@ -380,7 +227,8 @@ public final class CaptureOverseer extends Activity {
         private int  mSequenceId;
 
         private long elapsedTime  = SystemClock.elapsedRealtimeNanos();
-
+        private DecimalFormat df = new DecimalFormat("##.#");
+        */
         //******************************************************************************************
         // Class Methods
         //--------------
@@ -392,15 +240,16 @@ public final class CaptureOverseer extends Activity {
          * @param request
          * @param partialResult
          */
+        /*
         @Override
         public void onCaptureProgressed(CameraCaptureSession session, CaptureRequest request,
                                         CaptureResult partialResult) {
             super.onCaptureProgressed(session, request, partialResult);
-            CaptureOverseer.mCameraCaptureSession = session;
-            CaptureOverseer.mCaptureRequest       = request;
-           mCaptureResult = partialResult;
+            //CaptureOverseer.mCameraCaptureSession = session;
+            //CaptureOverseer.mCaptureRequest       = request;
+            //mCaptureResult = partialResult;
         }
-
+        */
         /**
          * This method is called when the camera device has started capturing the output image
          * for the request, at the beginning of image exposure, or when the camera device has
@@ -410,16 +259,17 @@ public final class CaptureOverseer extends Activity {
          * @param timestamp
          * @param frameNumber
          */
+        /*
         @Override
         public void onCaptureStarted(CameraCaptureSession session, CaptureRequest request,
                                      long timestamp, long frameNumber) {
             super.onCaptureStarted(session, request, timestamp, frameNumber);
-            CaptureOverseer.mCameraCaptureSession = session;
-            CaptureOverseer.mCaptureRequest       = request;
-           mTimestamp   = timestamp;
-           mFrameNumber = frameNumber;
+            //CaptureOverseer.mCameraCaptureSession = session;
+            //CaptureOverseer.mCaptureRequest       = request;
+            //mTimestamp   = timestamp;
+            mFrameNumber = frameNumber;
         }
-
+        */
         /**
          * This method is called when an image capture has fully completed and all the result
          * metadata is available.
@@ -427,38 +277,22 @@ public final class CaptureOverseer extends Activity {
          * @param request
          * @param result
          */
+        /*
         @Override
         public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request,
                                        TotalCaptureResult result) {
             super.onCaptureCompleted(session, request, result);
-            CaptureOverseer.mCameraCaptureSession = session;
-            CaptureOverseer.mCaptureRequest       = request;
-           mTotalCaptureResult = result;
-
-            long timestamp = result.get(CaptureResult.SENSOR_TIMESTAMP);
-            long exposure  = result.get(CaptureResult.SENSOR_EXPOSURE_TIME);
-            long frame     = result.get(CaptureResult.SENSOR_ROLLING_SHUTTER_SKEW);
-            long nanosSinceEpoch = timestamp - CaptureOverseer.mNanoEpoch;
-            // TODO: check if timestamp uses SystemClock or not
-            // TODO: a work around is basing all timestamps off the first timestamp
-
-            long msSinceEpoch = Math.round(nanosSinceEpoch * 1e-9 * 1e3);
-            long msExposure   = Math.round(exposure * 1e-9 * 1e3);
-            long msFrame      = Math.round(frame * 1e-9 * 1e3);
-
-            long frameNumber = result.getFrameNumber();
-
-            String filename = CaptureOverseer.mDataPath
-                    + "/" + String.format("%03d", frameNumber)
-                    + "-" + Long.toString(msSinceEpoch)
-                    + "-" + Long.toString(msExposure)
-                    + "-" + Long.toString(msFrame) + ".data";
-            DataManager.saveData(timestamp, filename);
+            //CaptureOverseer.mCameraCaptureSession = session;
+            //CaptureOverseer.mCaptureRequest       = request;
+            //mTotalCaptureResult = result;
 
             long time = SystemClock.elapsedRealtimeNanos();
-            DecimalFormat df = new DecimalFormat("##.#");
+
+            SurfaceManager.getInstance().onCaptureCompleted(result);
+
             String fps = df.format(1e9 / (double)(time - elapsedTime));
             elapsedTime = time;
+
             Log.e(Thread.currentThread().getName(),"image captured: " + Long.toString(mFrameNumber) + " realtime fps: " + fps);
 
             // End exposure block after EXPOSURE_DURATION_NANOS time
@@ -471,7 +305,7 @@ public final class CaptureOverseer extends Activity {
                 }
             }
         }
-
+        */
         /**
          * This method is called independently of the others in CaptureCallback, when a capture
          * sequence finishes and all CaptureResult or CaptureFailure for it have been
@@ -480,6 +314,7 @@ public final class CaptureOverseer extends Activity {
          * @param sequenceId
          * @param frameNumber
          */
+        /*
         @Override
         public void onCaptureSequenceCompleted(CameraCaptureSession session, int sequenceId,
                                                long frameNumber) {
@@ -515,7 +350,7 @@ public final class CaptureOverseer extends Activity {
                     // TODO: this is an error
             }
         }
-
+        */
         /**
          * This method is called independently of the others in CaptureCallback, when a capture
          * sequence aborts before any CaptureResult or CaptureFailure for it have been returned
@@ -523,6 +358,7 @@ public final class CaptureOverseer extends Activity {
          * @param session
          * @param sequenceId
          */
+        /*
         @Override
         public void onCaptureSequenceAborted(CameraCaptureSession session, int sequenceId) {
             super.onCaptureSequenceAborted(session, sequenceId);
@@ -530,7 +366,7 @@ public final class CaptureOverseer extends Activity {
             CaptureOverseer.mCameraCaptureSession = session;
            mSequenceId = sequenceId;
         }
-
+        */
 
         /**
          * This method is called if a single buffer for a capture could not be sent to its
@@ -540,6 +376,7 @@ public final class CaptureOverseer extends Activity {
          * @param target
          * @param frameNumber
          */
+        /*
         @Override
         public void onCaptureBufferLost(CameraCaptureSession session, CaptureRequest request,
                                         Surface target, long frameNumber) {
@@ -550,7 +387,7 @@ public final class CaptureOverseer extends Activity {
            mTarget      = target;
            mFrameNumber = frameNumber;
         }
-
+        */
 
         /**
          * This method is called instead of onCaptureCompleted(CameraCaptureSession, CaptureRequest,
@@ -559,6 +396,7 @@ public final class CaptureOverseer extends Activity {
          * @param request
          * @param failure
          */
+        /*
         @Override
         public void onCaptureFailed(CameraCaptureSession session, CaptureRequest request,
                                     CaptureFailure failure) {
@@ -591,5 +429,6 @@ public final class CaptureOverseer extends Activity {
                 }
             }
         }
-    }
+        */
+    //}
 }

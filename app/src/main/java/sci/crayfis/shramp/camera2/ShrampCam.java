@@ -116,7 +116,7 @@ class ShrampCam extends CameraDevice.StateCallback {
      * Is the camera currently open?
      * @return true if yes, false if no
      */
-    boolean isCameraOpen() { returnmCameraDevice == null; }
+    boolean isCameraOpen() { return mCameraDevice == null; }
 
     /**
      * Actions when camera is opened.
@@ -232,23 +232,29 @@ class ShrampCam extends CameraDevice.StateCallback {
      * Access CameraDevice
      * @return CameraDevice
      */
-    CameraDevice getCameraDevice() { returnmCameraDevice; }
+    CameraDevice getCameraDevice() { return mCameraDevice; }
 
     /**
      * Access Handler for this device
      * @return Handler
      */
-    Handler getHandler() { returnmHandler; }
+    Handler getHandler() { return mHandler; }
 
-    CaptureRequest.Builder getCaptureRequestBuilder() {returnmCaptureRequestBuilder;}
+    CaptureRequest.Builder getCaptureRequestBuilder() {return mCaptureRequestBuilder;}
 
-    ShrampCamSettings getShrampCamSettings() {returnmShrampCamSettings;}
+    ShrampCamSettings getShrampCamSettings() {return mShrampCamSettings;}
 
     /**
      * Access error code
      * @return int error code
      */
-    int getErrorCode() { returnmError; }
+    int getErrorCode() { return mError; }
+
+    CaptureRequest.Builder updateExposure(long exposureNanos) {
+        mCaptureRequestBuilder = mShrampCamSettings.updateExposure(mCaptureRequestBuilder,
+                                                                   exposureNanos);
+        return mCaptureRequestBuilder;
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////
 

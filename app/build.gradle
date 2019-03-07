@@ -9,7 +9,7 @@ android {
         versionCode 1
         versionName "1.0"
         renderscriptTargetApi 21
-        renderscriptSupportModeEnabled true
+        renderscriptSupportModeEnabled false // don't use support.v8.renderscript, use android.renderscript
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {

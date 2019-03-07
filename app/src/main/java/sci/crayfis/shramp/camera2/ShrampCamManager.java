@@ -194,8 +194,7 @@ public class ShrampCamManager {
         ShrampCamManager.mLogger.log("All cameras reporting ready");
         ShrampCamManager.mActiveCamera = shrampCam;
         CameraDevice cameraDevice = shrampCam.getCameraDevice();
-        CaptureRequest.Builder captureRequestBuilder = shrampCam.getCaptureRequestBuilder();
-        CaptureOverseer.cameraReady(cameraDevice, captureRequestBuilder);
+        CaptureOverseer.cameraReady(cameraDevice);
         ShrampCamManager.mLogger.log("return;");
     }
 
@@ -400,6 +399,14 @@ public class ShrampCamManager {
 
     public static Handler getCameraHandler() {
         return ShrampCamManager.mActiveCamera.getHandler();
+    }
+
+    public static CaptureRequest.Builder updateExposure(long exposureNanos) {
+        return ShrampCamManager.mActiveCamera.updateExposure(exposureNanos);
+    }
+
+    public static CaptureRequest.Builder getCaptureRequestBuilder() {
+        return ShrampCamManager.mActiveCamera.getCaptureRequestBuilder();
     }
 
 }
