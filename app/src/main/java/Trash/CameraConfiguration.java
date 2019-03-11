@@ -1268,7 +1268,7 @@ final class CameraConfiguration {
         boolean flag;
         String  report = " \n";
 
-        report = report.concat("Flash is: ");
+        report = report.concat("Flash_ is: ");
         try {
             mode = mCaptureRequestBuilder.get(CaptureRequest.FLASH_MODE);
             switch (mode) {
@@ -1296,7 +1296,7 @@ final class CameraConfiguration {
 
         //------------------------------------------------------------------------------------------
 
-        report = report.concat("Control mode is: ");
+        report = report.concat("Control_ mode is: ");
         try {
             mode = mCaptureRequestBuilder.get(CaptureRequest.CONTROL_MODE);
             switch (mode) {
@@ -1558,7 +1558,7 @@ final class CameraConfiguration {
 
         //------------------------------------------------------------------------------------------
 
-        report = report.concat("Color aberration correction is: ");
+        report = report.concat("Color_ aberration correction is: ");
         try {
             mode = mCaptureRequestBuilder.get(CaptureRequest.COLOR_CORRECTION_ABERRATION_MODE);
             switch (mode) {
@@ -1582,7 +1582,7 @@ final class CameraConfiguration {
 
         //------------------------------------------------------------------------------------------
 
-        report = report.concat("Color correction mode is: ");
+        report = report.concat("Color_ correction mode is: ");
         try {
             mode = mCaptureRequestBuilder.get(CaptureRequest.COLOR_CORRECTION_MODE);
             switch (mode) {
@@ -1638,7 +1638,7 @@ final class CameraConfiguration {
 
         //------------------------------------------------------------------------------------------
 
-        report = report.concat("Color correction gains are: ");
+        report = report.concat("Color_ correction gains are: ");
         try {
             RggbChannelVector gains = mCaptureRequestBuilder.get(CaptureRequest.COLOR_CORRECTION_GAINS);
 
@@ -1658,7 +1658,7 @@ final class CameraConfiguration {
 
         //------------------------------------------------------------------------------------------
 
-        report = report.concat("Color effect mode is: ");
+        report = report.concat("Color_ effect mode is: ");
         try {
             mode = mCaptureRequestBuilder.get(CaptureRequest.CONTROL_EFFECT_MODE);
             switch (mode) {
@@ -1719,7 +1719,7 @@ final class CameraConfiguration {
 
         //------------------------------------------------------------------------------------------
 
-        report = report.concat("Distortion correction mode is: ");
+        report = report.concat("Distortion_ correction mode is: ");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             try {
                 mode = mCaptureRequestBuilder.get(CaptureRequest.DISTORTION_CORRECTION_MODE);
@@ -1749,7 +1749,7 @@ final class CameraConfiguration {
 
         //------------------------------------------------------------------------------------------
 
-        report = report.concat("Edge mode is: ");
+        report = report.concat("Edge_ mode is: ");
         try {
             mode = mCaptureRequestBuilder.get(CaptureRequest.EDGE_MODE);
             switch (mode) {

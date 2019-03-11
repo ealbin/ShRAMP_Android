@@ -486,7 +486,7 @@ public class ShrampCamSetup2 {
 
             //--------------------------------------------------------------------------------------
 
-            report = report.concat("Color filter arrangement: " );
+            report = report.concat("Color_ filter arrangement: " );
             try {
                 int arrangement = mCameraCharacteristics.get(
                         CameraCharacteristics.SENSOR_INFO_COLOR_FILTER_ARRANGEMENT);

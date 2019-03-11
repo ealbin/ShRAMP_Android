@@ -18,7 +18,15 @@ import java.io.File;
 import sci.crayfis.shramp.util.BuildString;
 import sci.crayfis.shramp.logging.ShrampLogger;
 import sci.crayfis.shramp.ssh.AsyncResponse;
-import sci.crayfis.shramp.util.FailManager;
+import sci.crayfis.shramp.error.FailManager;
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                      UNDER CONSTRUCTION
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 
 /**
  * Entry point for the ShRAMP app
@@ -26,6 +34,7 @@ import sci.crayfis.shramp.util.FailManager;
  */
 @TargetApi(21)
 public final class MaineShRAMP extends Activity implements AsyncResponse {
+
 
     //**********************************************************************************************
     // Class Variables
@@ -63,7 +72,7 @@ public final class MaineShRAMP extends Activity implements AsyncResponse {
         MaineShRAMP.mLogger.log("or \"ShRAMP\" for short");
 
         // Get build info
-        String buildString = BuildString.getIt();
+        String buildString = BuildString.get();
         MaineShRAMP.mLogger.log(buildString);
 
         StructUtsname uname = Os.uname();

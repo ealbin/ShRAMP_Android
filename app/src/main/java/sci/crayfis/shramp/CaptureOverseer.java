@@ -8,18 +8,33 @@ import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.TotalCaptureResult;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.SystemClock;
+import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
 
-import java.nio.ByteBuffer;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.List;
+import java.util.Locale;
 
 import sci.crayfis.shramp.analysis.ImageProcessor;
-import sci.crayfis.shramp.camera2.ShrampCamManager;
+import sci.crayfis.shramp.camera2.CameraController;
+import Trash.camera2.ShrampCamManager;
 import sci.crayfis.shramp.camera2.capture.CaptureManager;
+import sci.crayfis.shramp.logging.DividerStyle;
 import sci.crayfis.shramp.logging.ShrampLogger;
 import sci.crayfis.shramp.surfaces.SurfaceManager;
 import sci.crayfis.shramp.util.DataManager;
+import sci.crayfis.shramp.util.HandlerManager;
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                      UNDER CONSTRUCTION
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 
 /**
  * Oversees the setup of surfaces, cameras and capture session
@@ -31,11 +46,17 @@ public final class CaptureOverseer extends Activity {
     // Class Variables
     //----------------
 
+    // Keep track of which camera we're using
+    private static final CameraController.Select PREFERRED_CAMERA = CameraController.Select.BACK;
+    private static final CameraController.Select SECONDARY_CAMERA = CameraController.Select.FRONT;
+
     // Logging
-    private static ShrampLogger mLogger = new ShrampLogger(ShrampLogger.DEFAULT_STREAM);
+    private static final ShrampLogger mLogger = new ShrampLogger(ShrampLogger.DEFAULT_STREAM);
+    private static final DecimalFormat mNanosFormatter = (DecimalFormat) NumberFormat.getInstance(Locale.US);
+
 
     // Static reference to single instance of this class.
-    // Static methods below use this reference to access the CameraManager, which cannot be static.
+    // Static methods below use this reference to access the CameraController, which cannot be static.
     private static CaptureOverseer mInstance;
 
     // Built and configured by a ShrampCam via the ShrampCamManager
@@ -45,6 +66,8 @@ public final class CaptureOverseer extends Activity {
 
     private static CaptureManager mCaptureManager;
 
+    private static ShrampCamManager mShrampCamManager;
+
     //..............................................................................................
 
     // Date epoch for data folder
@@ -53,71 +76,78 @@ public final class CaptureOverseer extends Activity {
     // Full path of data folder
     private static String mDataPath;
 
-    // Android rules, cannot be static (formally, that's a potential memory leak)
-    private CameraManager mCameraManager;
-
     //..............................................................................................
 
-    // Keep track of which camera we're using
-    private enum WhichCamera {FRONT, BACK, EXTERNAL};
-    private static WhichCamera mWhichCamera;
-
+    private static Handler mHandler;
 
     //**********************************************************************************************
     // Class Methods
     //--------------
 
     /**
-     * Helper for static methods to get CameraManager
-     * @return CameraManager
-     */
-    private static CameraManager getCameraManager() {return CaptureOverseer.mInstance.mCameraManager;}
-
-    //----------------------------------------------------------------------------------------------
-
-    /**
      * Entry point for this activity.
      * Set up surfaces - execution continues in surfacesReady()
-     * @param savedInstanceState
+     * @param savedInstanceState bla bla
      */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // For access in static methods
+        mInstance = this;
+
+        mHandler = new Handler(getMainLooper());
+
+        mLogger.divider(DividerStyle.Strong);
+        mLogger.log("Capture Overseer has begun");
+        long startTime = SystemClock.elapsedRealtimeNanos();
 
         // Set up ShRAMP data directory
         DataManager.setUpShrampDirectory();
 
         // TODO: REMOVE IN THE FUTURE
         // start fresh
+        mLogger.log("Clearing ShRAMP data directory, starting from scratch");
         DataManager.clean();
 
-        // For static access of CameraManager
-        mInstance = this;
-        mCameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
-
         // Turning control over to the ShrampCamManager to set up the camera
-        CameraManager    cameraManager    = getCameraManager();
-        ShrampCamManager shrampCamManager = ShrampCamManager.getInstance(cameraManager);
-        assert shrampCamManager != null;
+        CameraManager cameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
+        assert cameraManager != null;
 
-        // TODO: update camera manager etc
-        // shrampCamManager.openXxxxCamera() opens a camera (returns true if successful).
-        // When the camera opens, execution will continue in cameraReady()
-        // NOTE: execution of cameraReady() will be on the camera's thread
-        mWhichCamera = WhichCamera.BACK;
-        if (!shrampCamManager.openBackCamera()) {
-            mLogger.log("WARNING: BACK CAMERA DID NOT OPEN, TRYING FRONT");
-            mWhichCamera = WhichCamera.FRONT;
-            if (!shrampCamManager.openFrontCamera()) {
-                mLogger.log("WARNING: FRONT CAMERA DID NOT OPEN, TRYING EXTERNAL");
-                mWhichCamera = WhichCamera.EXTERNAL;
-                if (!shrampCamManager.openExternalCamera()) {
-                    mLogger.log("ERROR: NO CAMERAS");
-                }
+        CameraController.discoverCameras(cameraManager);
+        CameraController.logCameraCharacteristics();
+
+        Runnable next = new Runnable() {
+            @Override
+            public void run() {
+                prepareSurfaces();
             }
+        };
+        if (!CameraController.openCamera(PREFERRED_CAMERA, next, mHandler)) {
+             CameraController.openCamera(SECONDARY_CAMERA, next, mHandler);
         }
 
-        mLogger.log("return;");
+        String elapsed = mNanosFormatter.format(SystemClock.elapsedRealtimeNanos() - startTime);
+        mLogger.log("return; elapsed = " + elapsed + " [ns]");
+    }
+
+    public static void prepareSurfaces() {
+        Runnable next = new Runnable() {
+            @Override
+            public void run() {
+                prepareImageProcessing();
+            }
+        };
+        SurfaceManager.openSurfaces(mInstance, next, mHandler);
+    }
+
+    public static void prepareImageProcessing() {
+        mImageProcessor = new ImageProcessor(mInstance);
+
+    }
+
+    public static void defaultCapture() {
+
     }
 
     /**
@@ -126,6 +156,8 @@ public final class CaptureOverseer extends Activity {
      * @param cameraDevice configured and ready for capture
      */
     public static void cameraReady(CameraDevice cameraDevice) {
+        long startTime = SystemClock.elapsedRealtimeNanos();
+
         mLogger.log("Camera ready, setting up surfaces");
 
         mCameraDevice = cameraDevice;
@@ -135,8 +167,9 @@ public final class CaptureOverseer extends Activity {
         final Size imageSize   = ShrampCamManager.getImageSize();
 
         // Set image processor
-        mImageProcessor = new ImageProcessor(mInstance, imageFormat, bitsPerPixel, imageSize);
+        //mImageProcessor = new ImageProcessor(mInstance, imageFormat, bitsPerPixel, imageSize);
 
+        /*
         final Runnable openSurfaces = new Runnable() {
             @Override
             public void run() {
@@ -144,12 +177,14 @@ public final class CaptureOverseer extends Activity {
                                                           bitsPerPixel, imageSize);
             }
         };
-
+        */
         // Turning control over to the SurfaceManager to set up output surfaces.
         // Execution continues in surfacesReady()
         // Open surfaces on the activity thread
-        new Handler().post(openSurfaces);
-        mLogger.log("return;");
+        //new Handler(mInstance.getMainLooper()).post(openSurfaces);
+
+        String elapsed = mNanosFormatter.format(SystemClock.elapsedRealtimeNanos() - startTime);
+        mLogger.log("return; elapsed = " + elapsed + " [ns]");
     }
 
     /**
@@ -158,26 +193,39 @@ public final class CaptureOverseer extends Activity {
      * @param surfaces surfaces ready for output
      */
     public static void surfacesReady(List<Surface> surfaces) {
-        mLogger.log("All surfaces are ready, finishing capture request");
+        long startTime = SystemClock.elapsedRealtimeNanos();
+
+        mLogger.log("All surfaces are ready, starting capture");
 
         // Begin data taking
         mCaptureManager = new CaptureManager(mCameraDevice, surfaces);
+        mCaptureManager.createCaptureSession();
+
+        String elapsed = mNanosFormatter.format(SystemClock.elapsedRealtimeNanos() - startTime);
+        mLogger.log("return; elapsed = " + elapsed + " [ns]");
     }
 
     //----------------------------------------------------------------------------------------------
 
     public static void processImage(TotalCaptureResult result) {
+        Log.e(Thread.currentThread().getName(), "CaptureOverseer.processImage(TotalCaptureResult)");
         mImageProcessor.processImage(result);
     }
 
-    public static void processImage(ByteBuffer imageBytes) {
+    public static void processImage(byte[] imageBytes) {
+        Log.e(Thread.currentThread().getName(), "CaptureOverseer.processImage(byte[])");
         mImageProcessor.processImage(imageBytes);
     }
 
+    public static void quitSafely() {
+        mShrampCamManager.closeBackCamera();
+        HandlerManager.finish();
+        mInstance.finish();
+    }
 
-
-
-
+    public static void post(Runnable runnable) {
+        mHandler.post(runnable);
+    }
 
 
 
@@ -330,7 +378,7 @@ public final class CaptureOverseer extends Activity {
 
             DataManager.flush();
 
-            CameraManager    cameraManager    = CaptureOverseer.getCameraManager();
+            CameraController    cameraManager    = CaptureOverseer.getCameraManager();
             ShrampCamManager shrampCamManager = ShrampCamManager.getInstance(cameraManager);
             assert shrampCamManager != null;
             switch (mWhichCamera) {

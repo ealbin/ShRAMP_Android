@@ -1,32 +1,64 @@
 package sci.crayfis.shramp.util;
 
+import android.annotation.TargetApi;
 import android.os.SystemClock;
+import android.support.annotation.NonNull;
 
 import java.util.Calendar;
 import java.util.Locale;
 import java.util.TimeZone;
 
+/**
+ * TODO: description, comments and logging
+ */
+@TargetApi(21)
 public class TimeManager {
 
     //**********************************************************************************************
-    // Class Variables
-    //----------------
+    // Static Class Fields
+    //---------------------
 
+    // Private Object Constants
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+    // mInstance....................................................................................
+    // TODO: description
     private static final TimeManager mInstance = new TimeManager();
 
-    //..............................................................................................
+    //**********************************************************************************************
+    // Class Fields
+    //-------------
 
+    // Private
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+    // mFirstTimestamp..............................................................................
+    // TODO: description
+    private Long mFirstTimestamp;
+
+    // mStartDate...................................................................................
+    // TODO: description
     private String mStartDate;
-    private long   mSystemStartNanos;
-    private long   mFirstTimestamp;
 
+    // mSystemStartNanos............................................................................
+    // TODO: description
+    private Long mSystemStartNanos;
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     //**********************************************************************************************
-    // Class Methods
-    //--------------
+    // Constructors
+    //-------------
 
-    public static TimeManager getInstance() { return mInstance; }
+    // Private
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+    // TimeManager..................................................................................
+    /**
+     * TODO: description, comments and logging
+     */
     private TimeManager() {
 
         // Make sure time zone is Pacific Standard Time (no daylight savings)
@@ -46,7 +78,7 @@ public class TimeManager {
         int second        = calendar.get(Calendar.SECOND);
         int millisecond   = calendar.get(Calendar.MILLISECOND);
         mSystemStartNanos = SystemClock.elapsedRealtimeNanos();
-        mFirstTimestamp   = 0;
+        mFirstTimestamp   = 0L;
 
         mStartDate = Integer.toString(year) + "-"
                 + Integer.toString(month)   + "-"
@@ -57,22 +89,59 @@ public class TimeManager {
                 + Integer.toString(millisecond);
     }
 
-    //----------------------------------------------------------------------------------------------
+    //**********************************************************************************************
+    // Static Class Methods
+    //---------------------
 
+    // Public
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+    // getInstance..................................................................................
+    /**
+     * TODO: description, comments and logging
+     * @return
+     */
+    @NonNull
+    public static TimeManager getInstance() { return mInstance; }
+
+    //**********************************************************************************************
+    // Class Methods
+    //--------------
+
+    // Public
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+    // getElapsedNanos..............................................................................
+    /**
+     * TODO: description, comments and logging
+     * @param timestamp
+     * @return
+     */
+    public long getElapsedNanos(long timestamp) {
+        if (mFirstTimestamp.equals(0L)) {
+            mFirstTimestamp = timestamp;
+            return 0L;
+        }
+        return timestamp - mFirstTimestamp;
+    }
+
+    // getElapsedSystemNanos.......................................................................
+    /**
+     * TODO: description, comments and logging
+     * @return
+     */
+    public long getElapsedSystemNanos() {
+        return SystemClock.elapsedRealtimeNanos() - mSystemStartNanos;
+    }
+
+    // getStartDate.................................................................................
+    /**
+     * TODO: description, comments and logging
+     * @return
+     */
+    @NonNull
     public String getStartDate() {
         return mStartDate;
     }
 
-    public long getElapsedNanos(long timestamp) {
-        if (mFirstTimestamp == 0) {
-            mFirstTimestamp = timestamp;
-            return 0;
-        }
-
-        return timestamp - mFirstTimestamp;
-    }
-
-    public long getElapsedSystemNanos() {
-        return SystemClock.elapsedRealtimeNanos() - mSystemStartNanos;
-    }
 }

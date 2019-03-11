@@ -344,7 +344,7 @@ public abstract class CameraSetup {
         // Disable chromatic aberration correction
         mCapture_builder.set(CaptureRequest.COLOR_CORRECTION_ABERRATION_MODE,
                 CameraMetadata.COLOR_CORRECTION_ABERRATION_MODE_OFF);
-        Log.e(LOCAL_TAG, "Color aberration correction disabled");
+        Log.e(LOCAL_TAG, "Color_ aberration correction disabled");
 
         // Treat red, green and blue the same (no weighting)
         mCapture_builder.set(CaptureRequest.COLOR_CORRECTION_GAINS,
@@ -357,7 +357,7 @@ public abstract class CameraSetup {
                         0, 1,  1, 1,  0, 1,    // numerator4, denominator4, num5, den5, num6, den6
                         0, 1,  0, 1,  1, 1     // numerator7, denominator7, num8, den8, num9, den9
                 }));
-        Log.e(LOCAL_TAG, "Color gains/transformations unity/linear");
+        Log.e(LOCAL_TAG, "Color_ gains/transformations unity/linear");
 
         // Disable color effects
         mCapture_builder.set(CaptureRequest.CONTROL_EFFECT_MODE,
@@ -371,7 +371,7 @@ public abstract class CameraSetup {
 
         // Disable edge enhancement
         mCapture_builder.set(CaptureRequest.EDGE_MODE, CameraMetadata.EDGE_MODE_OFF);
-        Log.e(LOCAL_TAG, "Edge enhancement disabled");
+        Log.e(LOCAL_TAG, "Edge_ enhancement disabled");
 
         // Disable hotpixel correction
         mCapture_builder.set(CaptureRequest.HOT_PIXEL_MODE, CameraMetadata.HOT_PIXEL_MODE_OFF);
@@ -540,7 +540,7 @@ public abstract class CameraSetup {
                 case ImageFormat.DEPTH16 :
                     Log.e(LOCAL_TAG, "Depth16 supported"); break;
                 case ImageFormat.DEPTH_POINT_CLOUD :
-                    Log.e(LOCAL_TAG, "Depth point cloud supported"); break;
+                    Log.e(LOCAL_TAG, "Depth_ point cloud supported"); break;
                 case ImageFormat.FLEX_RGB_888 :
                     Log.e(LOCAL_TAG, "Flex RGB 888 supported"); break;
                 case ImageFormat.JPEG :

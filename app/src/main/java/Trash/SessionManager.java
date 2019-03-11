@@ -10,7 +10,7 @@ import android.view.Surface;
 
 import java.util.List;
 
-import sci.crayfis.shramp.camera2.ShrampCamManager;
+import Trash.camera2.ShrampCamManager;
 import sci.crayfis.shramp.camera2.capture.CaptureManager;
 import sci.crayfis.shramp.util.HandlerManager;
 

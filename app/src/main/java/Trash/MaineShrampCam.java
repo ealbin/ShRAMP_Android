@@ -3,7 +3,7 @@ package Trash;
 import android.hardware.camera2.CameraManager;
 import android.support.annotation.NonNull;
 
-import sci.crayfis.shramp.camera2.ShrampCamManager;
+import Trash.camera2.ShrampCamManager;
 import sci.crayfis.shramp.logging.ShrampLogger;
 
 /**

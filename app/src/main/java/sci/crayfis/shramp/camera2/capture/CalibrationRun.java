@@ -1,16 +1,22 @@
 package sci.crayfis.shramp.camera2.capture;
 
+import android.annotation.TargetApi;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CaptureFailure;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
+import android.os.SystemClock;
+import android.util.Log;
 import android.view.Surface;
 
-import sci.crayfis.shramp.CaptureOverseer;
-import sci.crayfis.shramp.util.TimeManager;
+import java.text.DecimalFormat;
 
+import sci.crayfis.shramp.CaptureOverseer;
+import sci.crayfis.shramp.logging.ShrampLogger;
+
+@TargetApi(21)
 class CalibrationRun extends CameraCaptureSession.CaptureCallback {
 
 
@@ -18,10 +24,19 @@ class CalibrationRun extends CameraCaptureSession.CaptureCallback {
     // Class Variables
     //----------------
 
-    private final TimeManager mTimeManager = TimeManager.getInstance();
-
     private int mFrameLimit;
     private int mFrameCount;
+
+    private long mLastCompleted;
+    private long mElapsedTime;
+    private long mTotalExposure;
+
+    private long mFirstTimestamp;
+    private long mLastTimestamp;
+
+    // Logging
+    private static final ShrampLogger mLogger = new ShrampLogger(ShrampLogger.DEFAULT_STREAM);
+    private static final DecimalFormat mFormatter = new DecimalFormat("#.##");
 
     //******************************************************************************************
     // Class Methods
@@ -31,8 +46,12 @@ class CalibrationRun extends CameraCaptureSession.CaptureCallback {
 
     CalibrationRun(int frameLimit) {
         this();
-        mFrameLimit = frameLimit;
-        mFrameCount = 0;
+        mFrameLimit     = frameLimit;
+        mFrameCount     = 0;
+        mLastCompleted  = 0;
+        mElapsedTime    = 0;
+        mTotalExposure  = 0;
+        mLogger.log("Calibration run frame limit: " + Integer.toString(frameLimit));
     }
 
     /**
@@ -77,21 +96,32 @@ class CalibrationRun extends CameraCaptureSession.CaptureCallback {
     public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request,
                                    TotalCaptureResult result) {
         super.onCaptureCompleted(session, request, result);
+        long now = SystemClock.elapsedRealtimeNanos();
         CaptureOverseer.processImage(result);
-        checkIfDone(session);
 
+        Long timestamp = result.get(CaptureResult.SENSOR_TIMESTAMP);
+        assert timestamp != null;
+        mLastTimestamp = timestamp;
 
-        /*
-
-        // End exposure block after EXPOSURE_DURATION_NANOS time
-        if (SystemClock.elapsedRealtimeNanos() >= CaptureOverseer.mFinishEpoch) {
-            try {
-                session.stopRepeating();
-            } catch (CameraAccessException e) {
-                CaptureOverseer.mLogger.log("ERROR: Camera Access Exception");
-            }
+        if (mLastCompleted == 0) {
+            mLastCompleted = now;
+            mFirstTimestamp = timestamp;
         }
-        */
+        else {
+            Long exposure = result.get(CaptureResult.SENSOR_EXPOSURE_TIME);
+            assert exposure != null;
+            mTotalExposure += exposure;
+
+            mElapsedTime   = now - mLastCompleted;
+            mLastCompleted = now;
+
+            double fps  = 1. / (mElapsedTime * 1e-9);
+            double duty = 100. * exposure / (double) mElapsedTime;
+
+            Log.e(Thread.currentThread().getName(), "Capture FPS: " + mFormatter.format(fps)
+                    + ", Exposure duty: " + mFormatter.format(duty) + "%");
+        }
+        checkIfDone(session);
     }
 
     private void checkIfDone(CameraCaptureSession session) {
@@ -119,34 +149,15 @@ class CalibrationRun extends CameraCaptureSession.CaptureCallback {
     public void onCaptureSequenceCompleted(CameraCaptureSession session, int sequenceId,
                                            long frameNumber) {
         super.onCaptureSequenceCompleted(session, sequenceId, frameNumber);
+        mLogger.log("Capture session completed");
+
+        long   totalElapsed = mLastTimestamp - mFirstTimestamp;
+        double averageFps   = mFrameCount / ( totalElapsed * 1e-9 );
+        double averageDuty  = mTotalExposure / (double) totalElapsed;
+
+        CaptureManager.sessionFinished(session, this, averageFps, averageDuty);
 
         // TODO: dump mTotalCaptureResult info
-
-        session.close();
-
-        /*
-        DataManager.flush();
-
-        CameraManager cameraManager = CaptureOverseer.getCameraManager();
-        ShrampCamManager shrampCamManager = ShrampCamManager.getInstance(cameraManager);
-        assert shrampCamManager != null;
-        switch (mWhichCamera) {
-            case BACK: {
-                shrampCamManager.closeBackCamera();
-                break;
-            }
-            case FRONT: {
-                shrampCamManager.closeFrontCamera();
-                break;
-            }
-            case EXTERNAL: {
-                shrampCamManager.closeExternalCamera();
-                break;
-            }
-            default:
-                // TODO: this is an error
-        }
-        */
     }
 
     /**
