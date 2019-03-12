@@ -81,8 +81,12 @@ abstract class step09_Lens_ extends step08_Jpeg_ {
                                                                      property.getFormatter());
 
                 builder.set(rKey, setting.getValue());
-                captureRequestMap.put(rKey, setting);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
         {
@@ -107,8 +111,12 @@ abstract class step09_Lens_ extends step08_Jpeg_ {
                                                                      property.getFormatter());
 
                 builder.set(rKey, setting.getValue());
-                captureRequestMap.put(rKey, setting);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
         {
@@ -133,8 +141,12 @@ abstract class step09_Lens_ extends step08_Jpeg_ {
                                                                      property.getFormatter());
 
                 builder.set(rKey, setting.getValue());
-                captureRequestMap.put(rKey, setting);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
         {
@@ -174,8 +186,12 @@ abstract class step09_Lens_ extends step08_Jpeg_ {
                 setting = new Parameter<>(name, value, units, formatter);
 
                 builder.set(rKey, setting.getValue());
-                captureRequestMap.put(rKey, setting);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
         {
@@ -200,8 +216,12 @@ abstract class step09_Lens_ extends step08_Jpeg_ {
                                                                      property.getFormatter());
 
                 builder.set(rKey, setting.getValue());
-                captureRequestMap.put(rKey, setting);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
     }

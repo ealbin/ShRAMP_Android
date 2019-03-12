@@ -83,12 +83,16 @@ abstract class step03_Color_ extends step02_Black_ {
                 setting = new Parameter<>(name, property.getValue(), property.getUnits(),
                                                                      property.getFormatter());
                 builder.set(rKey, setting.getValue());
-                captureRequestMap.put(rKey, setting);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
         {
-            CaptureRequest.Key<RggbChannelVector> key;
+            CaptureRequest.Key<RggbChannelVector> rKey;
             Parameter<RggbChannelVector> setting;
             ParameterFormatter<RggbChannelVector> formatter;
 
@@ -96,12 +100,12 @@ abstract class step03_Color_ extends step02_Black_ {
             RggbChannelVector value;
             String units;
 
-            key   = CaptureRequest.COLOR_CORRECTION_GAINS;//////////////////////////////////////////
-            name  = key.getName();
+            rKey  = CaptureRequest.COLOR_CORRECTION_GAINS;//////////////////////////////////////////
+            name  = rKey.getName();
             value = new RggbChannelVector(1, 1, 1, 1);
             units = "unitless gain factor";
 
-            if (supportedKeys.contains(key)) {
+            if (supportedKeys.contains(rKey)) {
 
                 formatter = new ParameterFormatter<RggbChannelVector>() {
                     @NonNull
@@ -112,9 +116,13 @@ abstract class step03_Color_ extends step02_Black_ {
                 };
                 setting = new Parameter<>(name, value, units, formatter);
 
-                builder.set(key, value);
-                captureRequestMap.put(key, setting);
+                builder.set(rKey, value);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
         {
@@ -133,15 +141,40 @@ abstract class step03_Color_ extends step02_Black_ {
 
             if (supportedKeys.contains(rKey)) {
 
-                Integer TRANSFORM_MATRIX = CameraMetadata.COLOR_CORRECTION_MODE_TRANSFORM_MATRIX;
-                Integer FAST             = CameraMetadata.COLOR_CORRECTION_MODE_FAST;
-                Integer HIGH_QUALITY     = CameraMetadata.COLOR_CORRECTION_MODE_HIGH_QUALITY;
+                Parameter<Integer> mode;
+                mode = captureRequestMap.get(CaptureRequest.CONTROL_AWB_MODE);
+                assert mode != null;
 
-                // TODO: do this after you do control
+                if (mode.toString().equals("OFF")) {
 
-                //builder.set(rKey, setting.getValue());
-                //captureRequestMap.put(rKey, setting);
+                    Integer TRANSFORM_MATRIX = CameraMetadata.COLOR_CORRECTION_MODE_TRANSFORM_MATRIX;
+                    Integer FAST             = CameraMetadata.COLOR_CORRECTION_MODE_FAST;
+                    Integer HIGH_QUALITY     = CameraMetadata.COLOR_CORRECTION_MODE_HIGH_QUALITY;
+
+                    value = TRANSFORM_MATRIX;
+                    valueString = "TRANSFORM_MATRIX";
+
+                    formatter = new ParameterFormatter<Integer>(valueString) {
+                        @NonNull
+                        @Override
+                        public String formatValue(@NonNull Integer value) {
+                            return getValueString();
+                        }
+                    };
+                    setting = new Parameter<>(name, value, units, formatter);
+
+                    builder.set(rKey, setting.getValue());
+                }
+                else {
+                    setting = new Parameter<>(name);
+                    setting.setValueString("DISABLED");
+                }
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
         {
@@ -166,16 +199,26 @@ abstract class step03_Color_ extends step02_Black_ {
 
             if (supportedKeys.contains(key)) {
 
-                formatter = new ParameterFormatter<ColorSpaceTransform>(valueString) {
-                    @NonNull
-                    @Override
-                    public String formatValue(@NonNull ColorSpaceTransform value) {
-                        return getValueString();
-                    }
-                };
-                setting = new Parameter<>(name, value, units, formatter);
+                Parameter<Integer> mode;
+                mode = captureRequestMap.get(CaptureRequest.COLOR_CORRECTION_MODE);
+                assert mode != null;
 
-                builder.set(key, value);
+                if (mode.toString().equals("DISABLED")) {
+                    setting = new Parameter<>(name);
+                    setting.setValueString("DISABLED");
+                }
+                else {
+                    formatter = new ParameterFormatter<ColorSpaceTransform>(valueString) {
+                        @NonNull
+                        @Override
+                        public String formatValue(@NonNull ColorSpaceTransform value) {
+                            return getValueString();
+                        }
+                    };
+                    setting = new Parameter<>(name, value, units, formatter);
+
+                    builder.set(key, value);
+                }
                 captureRequestMap.put(key, setting);
             }
         }

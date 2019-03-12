@@ -107,8 +107,12 @@ abstract class step06_Flash_ extends step05_Edge_ {
                 setting = new Parameter<>(name, value, units, formatter);
 
                 builder.set(rKey, setting.getValue());
-                captureRequestMap.put(rKey, setting);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
     }

@@ -4,7 +4,6 @@ import android.annotation.TargetApi;
 import android.graphics.Rect;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CaptureRequest;
-import android.location.Location;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
@@ -88,10 +87,12 @@ abstract class step12_Scaler_ extends step11_Reprocess_ {
                     }
                 };
                 setting = new Parameter<>(name, value, units, formatter);
-
-                builder.set(rKey, setting.getValue());
-                captureRequestMap.put(rKey, setting);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
     }

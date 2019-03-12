@@ -108,6 +108,16 @@ public abstract class ParameterFormatter<T> {
         return mValueString;
     }
 
+    // setValueString...............................................................................
+    /**
+     * TODO: description, comments and logging
+     * @return
+     */
+    @NonNull
+    protected void setValueString(@NonNull String valueString) {
+        mValueString = valueString;
+    }
+
     //**********************************************************************************************
     // Abstract Class Methods
     //-----------------------

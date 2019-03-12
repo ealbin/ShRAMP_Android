@@ -3,11 +3,17 @@ package sci.crayfis.shramp.camera2.requests;
 import android.annotation.TargetApi;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.params.StreamConfigurationMap;
 import android.support.annotation.NonNull;
 import android.util.Log;
+import android.util.Range;
+import android.util.Size;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 
 import sci.crayfis.shramp.camera2.CameraController;
 import sci.crayfis.shramp.camera2.util.Parameter;
@@ -61,6 +67,69 @@ abstract class step13_Sensor_ extends step12_Scaler_ {
         //==========================================================================================
         {
             CaptureRequest.Key<Long> rKey;
+            ParameterFormatter<Long> formatter;
+            Parameter<Long> setting;
+
+            String name;
+            Long   value;
+            String units;
+
+            rKey = CaptureRequest.SENSOR_FRAME_DURATION;////////////////////////////////////////////
+            name = rKey.getName();
+            units = "nanoseconds";
+
+            if (supportedKeys.contains(rKey)) {
+
+                Parameter<Integer> mode;
+                mode = captureRequestMap.get(CaptureRequest.CONTROL_AE_MODE);
+                assert mode != null;
+
+                if (mode.toString().equals("AUTO")) {
+                    setting = new Parameter<>(name);
+                    setting.setValueString("DISABLED");
+                }
+                else {
+                    CameraCharacteristics.Key<StreamConfigurationMap> cKey;
+                    Parameter<StreamConfigurationMap> property;
+
+                    cKey = CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP;
+                    property = characteristicsMap.get(cKey);
+                    assert property != null;
+
+                    StreamConfigurationMap streamConfigurationMap;
+                    streamConfigurationMap = property.getValue();
+                    assert streamConfigurationMap != null;
+
+                    Integer imageFormat = CameraController.getOutputFormat();
+                    Size    imageSize   = CameraController.getOutputSize();
+                    assert imageFormat != null;
+                    assert imageSize   != null;
+
+                    value = streamConfigurationMap.getOutputMinFrameDuration(imageFormat, imageSize);
+
+                    formatter = new ParameterFormatter<Long>() {
+                        @NonNull
+                        @Override
+                        public String formatValue(@NonNull Long value) {
+                            DecimalFormat nanosFormatter;
+                            nanosFormatter = (DecimalFormat) NumberFormat.getInstance(Locale.US);
+                            return nanosFormatter.format(value);
+                        }
+                    };
+                    setting = new Parameter<>(name, value, units, formatter);
+
+                    builder.set(rKey, setting.getValue());
+                }
+            }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
+        }
+        //==========================================================================================
+        {
+            CaptureRequest.Key<Long> rKey;
             Parameter<Long> setting;
 
             String name;
@@ -70,83 +139,84 @@ abstract class step13_Sensor_ extends step12_Scaler_ {
 
             if (supportedKeys.contains(rKey)) {
 
-                // TODO: finish after Control_
+                Parameter<Integer> mode;
+                mode = captureRequestMap.get(CaptureRequest.CONTROL_AE_MODE);
+                assert mode != null;
 
-                /*
-                CameraCharacteristics.Key<float[]> cKey;
-                Parameter<Float> property;
+                if (mode.toString().equals("AUTO")) {
+                    setting = new Parameter<>(name);
+                    setting.setValueString("DISABLED");
+                }
+                else {
+                    Parameter<Long> frameDuration;
+                    frameDuration = captureRequestMap.get(CaptureRequest.SENSOR_FRAME_DURATION);
+                    assert frameDuration != null;
 
-                cKey = CameraCharacteristics.LENS_INFO_AVAILABLE_APERTURES;
-                property = characteristicsMap.get(cKey);
-                assert property != null;
+                    setting = new Parameter<>(name, frameDuration.getValue(), frameDuration.getUnits(),
+                                                                              frameDuration.getFormatter());
 
-                setting = new Parameter<>(name, property.getValue(), property.getUnits(),
-                                                                     property.getFormatter());
-
-                builder.set(rKey, setting.getValue());
-                captureRequestMap.put(rKey, setting);
-                */
+                    builder.set(rKey, setting.getValue());
+                }
             }
-        }
-        //==========================================================================================
-        {
-            CaptureRequest.Key<Long> rKey;
-            Parameter<Long> setting;
-
-            String name;
-
-            rKey = CaptureRequest.SENSOR_FRAME_DURATION;////////////////////////////////////////////
-            name = rKey.getName();
-
-            if (supportedKeys.contains(rKey)) {
-
-                // TODO: finish after Control_
-
-                /*
-                CameraCharacteristics.Key<float[]> cKey;
-                Parameter<Float> property;
-
-                cKey = CameraCharacteristics.LENS_INFO_AVAILABLE_APERTURES;
-                property = characteristicsMap.get(cKey);
-                assert property != null;
-
-                setting = new Parameter<>(name, property.getValue(), property.getUnits(),
-                                                                     property.getFormatter());
-
-                builder.set(rKey, setting.getValue());
-                captureRequestMap.put(rKey, setting);
-                */
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
             }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
         {
             CaptureRequest.Key<Integer> rKey;
+            ParameterFormatter<Integer> formatter;
             Parameter<Integer> setting;
 
-            String name;
+            String  name;
+            Integer value;
+            String  units;
 
-            rKey = CaptureRequest.SENSOR_SENSITIVITY;///////////////////////////////////////////////
-            name = rKey.getName();
+            rKey  = CaptureRequest.SENSOR_SENSITIVITY;//////////////////////////////////////////////
+            name  = rKey.getName();
+            units = "ISO";
 
             if (supportedKeys.contains(rKey)) {
 
-                // TODO: finish after Control_
+                Parameter<Integer> mode;
+                mode = captureRequestMap.get(CaptureRequest.CONTROL_AE_MODE);
+                assert mode != null;
 
-                /*
-                CameraCharacteristics.Key<float[]> cKey;
-                Parameter<Float> property;
+                if (mode.toString().equals("AUTO")) {
+                    setting = new Parameter<>(name);
+                    setting.setValueString("DISABLED");
+                }
+                else {
+                    CameraCharacteristics.Key<Range<Integer>> cKey;
+                    Parameter<Range<Integer>> property;
 
-                cKey = CameraCharacteristics.LENS_INFO_AVAILABLE_APERTURES;
-                property = characteristicsMap.get(cKey);
-                assert property != null;
+                    cKey = CameraCharacteristics.SENSOR_INFO_SENSITIVITY_RANGE;
+                    property = characteristicsMap.get(cKey);
+                    assert property != null;
 
-                setting = new Parameter<>(name, property.getValue(), property.getUnits(),
-                                                                     property.getFormatter());
+                    Range<Integer> range = property.getValue();
+                    assert range != null;
+                    value = range.getUpper();
 
-                builder.set(rKey, setting.getValue());
-                captureRequestMap.put(rKey, setting);
-                */
+                    formatter = new ParameterFormatter<Integer>() {
+                        @NonNull
+                        @Override
+                        public String formatValue(@NonNull Integer value) {
+                            return value.toString();
+                        }
+                    };
+                    setting = new Parameter<>(name, value, units, formatter);
+
+                    builder.set(rKey, setting.getValue());
+                }
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
         {
@@ -171,38 +241,47 @@ abstract class step13_Sensor_ extends step12_Scaler_ {
                                                                      property.getFormatter());
 
                 builder.set(rKey, setting.getValue());
-                captureRequestMap.put(rKey, setting);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
         {
             CaptureRequest.Key<int[]> rKey;
+            ParameterFormatter<int[]> formatter;
             Parameter<int[]> setting;
 
             String name;
+            int[]  value;
+            String valueString;
+            String units;
 
-            rKey = CaptureRequest.SENSOR_TEST_PATTERN_DATA;/////////////////////////////////////////
-            name = rKey.getName();
+            rKey  = CaptureRequest.SENSOR_TEST_PATTERN_DATA;////////////////////////////////////////
+            name  = rKey.getName();
+            units = null;
 
             if (supportedKeys.contains(rKey)) {
 
-                // TODO: finish after Control_
+                value = null;
+                valueString = "NOT APPLICABLE";
 
-                /*
-                CameraCharacteristics.Key<float[]> cKey;
-                Parameter<Float> property;
-
-                cKey = CameraCharacteristics.LENS_INFO_AVAILABLE_APERTURES;
-                property = characteristicsMap.get(cKey);
-                assert property != null;
-
-                setting = new Parameter<>(name, property.getValue(), property.getUnits(),
-                                                                     property.getFormatter());
-
-                builder.set(rKey, setting.getValue());
-                captureRequestMap.put(rKey, setting);
-                */
+                formatter = new ParameterFormatter<int[]>(valueString) {
+                    @NonNull
+                    @Override
+                    public String formatValue(@NonNull int[] value) {
+                        return getValueString();
+                    }
+                };
+                setting = new Parameter<>(name, value, units, formatter);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
     }

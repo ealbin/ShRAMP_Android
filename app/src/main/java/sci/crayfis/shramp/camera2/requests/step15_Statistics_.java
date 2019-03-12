@@ -83,8 +83,12 @@ abstract class step15_Statistics_ extends step14_Shading_ {
                                                                      property.getFormatter());
 
                 builder.set(rKey, setting.getValue());
-                captureRequestMap.put(rKey, setting);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
         {
@@ -120,8 +124,12 @@ abstract class step15_Statistics_ extends step14_Shading_ {
                 setting = new Parameter<>(name, value, units, formatter);
 
                 builder.set(rKey, setting.getValue());
-                captureRequestMap.put(rKey, setting);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
         {
@@ -156,8 +164,12 @@ abstract class step15_Statistics_ extends step14_Shading_ {
                 setting = new Parameter<>(name, value, units, formatter);
 
                 builder.set(rKey, setting.getValue());
-                captureRequestMap.put(rKey, setting);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
         {
@@ -196,8 +208,12 @@ abstract class step15_Statistics_ extends step14_Shading_ {
                 setting = new Parameter<>(name, value, units, formatter);
 
                 builder.set(rKey, setting.getValue());
-                captureRequestMap.put(rKey, setting);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
     }

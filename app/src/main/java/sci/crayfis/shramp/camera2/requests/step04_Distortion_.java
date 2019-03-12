@@ -84,8 +84,12 @@ abstract class step04_Distortion_ extends step03_Color_ {
                 setting = new Parameter<>(name, property.getValue(), property.getUnits(),
                                                                      property.getFormatter());
                 builder.set(rKey, setting.getValue());
-                captureRequestMap.put(rKey, setting);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
     }

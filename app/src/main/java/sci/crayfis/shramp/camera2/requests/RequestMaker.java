@@ -7,6 +7,8 @@ import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.util.Log;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -114,6 +116,31 @@ final class RequestMaker extends step16_Tonemap_ {
         CameraController.setCaptureRequestTemplate(template);
         CameraController.setCaptureRequestBuilder(builder);
         CameraController.setCaptureRequestMap(captureRequestMap);
+    }
+
+    // write........................................................................................
+    /**
+     * TODO: description, comments and logging
+     *
+     * @param map
+     * @param keychain
+     */
+    public static void write(@NonNull LinkedHashMap<CaptureRequest.Key, Parameter> map,
+                             @Nullable List<CaptureRequest.Key<?>> keychain) {
+
+        Log.e("RequestMaker", "Camera Capture Request Summary:\n");
+        for (Parameter parameter : map.values()) {
+            Log.e("RequestMaker", parameter.toString());
+        }
+
+        if (keychain != null) {
+            Log.e("RequestMaker", "Keys unset:\n");
+            for (CaptureRequest.Key<?> key : keychain) {
+                if (!map.containsKey(key)) {
+                    Log.e("RequestMaker", key.getName());
+                }
+            }
+        }
     }
 
     //**********************************************************************************************

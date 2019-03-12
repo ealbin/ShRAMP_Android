@@ -80,8 +80,12 @@ abstract class step07_Hot_ extends step06_Flash_ {
                                                                      property.getFormatter());
 
                 builder.set(rKey, setting.getValue());
-                captureRequestMap.put(rKey, setting);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
     }

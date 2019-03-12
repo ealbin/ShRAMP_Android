@@ -89,8 +89,10 @@ abstract class Statistics_ extends Shading_ {
                     }
                 };
                 property = new Parameter<>(name, value, units, formatter);
-            } else {
+            }
+            else {
                 property = new Parameter<>(name);
+                property.setValueString("NOT SUPPORTED");
             }
             characteristicsMap.put(key, property);
         }
@@ -136,8 +138,10 @@ abstract class Statistics_ extends Shading_ {
                     }
                 };
                 property = new Parameter<>(name, value, units, formatter);
-            } else {
+            }
+            else {
                 property = new Parameter<>(name);
+                property.setValueString("NOT SUPPORTED");
             }
             characteristicsMap.put(key, property);
         }
@@ -176,8 +180,10 @@ abstract class Statistics_ extends Shading_ {
                         }
                     };
                     property = new Parameter<>(name, value, units, formatter);
-                } else {
+                }
+                else {
                     property = new Parameter<>(name);
+                    property.setValueString("NOT SUPPORTED");
                 }
                 characteristicsMap.put(key, property);
             }
@@ -217,8 +223,10 @@ abstract class Statistics_ extends Shading_ {
                         }
                     };
                     property = new Parameter<>(name, value, units, formatter);
-                } else {
+                }
+                else {
                     property = new Parameter<>(name);
+                    property.setValueString("NOT SUPPORTED");
                 }
                 characteristicsMap.put(key, property);
             }
@@ -249,8 +257,10 @@ abstract class Statistics_ extends Shading_ {
                     }
                 };
                 property = new Parameter<>(name, value, units, formatter);
-            } else {
+            }
+            else {
                 property = new Parameter<>(name);
+                property.setValueString("NOT SUPPORTED");
             }
             characteristicsMap.put(key, property);
         }

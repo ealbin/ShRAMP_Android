@@ -98,8 +98,10 @@ abstract class Sensor_ extends Scaler_ {
                     }
                 };
                 property = new Parameter<>(name, value, units, formatter);
-            } else {
+            }
+            else {
                 property = new Parameter<>(name);
+                property.setValueString("NOT SUPPORTED");
             }
             characteristicsMap.put(key, property);
         }
@@ -129,8 +131,10 @@ abstract class Sensor_ extends Scaler_ {
                     }
                 };
                 property = new Parameter<>(name, value, units, formatter);
-            } else {
+            }
+            else {
                 property = new Parameter<>(name);
+                property.setValueString("NOT SUPPORTED");
             }
             characteristicsMap.put(key, property);
         }
@@ -160,8 +164,10 @@ abstract class Sensor_ extends Scaler_ {
                     }
                 };
                 property = new Parameter<>(name, value, units, formatter);
-            } else {
+            }
+            else {
                 property = new Parameter<>(name);
+                property.setValueString("NOT SUPPORTED");
             }
             characteristicsMap.put(key, property);
         }
@@ -191,8 +197,10 @@ abstract class Sensor_ extends Scaler_ {
                     }
                 };
                 property = new Parameter<>(name, value, units, formatter);
-            } else {
+            }
+            else {
                 property = new Parameter<>(name);
+                property.setValueString("NOT SUPPORTED");
             }
             characteristicsMap.put(key, property);
         }
@@ -222,8 +230,10 @@ abstract class Sensor_ extends Scaler_ {
                     }
                 };
                 property = new Parameter<>(name, value, units, formatter);
-            } else {
+            }
+            else {
                 property = new Parameter<>(name);
+                property.setValueString("NOT SUPPORTED");
             }
             characteristicsMap.put(key, property);
         }
@@ -253,8 +263,10 @@ abstract class Sensor_ extends Scaler_ {
                     }
                 };
                 property = new Parameter<>(name, value, units, formatter);
-            } else {
+            }
+            else {
                 property = new Parameter<>(name);
+                property.setValueString("NOT SUPPORTED");
             }
             characteristicsMap.put(key, property);
         }
@@ -284,8 +296,10 @@ abstract class Sensor_ extends Scaler_ {
                     }
                 };
                 property = new Parameter<>(name, value, units, formatter);
-            } else {
+            }
+            else {
                 property = new Parameter<>(name);
+                property.setValueString("NOT SUPPORTED");
             }
             characteristicsMap.put(key, property);
         }
@@ -315,8 +329,10 @@ abstract class Sensor_ extends Scaler_ {
                     }
                 };
                 property = new Parameter<>(name, value, units, formatter);
-            } else {
+            }
+            else {
                 property = new Parameter<>(name);
+                property.setValueString("NOT SUPPORTED");
             }
             characteristicsMap.put(key, property);
         }
@@ -346,8 +362,10 @@ abstract class Sensor_ extends Scaler_ {
                     }
                 };
                 property = new Parameter<>(name, value, units, formatter);
-            } else {
+            }
+            else {
                 property = new Parameter<>(name);
+                property.setValueString("NOT SUPPORTED");
             }
             characteristicsMap.put(key, property);
         }
@@ -402,8 +420,10 @@ abstract class Sensor_ extends Scaler_ {
                     }
                 };
                 property = new Parameter<>(name, value, units, formatter);
-            } else {
+            }
+            else {
                 property = new Parameter<>(name);
+                property.setValueString("NOT SUPPORTED");
             }
             characteristicsMap.put(key, property);
         }
@@ -433,8 +453,10 @@ abstract class Sensor_ extends Scaler_ {
                     }
                 };
                 property = new Parameter<>(name, value, units, formatter);
-            } else {
+            }
+            else {
                 property = new Parameter<>(name);
+                property.setValueString("NOT SUPPORTED");
             }
             characteristicsMap.put(key, property);
         }
@@ -468,8 +490,10 @@ abstract class Sensor_ extends Scaler_ {
                         }
                     };
                     property = new Parameter<>(name, value, units, formatter);
-                } else {
+                }
+                else {
                     property = new Parameter<>(name);
+                    property.setValueString("NOT SUPPORTED");
                 }
                 characteristicsMap.put(key, property);
             }
@@ -500,8 +524,10 @@ abstract class Sensor_ extends Scaler_ {
                     }
                 };
                 property = new Parameter<>(name, value, units, formatter);
-            } else {
+            }
+            else {
                 property = new Parameter<>(name);
+                property.setValueString("NOT SUPPORTED");
             }
             characteristicsMap.put(key, property);
         }
@@ -531,8 +557,10 @@ abstract class Sensor_ extends Scaler_ {
                     }
                 };
                 property = new Parameter<>(name, value, units, formatter);
-            } else {
+            }
+            else {
                 property = new Parameter<>(name);
+                property.setValueString("NOT SUPPORTED");
             }
             characteristicsMap.put(key, property);
         }
@@ -562,8 +590,10 @@ abstract class Sensor_ extends Scaler_ {
                     }
                 };
                 property = new Parameter<>(name, value, units, formatter);
-            } else {
+            }
+            else {
                 property = new Parameter<>(name);
+                property.setValueString("NOT SUPPORTED");
             }
             characteristicsMap.put(key, property);
         }
@@ -594,8 +624,10 @@ abstract class Sensor_ extends Scaler_ {
                         }
                     };
                     property = new Parameter<>(name, value, units, formatter);
-                } else {
+                }
+                else {
                     property = new Parameter<>(name);
+                    property.setValueString("NOT SUPPORTED");
                 }
                 characteristicsMap.put(key, property);
             }
@@ -626,8 +658,10 @@ abstract class Sensor_ extends Scaler_ {
                     }
                 };
                 property = new Parameter<>(name, value, units, formatter);
-            } else {
+            }
+            else {
                 property = new Parameter<>(name);
+                property.setValueString("NOT SUPPORTED");
             }
             characteristicsMap.put(key, property);
         }
@@ -668,8 +702,10 @@ abstract class Sensor_ extends Scaler_ {
                     }
                 };
                 property = new Parameter<>(name, value, units, formatter);
-            } else {
+            }
+            else {
                 property = new Parameter<>(name);
+                property.setValueString("NOT SUPPORTED");
             }
             characteristicsMap.put(key, property);
         }
@@ -699,8 +735,10 @@ abstract class Sensor_ extends Scaler_ {
                     }
                 };
                 property = new Parameter<>(name, value, units, formatter);
-            } else {
+            }
+            else {
                 property = new Parameter<>(name);
+                property.setValueString("NOT SUPPORTED");
             }
             characteristicsMap.put(key, property);
         }
@@ -730,8 +768,10 @@ abstract class Sensor_ extends Scaler_ {
                     }
                 };
                 property = new Parameter<>(name, value, units, formatter);
-            } else {
+            }
+            else {
                 property = new Parameter<>(name);
+                property.setValueString("NOT SUPPORTED");
             }
             characteristicsMap.put(key, property);
         }
@@ -766,8 +806,10 @@ abstract class Sensor_ extends Scaler_ {
                         }
                     };
                     property = new Parameter<>(name, value, units, formatter);
-                } else {
+                }
+                else {
                     property = new Parameter<>(name);
+                    property.setValueString("NOT SUPPORTED");
                 }
                 characteristicsMap.put(key, property);
             }
@@ -798,8 +840,10 @@ abstract class Sensor_ extends Scaler_ {
                     }
                 };
                 property = new Parameter<>(name, value, units, formatter);
-            } else {
+            }
+            else {
                 property = new Parameter<>(name);
+                property.setValueString("NOT SUPPORTED");
             }
             characteristicsMap.put(key, property);
         }
@@ -910,8 +954,10 @@ abstract class Sensor_ extends Scaler_ {
                     }
                 };
                 property = new Parameter<>(name, value, units, formatter);
-            } else {
+            }
+            else {
                 property = new Parameter<>(name);
+                property.setValueString("NOT SUPPORTED");
             }
             characteristicsMap.put(key, property);
         }
@@ -1023,8 +1069,10 @@ abstract class Sensor_ extends Scaler_ {
                     }
                 };
                 property = new Parameter<>(name, value, units, formatter);
-            } else {
+            }
+            else {
                 property = new Parameter<>(name);
+                property.setValueString("NOT SUPPORTED");
             }
             characteristicsMap.put(key, property);
         }

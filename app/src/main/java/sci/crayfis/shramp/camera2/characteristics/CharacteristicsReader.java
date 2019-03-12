@@ -7,6 +7,7 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 
 import sci.crayfis.shramp.camera2.util.Parameter;
 
@@ -89,6 +90,31 @@ public final class CharacteristicsReader extends Tonemap_ {
                                                                             = new LinkedHashMap<>();
         mInstance.read(cameraCharacteristics, characteristicsMap);
         return characteristicsMap;
+    }
+
+    // write........................................................................................
+    /**
+     * TODO: description, comments and logging
+     *
+     * @param map
+     * @param keychain
+     */
+    public static void write(@NonNull LinkedHashMap<CameraCharacteristics.Key, Parameter> map,
+                             @Nullable List<CameraCharacteristics.Key<?>> keychain) {
+
+        Log.e("CharacteristicsReader", "Camera Characteristics Summary:\n");
+        for (Parameter parameter : map.values()) {
+            Log.e("CharacteristicsReader", parameter.toString());
+        }
+
+        if (keychain != null) {
+            Log.e("CharacteristicsReader", "Keys unset:\n");
+            for (CameraCharacteristics.Key<?> key : keychain) {
+                if (!map.containsKey(key)) {
+                    Log.e("CharacteristicsReader", key.getName());
+                }
+            }
+        }
     }
 
     //**********************************************************************************************

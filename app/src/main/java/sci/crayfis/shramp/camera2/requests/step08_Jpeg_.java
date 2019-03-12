@@ -88,10 +88,12 @@ abstract class step08_Jpeg_ extends step07_Hot_ {
                     }
                 };
                 setting = new Parameter<>(name, value, units, formatter);
-
-                builder.set(rKey, setting.getValue());
-                captureRequestMap.put(rKey, setting);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
         {
@@ -121,10 +123,12 @@ abstract class step08_Jpeg_ extends step07_Hot_ {
                     }
                 };
                 setting = new Parameter<>(name, value, units, formatter);
-
-                builder.set(rKey, setting.getValue());
-                captureRequestMap.put(rKey, setting);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
         {
@@ -154,10 +158,12 @@ abstract class step08_Jpeg_ extends step07_Hot_ {
                     }
                 };
                 setting = new Parameter<>(name, value, units, formatter);
-
-                builder.set(rKey, setting.getValue());
-                captureRequestMap.put(rKey, setting);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
         {
@@ -187,10 +193,12 @@ abstract class step08_Jpeg_ extends step07_Hot_ {
                     }
                 };
                 setting = new Parameter<>(name, value, units, formatter);
-
-                builder.set(rKey, setting.getValue());
-                captureRequestMap.put(rKey, setting);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
         {
@@ -220,10 +228,12 @@ abstract class step08_Jpeg_ extends step07_Hot_ {
                     }
                 };
                 setting = new Parameter<>(name, value, units, formatter);
-
-                builder.set(rKey, setting.getValue());
-                captureRequestMap.put(rKey, setting);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
     }

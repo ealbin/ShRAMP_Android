@@ -84,8 +84,12 @@ abstract class step16_Tonemap_ extends step15_Statistics_ {
                                                                      property.getFormatter());
 
                 builder.set(rKey, setting.getValue());
-                captureRequestMap.put(rKey, setting);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
         {
@@ -122,9 +126,17 @@ abstract class step16_Tonemap_ extends step15_Statistics_ {
                     setting = new Parameter<>(name, value, units, formatter);
 
                     builder.set(rKey, setting.getValue());
-                    captureRequestMap.put(rKey, setting);
+                }
+                else {
+                    setting = new Parameter<>(name);
+                    setting.setValueString("DISABLED");
                 }
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
         {
@@ -161,9 +173,17 @@ abstract class step16_Tonemap_ extends step15_Statistics_ {
                         setting = new Parameter<>(name, value, units, formatter);
 
                         builder.set(rKey, setting.getValue());
-                        captureRequestMap.put(rKey, setting);
+                    }
+                    else {
+                        setting = new Parameter<>(name);
+                        setting.setValueString("DISABLED");
                     }
                 }
+                else {
+                    setting = new Parameter<>(name);
+                    setting.setValueString("NOT SUPPORTED");
+                }
+                captureRequestMap.put(rKey, setting);
             }
         }
         //==========================================================================================
@@ -205,9 +225,17 @@ abstract class step16_Tonemap_ extends step15_Statistics_ {
                         setting = new Parameter<>(name, value, units, formatter);
 
                         builder.set(rKey, setting.getValue());
-                        captureRequestMap.put(rKey, setting);
+                    }
+                    else {
+                        setting = new Parameter<>(name);
+                        setting.setValueString("DISABLED");
                     }
                 }
+                else {
+                    setting = new Parameter<>(name);
+                    setting.setValueString("NOT SUPPORTED");
+                }
+                captureRequestMap.put(rKey, setting);
             }
         }
         //==========================================================================================

@@ -95,6 +95,7 @@ abstract class Color_ {
             }
             else {
                 property = new Parameter<>(name);
+                property.setValueString("NOT SUPPORTED");
             }
             characteristicsMap.put(key, property);
         }

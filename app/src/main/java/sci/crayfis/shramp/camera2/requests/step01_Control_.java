@@ -118,10 +118,13 @@ abstract class step01_Control_ {
                     };
                     setting = new Parameter<>(name, value, units, formatter);
                 }
-
                 builder.set(rKey, setting.getValue());
-                captureRequestMap.put(rKey, setting);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
         {
@@ -179,23 +182,24 @@ abstract class step01_Control_ {
                 setting = new Parameter<>(name, value, units, formatter);
 
                 builder.set(rKey, setting.getValue());
-                captureRequestMap.put(rKey, setting);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
         //                                 Auto-white Balance
         //==========================================================================================
         {
             CaptureRequest.Key<Integer> rKey;
-            ParameterFormatter<Integer> formatter;
             Parameter<Integer> setting;
 
             String name;
-            String units;
 
-            rKey  = CaptureRequest.CONTROL_AWB_MODE;////////////////////////////////////////////////
-            name  = rKey.getName();
-            units = null;
+            rKey = CaptureRequest.CONTROL_AWB_MODE;////////////////////////////////////////////////
+            name = rKey.getName();
 
             if (supportedKeys.contains(rKey)) {
 
@@ -218,18 +222,15 @@ abstract class step01_Control_ {
                     builder.set(rKey, setting.getValue());
                 }
                 else {
-                    formatter = new ParameterFormatter<Integer>("DISABLED") {
-                        @NonNull
-                        @Override
-                        public String formatValue(@NonNull Integer value) {
-                            return getValueString();
-                        }
-                    };
-                    setting = new Parameter<>(name, null, units, formatter);
+                    setting = new Parameter<>(name);
+                    setting.setValueString("DISABLED");
                 }
-
-                captureRequestMap.put(rKey, setting);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
         {
@@ -251,14 +252,8 @@ abstract class step01_Control_ {
                 assert mode != null;
 
                 if (!mode.toString().equals("AUTO")) {
-                    formatter = new ParameterFormatter<Boolean>("DISABLED") {
-                        @NonNull
-                        @Override
-                        public String formatValue(@NonNull Boolean value) {
-                            return getValueString();
-                        }
-                    };
-                    setting = new Parameter<>(name, null, units, formatter);
+                    setting = new Parameter<>(name);
+                    setting.setValueString("DISABLED");
                 }
                 else if (Build.VERSION.SDK_INT >= 23) {
                     CameraCharacteristics.Key<Boolean> cKey;
@@ -292,8 +287,12 @@ abstract class step01_Control_ {
                 }
 
                 builder.set(rKey, setting.getValue());
-                captureRequestMap.put(rKey, setting);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
         {
@@ -318,24 +317,24 @@ abstract class step01_Control_ {
                     }
                 };
                 setting = new Parameter<>(name, null, units, formatter);
-
-                captureRequestMap.put(rKey, setting);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
         //                                 Auto Focus
         //==========================================================================================
         {
             CaptureRequest.Key<Integer> rKey;
-            ParameterFormatter<Integer> formatter;
             Parameter<Integer> setting;
 
             String name;
-            String units;
 
-            rKey  = CaptureRequest.CONTROL_AF_MODE;/////////////////////////////////////////////////
-            name  = rKey.getName();
-            units = null;
+            rKey = CaptureRequest.CONTROL_AF_MODE;/////////////////////////////////////////////////
+            name = rKey.getName();
 
             if (supportedKeys.contains(rKey)) {
 
@@ -358,18 +357,15 @@ abstract class step01_Control_ {
                     builder.set(rKey, setting.getValue());
                 }
                 else {
-                    formatter = new ParameterFormatter<Integer>("DISABLED") {
-                        @NonNull
-                        @Override
-                        public String formatValue(@NonNull Integer value) {
-                            return getValueString();
-                        }
-                    };
-                    setting = new Parameter<>(name, null, units, formatter);
+                    setting = new Parameter<>(name);
+                    setting.setValueString("DISABLED");
                 }
-
-                captureRequestMap.put(rKey, setting);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
         {
@@ -394,9 +390,12 @@ abstract class step01_Control_ {
                     }
                 };
                 setting = new Parameter<>(name, null, units, formatter);
-
-                captureRequestMap.put(rKey, setting);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
         {
@@ -421,24 +420,24 @@ abstract class step01_Control_ {
                     }
                 };
                 setting = new Parameter<>(name, null, units, formatter);
-
-                captureRequestMap.put(rKey, setting);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
         //                               Auto Exposure
         //==========================================================================================
         {
             CaptureRequest.Key<Integer> rKey;
-            ParameterFormatter<Integer> formatter;
             Parameter<Integer> setting;
 
             String name;
-            String units;
 
-            rKey  = CaptureRequest.CONTROL_AE_MODE;/////////////////////////////////////////////////
-            name  = rKey.getName();
-            units = null;
+            rKey = CaptureRequest.CONTROL_AE_MODE;/////////////////////////////////////////////////
+            name = rKey.getName();
 
             if (supportedKeys.contains(rKey)) {
 
@@ -461,18 +460,15 @@ abstract class step01_Control_ {
                     builder.set(rKey, setting.getValue());
                 }
                 else {
-                    formatter = new ParameterFormatter<Integer>("DISABLED") {
-                        @NonNull
-                        @Override
-                        public String formatValue(@NonNull Integer value) {
-                            return getValueString();
-                        }
-                    };
-                    setting = new Parameter<>(name, null, units, formatter);
+                    setting = new Parameter<>(name);
+                    setting.setValueString("DISABLED");
                 }
-
-                captureRequestMap.put(rKey, setting);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
         {
@@ -494,14 +490,8 @@ abstract class step01_Control_ {
                 assert mode != null;
 
                 if (!mode.toString().equals("AUTO")) {
-                    formatter = new ParameterFormatter<Boolean>("DISABLED") {
-                        @NonNull
-                        @Override
-                        public String formatValue(@NonNull Boolean value) {
-                            return getValueString();
-                        }
-                    };
-                    setting = new Parameter<>(name, null, units, formatter);
+                    setting = new Parameter<>(name);
+                    setting.setValueString("DISABLED");
                 }
                 else if (Build.VERSION.SDK_INT >= 23) {
                     CameraCharacteristics.Key<Boolean> cKey;
@@ -535,8 +525,12 @@ abstract class step01_Control_ {
                 }
 
                 builder.set(rKey, setting.getValue());
-                captureRequestMap.put(rKey, setting);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
         {
@@ -561,9 +555,12 @@ abstract class step01_Control_ {
                     }
                 };
                 setting = new Parameter<>(name, null, units, formatter);
-
-                captureRequestMap.put(rKey, setting);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
         {
@@ -588,22 +585,22 @@ abstract class step01_Control_ {
                     }
                 };
                 setting = new Parameter<>(name, null, units, formatter);
-
-                captureRequestMap.put(rKey, setting);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
         {
             CaptureRequest.Key<Integer> rKey;
-            ParameterFormatter<Integer> formatter;
             Parameter<Integer> setting;
 
             String name;
-            String units;
 
             rKey  = CaptureRequest.CONTROL_AE_ANTIBANDING_MODE;/////////////////////////////////////
             name  = rKey.getName();
-            units = null;
 
             if (supportedKeys.contains(rKey)) {
 
@@ -626,31 +623,25 @@ abstract class step01_Control_ {
                     builder.set(rKey, setting.getValue());
                 }
                 else {
-                    formatter = new ParameterFormatter<Integer>("DISABLED") {
-                        @NonNull
-                        @Override
-                        public String formatValue(@NonNull Integer value) {
-                            return getValueString();
-                        }
-                    };
-                    setting = new Parameter<>(name, null, units, formatter);
+                    setting = new Parameter<>(name);
+                    setting.setValueString("DISABLED");
                 }
-
-                captureRequestMap.put(rKey, setting);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
         {
             CaptureRequest.Key<Integer> rKey;
-            ParameterFormatter<Integer> formatter;
             Parameter<Integer> setting;
 
             String name;
-            String units;
 
             rKey  = CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION;////////////////////////////////
             name  = rKey.getName();
-            units = null;
 
             if (supportedKeys.contains(rKey)) {
 
@@ -673,31 +664,25 @@ abstract class step01_Control_ {
                     builder.set(rKey, setting.getValue());
                 }
                 else {
-                    formatter = new ParameterFormatter<Integer>("DISABLED") {
-                        @NonNull
-                        @Override
-                        public String formatValue(@NonNull Integer value) {
-                            return getValueString();
-                        }
-                    };
-                    setting = new Parameter<>(name, null, units, formatter);
+                    setting = new Parameter<>(name);
+                    setting.setValueString("DISABLED");
                 }
-
-                captureRequestMap.put(rKey, setting);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
         {
             CaptureRequest.Key<Range<Integer>> rKey;
-            ParameterFormatter<Range<Integer>> formatter;
             Parameter<Range<Integer>> setting;
 
             String name;
-            String units;
 
             rKey  = CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE;/////////////////////////////////////
             name  = rKey.getName();
-            units = null;
 
             if (supportedKeys.contains(rKey)) {
 
@@ -720,18 +705,15 @@ abstract class step01_Control_ {
                     builder.set(rKey, setting.getValue());
                 }
                 else {
-                    formatter = new ParameterFormatter<Range<Integer>>("DISABLED") {
-                        @NonNull
-                        @Override
-                        public String formatValue(@NonNull Range<Integer> value) {
-                            return getValueString();
-                        }
-                    };
-                    setting = new Parameter<>(name, null, units, formatter);
+                    setting = new Parameter<>(name);
+                    setting.setValueString("DISABLED");
                 }
-
-                captureRequestMap.put(rKey, setting);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
         {
@@ -756,8 +738,12 @@ abstract class step01_Control_ {
                                                                        properties.getFormatter());
 
                 builder.set(rKey, setting.getValue());
-                captureRequestMap.put(rKey, setting);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
         {
@@ -786,8 +772,12 @@ abstract class step01_Control_ {
                     setting = new Parameter<>(name, false, units, formatter);
 
                     builder.set(rKey, setting.getValue());
-                    captureRequestMap.put(rKey, setting);
                 }
+                else {
+                    setting = new Parameter<>(name);
+                    setting.setValueString("NOT SUPPORTED");
+                }
+                captureRequestMap.put(rKey, setting);
             }
         }
         //==========================================================================================
@@ -814,8 +804,12 @@ abstract class step01_Control_ {
                                                                            properties.getFormatter());
 
                     builder.set(rKey, setting.getValue());
-                    captureRequestMap.put(rKey, setting);
                 }
+                else {
+                    setting = new Parameter<>(name);
+                    setting.setValueString("NOT SUPPORTED");
+                }
+                captureRequestMap.put(rKey, setting);
             }
         }
         //==========================================================================================
@@ -841,8 +835,12 @@ abstract class step01_Control_ {
                                                                        properties.getFormatter());
 
                 builder.set(rKey, setting.getValue());
-                captureRequestMap.put(rKey, setting);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
         {
@@ -867,8 +865,12 @@ abstract class step01_Control_ {
                         properties.getFormatter());
 
                 builder.set(rKey, setting.getValue());
-                captureRequestMap.put(rKey, setting);
             }
+            else {
+                setting = new Parameter<>(name);
+                setting.setValueString("NOT SUPPORTED");
+            }
+            captureRequestMap.put(rKey, setting);
         }
         //==========================================================================================
     }

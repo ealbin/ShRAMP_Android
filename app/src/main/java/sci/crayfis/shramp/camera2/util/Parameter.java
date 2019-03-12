@@ -158,6 +158,13 @@ public class Parameter<T> {
      */
     public void setUnits(String units) { mUnits = units; }
 
+    // setValueString...............................................................................
+    /**
+     * TODO: description, comments and logging
+     * @param valueString
+     */
+    public void setValueString(@NonNull String valueString) { mParameterFormatter.setValueString(valueString); }
+
     //**********************************************************************************************
     // Overriden Methods
     //------------------

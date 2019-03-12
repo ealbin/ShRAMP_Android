@@ -95,6 +95,7 @@ abstract class Lens_ extends Jpeg_ {
                     }
                     else {
                     property = new Parameter<>(name);
+                    property.setValueString("NOT SUPPORTED");
                 }
                 characteristicsMap.put(key, property);
             }
@@ -146,6 +147,7 @@ abstract class Lens_ extends Jpeg_ {
             }
             else {
                 property = new Parameter<>(name);
+                property.setValueString("NOT SUPPORTED");
             }
             characteristicsMap.put(key, property);
         }
@@ -191,6 +193,7 @@ abstract class Lens_ extends Jpeg_ {
             }
             else {
                 property = new Parameter<>(name);
+                property.setValueString("NOT SUPPORTED");
             }
             characteristicsMap.put(key, property);
         }
@@ -236,6 +239,7 @@ abstract class Lens_ extends Jpeg_ {
             }
             else {
                 property = new Parameter<>(name);
+                property.setValueString("NOT SUPPORTED");
             }
             characteristicsMap.put(key, property);
         }
@@ -281,6 +285,7 @@ abstract class Lens_ extends Jpeg_ {
             }
             else {
                 property = new Parameter<>(name);
+                property.setValueString("NOT SUPPORTED");
             }
             characteristicsMap.put(key, property);
         }
@@ -327,6 +332,7 @@ abstract class Lens_ extends Jpeg_ {
             }
             else {
                 property = new Parameter<>(name);
+                property.setValueString("NOT SUPPORTED");
             }
             characteristicsMap.put(key, property);
         }
@@ -374,6 +380,7 @@ abstract class Lens_ extends Jpeg_ {
             }
             else {
                 property = new Parameter<>(name);
+                property.setValueString("NOT SUPPORTED");
             }
             characteristicsMap.put(key, property);
         }
@@ -419,6 +426,7 @@ abstract class Lens_ extends Jpeg_ {
             }
             else {
                 property = new Parameter<>(name);
+                property.setValueString("NOT SUPPORTED");
             }
             characteristicsMap.put(key, property);
         }
@@ -464,6 +472,7 @@ abstract class Lens_ extends Jpeg_ {
             }
             else {
                 property = new Parameter<>(name);
+                property.setValueString("NOT SUPPORTED");
             }
             characteristicsMap.put(key, property);
         }
@@ -505,8 +514,10 @@ abstract class Lens_ extends Jpeg_ {
                         }
                     };
                     property = new Parameter<>(name, value, units, formatter);
-                } else {
+                }
+                else {
                     property = new Parameter<>(name);
+                    property.setValueString("NOT SUPPORTED");
                 }
                 characteristicsMap.put(key, property);
             }
@@ -548,8 +559,10 @@ abstract class Lens_ extends Jpeg_ {
                         }
                     };
                     property = new Parameter<>(name, value, units, formatter);
-                } else {
+                }
+                else {
                     property = new Parameter<>(name);
+                    property.setValueString("NOT SUPPORTED");
                 }
                 characteristicsMap.put(key, property);
             }
@@ -592,8 +605,10 @@ abstract class Lens_ extends Jpeg_ {
                         }
                     };
                     property = new Parameter<>(name, value, units, formatter);
-                } else {
+                }
+                else {
                     property = new Parameter<>(name);
+                    property.setValueString("NOT SUPPORTED");
                 }
                 characteristicsMap.put(key, property);
             }
@@ -636,8 +651,10 @@ abstract class Lens_ extends Jpeg_ {
                         }
                     };
                     property = new Parameter<>(name, value, units, formatter);
-                } else {
+                }
+                else {
                     property = new Parameter<>(name);
+                    property.setValueString("NOT SUPPORTED");
                 }
                 characteristicsMap.put(key, property);
             }
