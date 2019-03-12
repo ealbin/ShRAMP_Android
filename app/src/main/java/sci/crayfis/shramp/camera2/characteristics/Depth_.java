@@ -72,8 +72,9 @@ abstract class Depth_ extends Control_ {
                     assert value != null;
 
                     formatter = new ParameterFormatter<Boolean>() {
+                        @NonNull
                         @Override
-                        public String formatValue(Boolean value) {
+                        public String formatValue(@NonNull Boolean value) {
                             if (value) {
                                 return "YES";
                             }

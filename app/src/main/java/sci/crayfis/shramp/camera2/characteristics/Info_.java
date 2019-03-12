@@ -110,8 +110,9 @@ abstract class Info_ extends Hot_ {
                 assert value != null;
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
+                    @NonNull
                     @Override
-                    public String formatValue(Integer value) {
+                    public String formatValue(@NonNull Integer value) {
                         return getValueString();
                     }
                 };
@@ -140,8 +141,9 @@ abstract class Info_ extends Hot_ {
                 assert value != null;
 
                 formatter = new ParameterFormatter<String>() {
+                    @NonNull
                     @Override
-                    public String formatValue(String value) {
+                    public String formatValue(@NonNull String value) {
                         return value;
                     }
                 };

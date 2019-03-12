@@ -17,7 +17,7 @@ import sci.crayfis.shramp.camera2.util.ParameterFormatter;
  * TODO: description, comments and logging
  */
 @TargetApi(21)
-abstract class Scalar_ extends Request_ {
+abstract class Scaler_ extends Request_ {
 
     //**********************************************************************************************
     // Constructors
@@ -26,11 +26,11 @@ abstract class Scalar_ extends Request_ {
     // Protected
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    // Scalar_......................................................................................
+    // Scaler_......................................................................................
     /**
      * TODO: description, comments and logging
      */
-    protected Scalar_() { super(); }
+    protected Scaler_() { super(); }
 
     //**********************************************************************************************
     // Overriding Methods
@@ -50,7 +50,7 @@ abstract class Scalar_ extends Request_ {
                         @NonNull LinkedHashMap<CameraCharacteristics.Key, Parameter> characteristicsMap) {
         super.read(cameraCharacteristics, characteristicsMap);
 
-        Log.e("              Scalar_","reading Scalar_ characteristics");
+        Log.e("              Scaler_","reading Scaler_ characteristics");
         List<CameraCharacteristics.Key<?>> keychain = cameraCharacteristics.getKeys();
 
         //==========================================================================================
@@ -72,8 +72,9 @@ abstract class Scalar_ extends Request_ {
                 assert value != null;
 
                 formatter = new ParameterFormatter<Float>() {
+                    @NonNull
                     @Override
-                    public String formatValue(Float value) {
+                    public String formatValue(@NonNull Float value) {
                         return value.toString();
                     }
                 };
@@ -113,8 +114,9 @@ abstract class Scalar_ extends Request_ {
                 }
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
+                    @NonNull
                     @Override
-                    public String formatValue(Integer value) {
+                    public String formatValue(@NonNull Integer value) {
                         return getValueString();
                     }
                 };
@@ -143,8 +145,9 @@ abstract class Scalar_ extends Request_ {
                 assert value != null;
 
                 formatter = new ParameterFormatter<StreamConfigurationMap>() {
+                    @NonNull
                     @Override
-                    public String formatValue(StreamConfigurationMap value) {
+                    public String formatValue(@NonNull StreamConfigurationMap value) {
                         return value.toString();
                     }
                 };

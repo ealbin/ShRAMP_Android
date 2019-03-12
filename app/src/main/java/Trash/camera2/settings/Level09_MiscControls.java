@@ -237,7 +237,7 @@ abstract class Level09_MiscControls extends Level08_AutoExposure {
         /*
          * Added in API 21
          *
-         * Control_ for which scene mode is currently active.
+         * step01_Control_ for which scene mode is currently active.
          *
          * Scene modes are custom camera modes optimized for a certain set of conditions and capture
          * settings.

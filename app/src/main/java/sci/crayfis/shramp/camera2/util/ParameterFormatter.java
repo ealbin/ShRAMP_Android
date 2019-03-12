@@ -30,7 +30,7 @@ public abstract class ParameterFormatter<T> {
 
     // mValueString.................................................................................
     // TODO: description
-    private String mValueString;
+    private String mValueString = "ERROR: VALUE NOT SET";
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -83,7 +83,7 @@ public abstract class ParameterFormatter<T> {
         }
 
         if (value == null) {
-            out += "Not Supported";
+            out += mValueString;
         }
         else {
             out += formatValue(value);
@@ -121,6 +121,7 @@ public abstract class ParameterFormatter<T> {
      * @param value
      * @return
      */
-    public abstract String formatValue(T value);
+    @NonNull
+    public abstract String formatValue(@NonNull T value);
 
 }

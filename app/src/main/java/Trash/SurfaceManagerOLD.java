@@ -175,7 +175,7 @@ public class SurfaceManagerOLD {
 
         if (isReady) {
             SurfaceManagerOLD.mLogger.log("All surfaces are ready");
-            CaptureOverseer.surfacesReady(mSurfaces);
+            //CaptureOverseer.surfacesReady(mSurfaces);
         }
         else {
             SurfaceManagerOLD.mLogger.log("Not all surfaces are ready, continuing to wait");

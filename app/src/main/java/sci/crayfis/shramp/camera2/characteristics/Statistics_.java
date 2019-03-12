@@ -82,8 +82,9 @@ abstract class Statistics_ extends Shading_ {
                 valueString = "OFF";
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
+                    @NonNull
                     @Override
-                    public String formatValue(Integer value) {
+                    public String formatValue(@NonNull Integer value) {
                         return getValueString();
                     }
                 };
@@ -115,8 +116,9 @@ abstract class Statistics_ extends Shading_ {
                 assert value != null;
 
                 formatter = new ParameterFormatter<Boolean[]>() {
+                    @NonNull
                     @Override
-                    public String formatValue(Boolean[] value) {
+                    public String formatValue(@NonNull Boolean[] value) {
                         String out = "( ";
                         int length = value.length;
                         for (int i = 0; i < length; i++) {
@@ -167,8 +169,9 @@ abstract class Statistics_ extends Shading_ {
                     valueString = "OFF";
 
                     formatter = new ParameterFormatter<Integer>(valueString) {
+                        @NonNull
                         @Override
-                        public String formatValue(Integer value) {
+                        public String formatValue(@NonNull Integer value) {
                             return getValueString();
                         }
                     };
@@ -207,8 +210,9 @@ abstract class Statistics_ extends Shading_ {
                     valueString = "OFF";
 
                     formatter = new ParameterFormatter<Integer>(valueString) {
+                        @NonNull
                         @Override
-                        public String formatValue(Integer value) {
+                        public String formatValue(@NonNull Integer value) {
                             return getValueString();
                         }
                     };
@@ -238,8 +242,9 @@ abstract class Statistics_ extends Shading_ {
                 assert value != null;
 
                 formatter = new ParameterFormatter<Integer>() {
+                    @NonNull
                     @Override
-                    public String formatValue(Integer value) {
+                    public String formatValue(@NonNull Integer value) {
                         return value.toString();
                     }
                 };

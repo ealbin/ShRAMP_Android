@@ -77,8 +77,9 @@ abstract class Lens_ extends Jpeg_ {
                     assert value != null;
 
                     formatter = new ParameterFormatter<Float[]>() {
+                        @NonNull
                         @Override
-                        public String formatValue(Float[] value) {
+                        public String formatValue(@NonNull Float[] value) {
                             String out = "( ";
                             int length = value.length;
                             for (int i = 0; i < length; i++) {
@@ -135,8 +136,9 @@ abstract class Lens_ extends Jpeg_ {
                 }
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
+                    @NonNull
                     @Override
-                    public String formatValue(Integer value) {
+                    public String formatValue(@NonNull Integer value) {
                         return getValueString();
                     }
                 };
@@ -179,8 +181,9 @@ abstract class Lens_ extends Jpeg_ {
                 value = smallest;
 
                 formatter = new ParameterFormatter<Float>() {
+                    @NonNull
                     @Override
-                    public String formatValue(Float value) {
+                    public String formatValue(@NonNull Float value) {
                         return value.toString();
                     }
                 };
@@ -223,8 +226,9 @@ abstract class Lens_ extends Jpeg_ {
                 value = biggest;
 
                 formatter = new ParameterFormatter<Float>() {
+                    @NonNull
                     @Override
-                    public String formatValue(Float value) {
+                    public String formatValue(@NonNull Float value) {
                         return value.toString();
                     }
                 };
@@ -267,8 +271,9 @@ abstract class Lens_ extends Jpeg_ {
                 value = longest;
 
                 formatter = new ParameterFormatter<Float>() {
+                    @NonNull
                     @Override
-                    public String formatValue(Float value) {
+                    public String formatValue(@NonNull Float value) {
                         return value.toString();
                     }
                 };
@@ -312,8 +317,9 @@ abstract class Lens_ extends Jpeg_ {
                 }
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
+                    @NonNull
                     @Override
-                    public String formatValue(Integer value) {
+                    public String formatValue(@NonNull Integer value) {
                         return getValueString();
                     }
                 };
@@ -358,8 +364,9 @@ abstract class Lens_ extends Jpeg_ {
                 }
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
+                    @NonNull
                     @Override
-                    public String formatValue(Integer value) {
+                    public String formatValue(@NonNull Integer value) {
                         return getValueString();
                     }
                 };
@@ -402,8 +409,9 @@ abstract class Lens_ extends Jpeg_ {
                 assert value != null;
 
                 formatter = new ParameterFormatter<Float>() {
+                    @NonNull
                     @Override
-                    public String formatValue(Float value) {
+                    public String formatValue(@NonNull Float value) {
                         return value.toString();
                     }
                 };
@@ -446,8 +454,9 @@ abstract class Lens_ extends Jpeg_ {
                 assert value != null;
 
                 formatter = new ParameterFormatter<Float>() {
+                    @NonNull
                     @Override
-                    public String formatValue(Float value) {
+                    public String formatValue(@NonNull Float value) {
                         return value.toString();
                     }
                 };
@@ -481,8 +490,9 @@ abstract class Lens_ extends Jpeg_ {
                     assert value != null;
 
                     formatter = new ParameterFormatter<Float[]>() {
+                        @NonNull
                         @Override
-                        public String formatValue(Float[] value) {
+                        public String formatValue(@NonNull Float[] value) {
                             String out = "( ";
                             int length = value.length;
                             for (int i = 0; i < length; i++ ) {
@@ -531,8 +541,9 @@ abstract class Lens_ extends Jpeg_ {
                     }
 
                     formatter = new ParameterFormatter<Integer>(valueString) {
+                        @NonNull
                         @Override
-                        public String formatValue(Integer value) {
+                        public String formatValue(@NonNull Integer value) {
                             return getValueString();
                         }
                     };
@@ -566,8 +577,9 @@ abstract class Lens_ extends Jpeg_ {
                     assert value != null;
 
                     formatter = new ParameterFormatter<Float[]>() {
+                        @NonNull
                         @Override
-                        public String formatValue(Float[] value) {
+                        public String formatValue(@NonNull Float[] value) {
                             String out = "( ";
                             int length = value.length;
                             for (int i = 0; i < length; i++ ) {
@@ -609,8 +621,9 @@ abstract class Lens_ extends Jpeg_ {
                     assert value != null;
 
                     formatter = new ParameterFormatter<Float[]>() {
+                        @NonNull
                         @Override
-                        public String formatValue(Float[] value) {
+                        public String formatValue(@NonNull Float[] value) {
                             String out = "( ";
                             int length = value.length;
                             for (int i = 0; i < length; i++ ) {

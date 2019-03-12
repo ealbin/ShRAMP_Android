@@ -140,7 +140,7 @@ final class ImageReaderListener implements ImageReader.OnImageAvailableListener 
             imageBytes.get(data);
             image.close();
 
-            CaptureOverseer.processImage(data);
+            //CaptureOverseer.processImage(data);
         } catch (IllegalStateException e) {
             // TODO: error
             if (image != null) {

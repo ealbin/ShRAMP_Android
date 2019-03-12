@@ -199,7 +199,7 @@ public final class ShrampCamManager {
         mActiveCamera = shrampCam;
         CameraDevice cameraDevice = shrampCam.getCameraDevice();
         mLogger.log("return via CaptureOverseer.cameraReady();");
-        CaptureOverseer.cameraReady(cameraDevice);
+        //CaptureOverseer.cameraReady(cameraDevice);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

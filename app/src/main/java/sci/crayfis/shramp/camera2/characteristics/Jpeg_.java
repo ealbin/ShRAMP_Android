@@ -86,8 +86,9 @@ abstract class Jpeg_ extends Info_ {
                 value = smallest;
 
                 formatter = new ParameterFormatter<Size>() {
+                    @NonNull
                     @Override
-                    public String formatValue(Size value) {
+                    public String formatValue(@NonNull Size value) {
                         return value.toString();
                     }
                 };

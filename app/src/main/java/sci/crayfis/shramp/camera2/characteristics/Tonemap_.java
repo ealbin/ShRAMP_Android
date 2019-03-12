@@ -95,8 +95,9 @@ abstract class Tonemap_ extends Sync_ {
                 }
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
+                    @NonNull
                     @Override
-                    public String formatValue(Integer value) {
+                    public String formatValue(@NonNull Integer value) {
                         return getValueString();
                     }
                 };
@@ -125,8 +126,9 @@ abstract class Tonemap_ extends Sync_ {
                 assert value != null;
 
                 formatter = new ParameterFormatter<Integer>() {
+                    @NonNull
                     @Override
-                    public String formatValue(Integer value) {
+                    public String formatValue(@NonNull Integer value) {
                         return value.toString();
                     }
                 };

@@ -1296,7 +1296,7 @@ final class CameraConfiguration {
 
         //------------------------------------------------------------------------------------------
 
-        report = report.concat("Control_ mode is: ");
+        report = report.concat("step01_Control_ mode is: ");
         try {
             mode = mCaptureRequestBuilder.get(CaptureRequest.CONTROL_MODE);
             switch (mode) {

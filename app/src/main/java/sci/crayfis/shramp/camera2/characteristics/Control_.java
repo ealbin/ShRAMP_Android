@@ -93,8 +93,9 @@ abstract class Control_ extends Color_ {
                 }
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
+                    @NonNull
                     @Override
-                    public String formatValue(Integer value) {
+                    public String formatValue(@NonNull Integer value) {
                         return getValueString();
                     }
                 };
@@ -145,8 +146,9 @@ abstract class Control_ extends Color_ {
                 }
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
+                    @NonNull
                     @Override
-                    public String formatValue(Integer value) {
+                    public String formatValue(@NonNull Integer value) {
                         return getValueString();
                     }
                 };
@@ -194,8 +196,9 @@ abstract class Control_ extends Color_ {
                 }
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
+                    @NonNull
                     @Override
-                    public String formatValue(Integer value) {
+                    public String formatValue(@NonNull Integer value) {
                         return getValueString();
                     }
                 };
@@ -249,8 +252,9 @@ abstract class Control_ extends Color_ {
                 assert value != null;
 
                 formatter = new ParameterFormatter<Range<Integer>>() {
+                    @NonNull
                     @Override
-                    public String formatValue(Range<Integer> value) {
+                    public String formatValue(@NonNull Range<Integer> value) {
                         return value.toString();
                     }
                 };
@@ -281,8 +285,9 @@ abstract class Control_ extends Color_ {
                 value = range.getUpper();
 
                 formatter = new ParameterFormatter<Integer>() {
+                    @NonNull
                     @Override
-                    public String formatValue(Integer value) {
+                    public String formatValue(@NonNull Integer value) {
                         return value.toString();
                     }
                 };
@@ -312,8 +317,9 @@ abstract class Control_ extends Color_ {
                 assert value != null;
 
                 formatter = new ParameterFormatter<Rational>() {
+                    @NonNull
                     @Override
-                    public String formatValue(Rational value) {
+                    public String formatValue(@NonNull Rational value) {
                         return value.toString();
                     }
                 };
@@ -344,8 +350,9 @@ abstract class Control_ extends Color_ {
                     assert value != null;
 
                     formatter = new ParameterFormatter<Boolean>() {
+                        @NonNull
                         @Override
-                        public String formatValue(Boolean value) {
+                        public String formatValue(@NonNull Boolean value) {
                             if (value) {
                                 return "YES";
                             }
@@ -396,8 +403,9 @@ abstract class Control_ extends Color_ {
                 }
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
+                    @NonNull
                     @Override
-                    public String formatValue(Integer value) {
+                    public String formatValue(@NonNull Integer value) {
                         return getValueString();
                     }
                 };
@@ -441,8 +449,9 @@ abstract class Control_ extends Color_ {
                 valueString = "OFF";
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
+                    @NonNull
                     @Override
-                    public String formatValue(Integer value) {
+                    public String formatValue(@NonNull Integer value) {
                         return getValueString();
                     }
                 };
@@ -488,8 +497,9 @@ abstract class Control_ extends Color_ {
                     }
 
                     formatter = new ParameterFormatter<Integer>(valueString) {
+                        @NonNull
                         @Override
-                        public String formatValue(Integer value) {
+                        public String formatValue(@NonNull Integer value) {
                             return getValueString();
                         }
                     };
@@ -547,8 +557,9 @@ abstract class Control_ extends Color_ {
                 valueString = "DISABLED";
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
+                    @NonNull
                     @Override
-                    public String formatValue(Integer value) {
+                    public String formatValue(@NonNull Integer value) {
                         return getValueString();
                     }
                 };
@@ -585,8 +596,9 @@ abstract class Control_ extends Color_ {
                 valueString = "OFF";
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
+                    @NonNull
                     @Override
-                    public String formatValue(Integer value) {
+                    public String formatValue(@NonNull Integer value) {
                         return getValueString();
                     }
                 };
@@ -636,8 +648,9 @@ abstract class Control_ extends Color_ {
                 }
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
+                    @NonNull
                     @Override
-                    public String formatValue(Integer value) {
+                    public String formatValue(@NonNull Integer value) {
                         return getValueString();
                     }
                 };
@@ -667,8 +680,9 @@ abstract class Control_ extends Color_ {
                     assert value != null;
 
                     formatter = new ParameterFormatter<Boolean>() {
+                        @NonNull
                         @Override
-                        public String formatValue(Boolean value) {
+                        public String formatValue(@NonNull Boolean value) {
                             if (value) {
                                 return "YES";
                             }
@@ -701,8 +715,9 @@ abstract class Control_ extends Color_ {
                 assert value != null;
 
                 formatter = new ParameterFormatter<Integer>() {
+                    @NonNull
                     @Override
-                    public String formatValue(Integer value) {
+                    public String formatValue(@NonNull Integer value) {
                         return value.toString();
                     }
                 };
@@ -731,8 +746,9 @@ abstract class Control_ extends Color_ {
                 assert value != null;
 
                 formatter = new ParameterFormatter<Integer>() {
+                    @NonNull
                     @Override
-                    public String formatValue(Integer value) {
+                    public String formatValue(@NonNull Integer value) {
                         return value.toString();
                     }
                 };
@@ -761,8 +777,9 @@ abstract class Control_ extends Color_ {
                 assert value != null;
 
                 formatter = new ParameterFormatter<Integer>() {
+                    @NonNull
                     @Override
-                    public String formatValue(Integer value) {
+                    public String formatValue(@NonNull Integer value) {
                         return value.toString();
                     }
                 };
@@ -801,8 +818,9 @@ abstract class Control_ extends Color_ {
                     }
 
                     formatter = new ParameterFormatter<Integer>() {
+                        @NonNull
                         @Override
-                        public String formatValue(Integer value) {
+                        public String formatValue(@NonNull Integer value) {
                             return value.toString();
                         }
                     };

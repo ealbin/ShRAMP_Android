@@ -146,8 +146,9 @@ abstract class Request_ extends Reprocess_ {
                 assert value != null;
 
                 formatter = new ParameterFormatter<Integer[]>(valueString) {
+                    @NonNull
                     @Override
-                    public String formatValue(Integer[] value) {
+                    public String formatValue(@NonNull Integer[] value) {
                         return getValueString();
                     }
                 };
@@ -177,8 +178,9 @@ abstract class Request_ extends Reprocess_ {
                     assert value != null;
 
                     formatter = new ParameterFormatter<Integer>() {
+                        @NonNull
                         @Override
-                        public String formatValue(Integer value) {
+                        public String formatValue(@NonNull Integer value) {
                             return value.toString();
                         }
                     };
@@ -208,8 +210,9 @@ abstract class Request_ extends Reprocess_ {
                 assert value != null;
 
                 formatter = new ParameterFormatter<Integer>() {
+                    @NonNull
                     @Override
-                    public String formatValue(Integer value) {
+                    public String formatValue(@NonNull Integer value) {
                         return value.toString();
                     }
                 };
@@ -238,8 +241,9 @@ abstract class Request_ extends Reprocess_ {
                 assert value != null;
 
                 formatter = new ParameterFormatter<Integer>() {
+                    @NonNull
                     @Override
-                    public String formatValue(Integer value) {
+                    public String formatValue(@NonNull Integer value) {
                         return value.toString();
                     }
                 };
@@ -268,8 +272,9 @@ abstract class Request_ extends Reprocess_ {
                 assert value != null;
 
                 formatter = new ParameterFormatter<Integer>() {
+                    @NonNull
                     @Override
-                    public String formatValue(Integer value) {
+                    public String formatValue(@NonNull Integer value) {
                         return value.toString();
                     }
                 };
@@ -298,8 +303,9 @@ abstract class Request_ extends Reprocess_ {
                 assert value != null;
 
                 formatter = new ParameterFormatter<Integer>() {
+                    @NonNull
                     @Override
-                    public String formatValue(Integer value) {
+                    public String formatValue(@NonNull Integer value) {
                         return value.toString();
                     }
                 };
@@ -328,8 +334,9 @@ abstract class Request_ extends Reprocess_ {
                 assert value != null;
 
                 formatter = new ParameterFormatter<Byte>() {
+                    @NonNull
                     @Override
-                    public String formatValue(Byte value) {
+                    public String formatValue(@NonNull Byte value) {
                         return value.toString();
                     }
                 };

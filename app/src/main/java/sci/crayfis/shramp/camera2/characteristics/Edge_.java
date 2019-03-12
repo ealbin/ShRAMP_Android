@@ -3,6 +3,7 @@ package sci.crayfis.shramp.camera2.characteristics;
 import android.annotation.TargetApi;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraMetadata;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
@@ -76,7 +77,11 @@ abstract class Edge_ extends Distortion_ {
                 Integer OFF              = CameraMetadata.EDGE_MODE_OFF;
                 Integer FAST             = CameraMetadata.EDGE_MODE_FAST;
                 Integer HIGH_QUALITY     = CameraMetadata.EDGE_MODE_HIGH_QUALITY;
-                Integer ZERO_SHUTTER_LAG = CameraMetadata.EDGE_MODE_ZERO_SHUTTER_LAG;
+                Integer ZERO_SHUTTER_LAG = null;
+
+                if ( Build.VERSION.SDK_INT >= 23) {
+                    ZERO_SHUTTER_LAG = CameraMetadata.EDGE_MODE_ZERO_SHUTTER_LAG;
+                }
 
                 if (options.contains(OFF)) {
                     value       =  OFF;
@@ -88,8 +93,9 @@ abstract class Edge_ extends Distortion_ {
                 }
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
+                    @NonNull
                     @Override
-                    public String formatValue(Integer value) {
+                    public String formatValue(@NonNull Integer value) {
                         return getValueString();
                     }
                 };

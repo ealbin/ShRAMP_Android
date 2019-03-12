@@ -53,6 +53,10 @@ final class Camera extends CameraDevice.StateCallback{
     // TODO: description
     private String mCameraId;
 
+    // mCaptureRequestBuilder.......................................................................
+    // TODO: description
+    private CaptureRequest.Builder mCaptureRequestBuilder;
+
     // mCaptureRequestMap...........................................................................
     // TODO: description
     private LinkedHashMap<CaptureRequest.Key, Parameter> mCaptureRequestMap;
@@ -137,6 +141,16 @@ final class Camera extends CameraDevice.StateCallback{
         }
     }
 
+    // getAvailableCaptureRequestKeys...............................................................
+    /**
+     * TODO: description, comments and logging
+     * @return
+     */
+    @NonNull
+    List<CaptureRequest.Key<?>> getAvailableCaptureRequestKeys() {
+        return mCameraCharacteristics.getAvailableCaptureRequestKeys();
+    }
+
     // getBitsPerPixel..............................................................................
     /**
      * TODO: description, comments and logging
@@ -144,6 +158,16 @@ final class Camera extends CameraDevice.StateCallback{
      */
     @Nullable
     Integer getBitsPerPixel() { return mBitsPerPixel; }
+
+    // getCameraDevice..............................................................................
+    /**
+     * TODO: description, comments and logging
+     * @return
+     */
+    @Nullable
+    CameraDevice getCameraDevice() {
+        return mCameraDevice;
+    }
 
     // getCameraId..................................................................................
     /**
@@ -153,6 +177,16 @@ final class Camera extends CameraDevice.StateCallback{
     String getCameraId() {
         Log.e("CameraClass", "Camera: " + mName + " is sharing its ID: " + mCameraId);
         return mCameraId;
+    }
+
+    // getCharacteristicsMap........................................................................
+    /**
+     * TODO: description, comments and logging
+     * @return
+     */
+    @NonNull
+    LinkedHashMap<CameraCharacteristics.Key, Parameter> getCharacteristicsMap() {
+        return mCharacteristicsMap;
     }
 
     // getOutputFormat..............................................................................
@@ -177,6 +211,33 @@ final class Camera extends CameraDevice.StateCallback{
     void logCharacteristics() {
         String label = mName + ", ID: " + mCameraId;
         CharacteristicsReader.log(label, mCharacteristicsMap);
+    }
+
+    // setCaptureRequestBuilder.....................................................................
+    /**
+     * TODO: description, comments and logging
+     * @param builder
+     */
+    void setCaptureRequestBuilder(@NonNull CaptureRequest.Builder builder) {
+        mCaptureRequestBuilder = builder;
+    }
+
+    // setCaptureRequestMap.........................................................................
+    /**
+     * TODO: description, comments and logging
+     * @param map
+     */
+    void setCaptureRequestMap(@NonNull LinkedHashMap<CaptureRequest.Key, Parameter>  map) {
+        mCaptureRequestMap = map;
+    }
+
+    // setCaptureRequestTemplate....................................................................
+    /**
+     * TODO: description, comments and logging
+     * @param template
+     */
+    void setCaptureRequestTemplate(@NonNull Integer template) {
+        mCaptureRequestTemplate = template;
     }
 
     // Private

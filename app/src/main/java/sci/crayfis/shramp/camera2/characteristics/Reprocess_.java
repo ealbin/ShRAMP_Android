@@ -72,8 +72,9 @@ abstract class Reprocess_ extends Noise_ {
                     assert value != null;
 
                     formatter = new ParameterFormatter<Integer>() {
+                        @NonNull
                         @Override
-                        public String formatValue(Integer value) {
+                        public String formatValue(@NonNull Integer value) {
                             return value.toString();
                         }
                     };
@@ -84,5 +85,6 @@ abstract class Reprocess_ extends Noise_ {
                 characteristicsMap.put(key, property);
             }
         }
+        //==========================================================================================
     }
 }

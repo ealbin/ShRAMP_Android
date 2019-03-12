@@ -24,7 +24,7 @@ import sci.crayfis.shramp.util.ArrayToList;
  * TODO: description, comments and logging
  */
 @TargetApi(21)
-abstract class Sensor_ extends Scalar_ {
+abstract class Sensor_ extends Scaler_ {
 
     //**********************************************************************************************
     // Constructors
@@ -91,8 +91,9 @@ abstract class Sensor_ extends Scalar_ {
                 valueString = "OFF";
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
+                    @NonNull
                     @Override
-                    public String formatValue(Integer value) {
+                    public String formatValue(@NonNull Integer value) {
                         return getValueString();
                     }
                 };
@@ -121,8 +122,9 @@ abstract class Sensor_ extends Scalar_ {
                 assert value != null;
 
                 formatter = new ParameterFormatter<BlackLevelPattern>() {
+                    @NonNull
                     @Override
-                    public String formatValue(BlackLevelPattern value) {
+                    public String formatValue(@NonNull BlackLevelPattern value) {
                         return value.toString();
                     }
                 };
@@ -151,8 +153,9 @@ abstract class Sensor_ extends Scalar_ {
                 assert value != null;
 
                 formatter = new ParameterFormatter<ColorSpaceTransform>() {
+                    @NonNull
                     @Override
-                    public String formatValue(ColorSpaceTransform value) {
+                    public String formatValue(@NonNull ColorSpaceTransform value) {
                         return value.toString();
                     }
                 };
@@ -181,8 +184,9 @@ abstract class Sensor_ extends Scalar_ {
                 assert value != null;
 
                 formatter = new ParameterFormatter<ColorSpaceTransform>() {
+                    @NonNull
                     @Override
-                    public String formatValue(ColorSpaceTransform value) {
+                    public String formatValue(@NonNull ColorSpaceTransform value) {
                         return value.toString();
                     }
                 };
@@ -211,8 +215,9 @@ abstract class Sensor_ extends Scalar_ {
                 assert value != null;
 
                 formatter = new ParameterFormatter<ColorSpaceTransform>() {
+                    @NonNull
                     @Override
-                    public String formatValue(ColorSpaceTransform value) {
+                    public String formatValue(@NonNull ColorSpaceTransform value) {
                         return value.toString();
                     }
                 };
@@ -241,8 +246,9 @@ abstract class Sensor_ extends Scalar_ {
                 assert value != null;
 
                 formatter = new ParameterFormatter<ColorSpaceTransform>() {
+                    @NonNull
                     @Override
-                    public String formatValue(ColorSpaceTransform value) {
+                    public String formatValue(@NonNull ColorSpaceTransform value) {
                         return value.toString();
                     }
                 };
@@ -271,8 +277,9 @@ abstract class Sensor_ extends Scalar_ {
                 assert value != null;
 
                 formatter = new ParameterFormatter<ColorSpaceTransform>() {
+                    @NonNull
                     @Override
-                    public String formatValue(ColorSpaceTransform value) {
+                    public String formatValue(@NonNull ColorSpaceTransform value) {
                         return value.toString();
                     }
                 };
@@ -301,8 +308,9 @@ abstract class Sensor_ extends Scalar_ {
                 assert value != null;
 
                 formatter = new ParameterFormatter<ColorSpaceTransform>() {
+                    @NonNull
                     @Override
-                    public String formatValue(ColorSpaceTransform value) {
+                    public String formatValue(@NonNull ColorSpaceTransform value) {
                         return value.toString();
                     }
                 };
@@ -331,8 +339,9 @@ abstract class Sensor_ extends Scalar_ {
                 assert value != null;
 
                 formatter = new ParameterFormatter<Rect>() {
+                    @NonNull
                     @Override
-                    public String formatValue(Rect value) {
+                    public String formatValue(@NonNull Rect value) {
                         return value.flattenToString();
                     }
                 };
@@ -386,8 +395,9 @@ abstract class Sensor_ extends Scalar_ {
                 assert valueString != null;
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
+                    @NonNull
                     @Override
-                    public String formatValue(Integer value) {
+                    public String formatValue(@NonNull Integer value) {
                         return getValueString();
                     }
                 };
@@ -416,8 +426,9 @@ abstract class Sensor_ extends Scalar_ {
                 assert value != null;
 
                 formatter = new ParameterFormatter<Range<Long>>() {
+                    @NonNull
                     @Override
-                    public String formatValue(Range<Long> value) {
+                    public String formatValue(@NonNull Range<Long> value) {
                         return value.toString();
                     }
                 };
@@ -447,8 +458,9 @@ abstract class Sensor_ extends Scalar_ {
                     assert value != null;
 
                     formatter = new ParameterFormatter<Boolean>() {
+                        @NonNull
                         @Override
-                        public String formatValue(Boolean value) {
+                        public String formatValue(@NonNull Boolean value) {
                             if (value) {
                                 return "YES";
                             }
@@ -481,8 +493,9 @@ abstract class Sensor_ extends Scalar_ {
                 assert value != null;
 
                 formatter = new ParameterFormatter<Long>() {
+                    @NonNull
                     @Override
-                    public String formatValue(Long value) {
+                    public String formatValue(@NonNull Long value) {
                         return value.toString();
                     }
                 };
@@ -511,8 +524,9 @@ abstract class Sensor_ extends Scalar_ {
                 assert value != null;
 
                 formatter = new ParameterFormatter<SizeF>() {
+                    @NonNull
                     @Override
-                    public String formatValue(SizeF value) {
+                    public String formatValue(@NonNull SizeF value) {
                         return value.toString();
                     }
                 };
@@ -541,8 +555,9 @@ abstract class Sensor_ extends Scalar_ {
                 assert value != null;
 
                 formatter = new ParameterFormatter<Size>() {
+                    @NonNull
                     @Override
-                    public String formatValue(Size value) {
+                    public String formatValue(@NonNull Size value) {
                         return value.toString();
                     }
                 };
@@ -572,8 +587,9 @@ abstract class Sensor_ extends Scalar_ {
                     assert value != null;
 
                     formatter = new ParameterFormatter<Rect>() {
+                        @NonNull
                         @Override
-                        public String formatValue(Rect value) {
+                        public String formatValue(@NonNull Rect value) {
                             return value.flattenToString();
                         }
                     };
@@ -603,8 +619,9 @@ abstract class Sensor_ extends Scalar_ {
                 assert value != null;
 
                 formatter = new ParameterFormatter<Range<Integer>>() {
+                    @NonNull
                     @Override
-                    public String formatValue(Range<Integer> value) {
+                    public String formatValue(@NonNull Range<Integer> value) {
                         return value.toString();
                     }
                 };
@@ -644,8 +661,9 @@ abstract class Sensor_ extends Scalar_ {
                 }
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
+                    @NonNull
                     @Override
-                    public String formatValue(Integer value) {
+                    public String formatValue(@NonNull Integer value) {
                         return getValueString();
                     }
                 };
@@ -674,8 +692,9 @@ abstract class Sensor_ extends Scalar_ {
                 assert value != null;
 
                 formatter = new ParameterFormatter<Integer>() {
+                    @NonNull
                     @Override
-                    public String formatValue(Integer value) {
+                    public String formatValue(@NonNull Integer value) {
                         return value.toString();
                     }
                 };
@@ -704,8 +723,9 @@ abstract class Sensor_ extends Scalar_ {
                 assert value != null;
 
                 formatter = new ParameterFormatter<Integer>() {
+                    @NonNull
                     @Override
-                    public String formatValue(Integer value) {
+                    public String formatValue(@NonNull Integer value) {
                         return value.toString();
                     }
                 };
@@ -735,8 +755,9 @@ abstract class Sensor_ extends Scalar_ {
                     assert value != null;
 
                     formatter = new ParameterFormatter<Rect[]>() {
+                        @NonNull
                         @Override
-                        public String formatValue(Rect[] value) {
+                        public String formatValue(@NonNull Rect[] value) {
                             String out = "( ";
                             for (Rect rect : value) {
                                 out += rect.flattenToString() + " ";
@@ -770,8 +791,9 @@ abstract class Sensor_ extends Scalar_ {
                 assert value != null;
 
                 formatter = new ParameterFormatter<Integer>() {
+                    @NonNull
                     @Override
-                    public String formatValue(Integer value) {
+                    public String formatValue(@NonNull Integer value) {
                         return value.toString();
                     }
                 };
@@ -881,8 +903,9 @@ abstract class Sensor_ extends Scalar_ {
                 assert valueString != null;
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
+                    @NonNull
                     @Override
-                    public String formatValue(Integer value) {
+                    public String formatValue(@NonNull Integer value) {
                         return getValueString();
                     }
                 };
@@ -993,8 +1016,9 @@ abstract class Sensor_ extends Scalar_ {
                 assert valueString != null;
 
                 formatter = new ParameterFormatter<Byte>(valueString) {
+                    @NonNull
                     @Override
-                    public String formatValue(Byte value) {
+                    public String formatValue(@NonNull Byte value) {
                         return getValueString();
                     }
                 };

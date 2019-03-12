@@ -89,8 +89,9 @@ abstract class Shading_ extends Sensor_ {
                     }
 
                     formatter = new ParameterFormatter<Integer>(valueString) {
+                        @NonNull
                         @Override
-                        public String formatValue(Integer value) {
+                        public String formatValue(@NonNull Integer value) {
                             return getValueString();
                         }
                     };

@@ -97,7 +97,7 @@ class CalibrationRun extends CameraCaptureSession.CaptureCallback {
                                    TotalCaptureResult result) {
         super.onCaptureCompleted(session, request, result);
         long now = SystemClock.elapsedRealtimeNanos();
-        CaptureOverseer.processImage(result);
+        //CaptureOverseer.processImage(result);
 
         Long timestamp = result.get(CaptureResult.SENSOR_TIMESTAMP);
         assert timestamp != null;

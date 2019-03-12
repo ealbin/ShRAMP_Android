@@ -241,7 +241,7 @@ public class CaptureManager extends CameraCaptureSession.StateCallback {
                 @Override
                 public void run() {
                     // TODO: reset image processor
-                    CaptureOverseer.post(restartCapture);
+                    //CaptureOverseer.post(restartCapture);
                 }
             };
 
@@ -250,7 +250,7 @@ public class CaptureManager extends CameraCaptureSession.StateCallback {
         else {
             mLogger.log("Quitting");
             session.close();
-            CaptureOverseer.quitSafely();
+            //CaptureOverseer.quitSafely();
         }
     }
 

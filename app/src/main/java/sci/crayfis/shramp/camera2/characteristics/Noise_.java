@@ -98,8 +98,9 @@ abstract class Noise_ extends Logical_ {
                 }
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
+                    @NonNull
                     @Override
-                    public String formatValue(Integer value) {
+                    public String formatValue(@NonNull Integer value) {
                         return getValueString();
                     }
                 };
@@ -109,5 +110,6 @@ abstract class Noise_ extends Logical_ {
             }
             characteristicsMap.put(key, property);
         }
+        //==========================================================================================
     }
 }

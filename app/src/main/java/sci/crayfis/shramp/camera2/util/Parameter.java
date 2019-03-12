@@ -22,7 +22,7 @@ public class Parameter<T> {
     // TODO: description
     private final ParameterFormatter<T> mDefaultFormat = new ParameterFormatter<T>() {
         @Override
-        public String formatValue(T value) {
+        public String formatValue(@NonNull T value) {
             return value.toString();
         }
     };
@@ -82,7 +82,7 @@ public class Parameter<T> {
      * @param units
      * @param parameterFormatter
      */
-    public Parameter(@NonNull String description, @NonNull T value,
+    public Parameter(@NonNull String description, @Nullable T value,
                      @Nullable String units, @Nullable ParameterFormatter<T> parameterFormatter) {
         mValue       = value;
         mDescription = description;
@@ -119,6 +119,14 @@ public class Parameter<T> {
      */
     @NonNull
     public String getDescription() { return mDescription; }
+
+    // getFormatter.................................................................................
+    /**
+     * TODO: description, comments and logging
+     * @return
+     */
+    @NonNull
+    public ParameterFormatter<T> getFormatter() { return mParameterFormatter; }
 
     // getUnits.....................................................................................
     /**

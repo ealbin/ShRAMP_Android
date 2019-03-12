@@ -3,7 +3,9 @@ package sci.crayfis.shramp.camera2;
 import android.annotation.TargetApi;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
+import android.hardware.camera2.CaptureRequest;
 import android.os.Handler;
 import android.os.Process;
 import android.support.annotation.NonNull;
@@ -12,7 +14,10 @@ import android.util.Log;
 import android.util.Size;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 
+import sci.crayfis.shramp.camera2.util.Parameter;
 import sci.crayfis.shramp.util.HandlerManager;
 
 /**
@@ -170,6 +175,18 @@ final public class CameraController {
         }
     }
 
+    // getAvailableCaptureRequestKeys...............................................................
+    /**
+     * TODO: description, comments and logging
+     * @return
+     */
+    public static List<CaptureRequest.Key<?>> getAvailableCaptureRequestKeys() {
+        if (mInstance.mOpenCamera == null) {
+            return null;
+        }
+        return mInstance.mOpenCamera.getAvailableCaptureRequestKeys();
+    }
+
     // getBitsPerPixel..............................................................................
     /**
      * TODO: description, comments and logging
@@ -181,6 +198,32 @@ final public class CameraController {
             return null;
         }
         return mInstance.mOpenCamera.getBitsPerPixel();
+    }
+
+    // getOpenedCharacteristicsMap..................................................................
+    /**
+     * TODO: description, comments and logging
+     * @return
+     */
+    @NonNull
+    public static LinkedHashMap<CameraCharacteristics.Key, Parameter> getOpenedCharacteristicsMap() {
+        if (mInstance.mOpenCamera == null) {
+            return null;
+        }
+        return mInstance.mOpenCamera.getCharacteristicsMap();
+    }
+
+    // getOpenedCamera..............................................................................
+    /**
+     * TODO: description, comments and logging
+     * @return
+     */
+    @Nullable
+    public static CameraDevice getOpenedCameraDevice() {
+        if (mInstance.mOpenCamera == null) {
+            return null;
+        }
+        return mInstance.mOpenCamera.getCameraDevice();
     }
 
     // getOutputFormat..............................................................................
@@ -263,6 +306,42 @@ final public class CameraController {
     public static void post(Runnable runnable) {
         Log.e("CameraControllerClass", "post()");
         mHandler.post(runnable);
+    }
+
+    // setCaptureRequestBuilder.....................................................................
+    /**
+     * TODO: description, comments and logging
+     * @param builder
+     */
+    public static void setCaptureRequestBuilder(@NonNull CaptureRequest.Builder builder) {
+        if (mInstance.mOpenCamera == null) {
+            return;
+        }
+        mInstance.mOpenCamera.setCaptureRequestBuilder(builder);
+    }
+
+    // setCaptureRequestMap.........................................................................
+    /**
+     * TODO: description, comments and logging
+     * @param map
+     */
+    public static void setCaptureRequestMap(@NonNull LinkedHashMap<CaptureRequest.Key, Parameter>  map) {
+        if (mInstance.mOpenCamera == null) {
+            return;
+        }
+        mInstance.mOpenCamera.setCaptureRequestMap(map);
+    }
+
+    // setCaptureRequestTemplate....................................................................
+    /**
+     * TODO: description, comments and logging
+     * @param template
+     */
+    public static void setCaptureRequestTemplate(@NonNull Integer template) {
+        if (mInstance.mOpenCamera == null) {
+            return;
+        }
+        mInstance.mOpenCamera.setCaptureRequestTemplate(template);
     }
 
     // Package-private
