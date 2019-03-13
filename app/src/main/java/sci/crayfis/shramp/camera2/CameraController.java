@@ -2,6 +2,7 @@ package sci.crayfis.shramp.camera2;
 
 import android.annotation.TargetApi;
 import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
@@ -12,6 +13,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.util.Size;
+import android.view.Surface;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -125,6 +127,28 @@ final public class CameraController {
         mInstance.mOpenCamera.close();
     }
 
+    // createCaptureSession.........................................................................
+    /**
+     * TODO: description, comments and logging
+     * @param surfaceList
+     * @param stateCallback
+     * @param handler
+     */
+    public static void createCaptureSession(@NonNull List<Surface> surfaceList,
+                                            @NonNull CameraCaptureSession.StateCallback stateCallback,
+                                            @NonNull Handler handler) {
+        if (mInstance.mOpenCamera != null) {
+            CameraDevice cameraDevice = mInstance.mOpenCamera.getCameraDevice();
+            assert cameraDevice != null;
+            try {
+                cameraDevice.createCaptureSession(surfaceList, stateCallback, handler);
+            }
+            catch (CameraAccessException e) {
+                // TODO: error
+            }
+        }
+    }
+
     // discoverCameras..............................................................................
     /**
      * TODO: description, comments and logging
@@ -199,6 +223,18 @@ final public class CameraController {
             return null;
         }
         return mInstance.mOpenCamera.getBitsPerPixel();
+    }
+
+    // getCaptureRequestBuilder.....................................................................
+    /**
+     * TODO: description, comments and logging
+     * @return
+     */
+    public static CaptureRequest.Builder getCaptureRequestBuilder() {
+        if (mInstance.mOpenCamera == null) {
+            return null;
+        }
+        return mInstance.mOpenCamera.getCaptureRequestBuilder();
     }
 
     // getOpenedCharacteristicsMap..................................................................
@@ -332,6 +368,18 @@ final public class CameraController {
         mInstance.mOpenCamera.setCaptureRequestTemplate(template);
     }
 
+    // writeCaptureRequest..........................................................................
+    /**
+     * TODO: description, comments and logging
+     */
+    public static void writeCaptureRequest() {
+        if (mInstance.mOpenCamera != null) {
+            Log.e("CameraController", ".");
+            mInstance.mOpenCamera.writeRequest();
+            Log.e("CameraController", ".");
+        }
+    }
+
     // writeCameraCharacteristics...................................................................
     /**
      * TODO: description, comments and logging
@@ -356,7 +404,9 @@ final public class CameraController {
     static void cameraHasOpened(@NonNull Camera camera) {
         mInstance.mOpenCamera = camera;
         RequestMaker.makeDefault();
+        Log.e("CameraController", ".");
         camera.writeRequest();
+        Log.e("CameraController", ".");
         if (mInstance.mNextRunnable != null) {
             if (mInstance.mNextHandler != null) {
                 mInstance.mNextHandler.post(mInstance.mNextRunnable);

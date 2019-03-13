@@ -4,9 +4,11 @@ import android.annotation.TargetApi;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraDevice;
+import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CaptureRequest;
 import android.os.Handler;
 import android.os.Process;
+import android.support.annotation.NonNull;
 import android.view.Surface;
 
 import java.text.DecimalFormat;
@@ -17,11 +19,52 @@ import java.util.Locale;
 import sci.crayfis.shramp.CaptureOverseer;
 import sci.crayfis.shramp.analysis.ImageProcessor;
 import Trash.camera2.ShrampCamManager;
+import sci.crayfis.shramp.camera2.CameraController;
+import sci.crayfis.shramp.camera2.requests.RequestMaker;
 import sci.crayfis.shramp.logging.ShrampLogger;
+import sci.crayfis.shramp.surfaces.SurfaceManager;
 import sci.crayfis.shramp.util.HandlerManager;
 
+/**
+ * TODO: description, comments and logging
+ */
 @TargetApi(21)
 public class CaptureManager extends CameraCaptureSession.StateCallback {
+
+    //**********************************************************************************************
+    // Static Class Fields
+    //---------------------
+
+    // Private Constants
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+    // PRIORITY.....................................................................................
+    // TODO: description
+    private static final Integer PRIORITY = Process.THREAD_PRIORITY_DEFAULT;
+
+    // THREAD_NAME..................................................................................
+    // TODO: description
+    private static final String THREAD_NAME = "CaptureManagerThread";
+
+    // DEFAULT_N_FRAMES.............................................................................
+    // TODO: description
+    private static final Integer DEFAULT_N_FRAMES = 30;
+
+    // DEFAULT_FRAME_EXPOSURE_NANOS.................................................................
+    // TODO: description
+    private static final Long DEFAULT_FRAME_EXPOSURE_NANOS = 33333333L;
+
+    // Private Object Constants
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+    // mHandler.....................................................................................
+    // TODO: description
+    private static final Handler mHandler = HandlerManager.newHandler(THREAD_NAME, PRIORITY);
+
+    // mInstance....................................................................................
+    // TODO: description
+    private static final CaptureManager mInstance = new CaptureManager();
+
 
     //******************************************************************************************
     // Class Variables
@@ -29,43 +72,19 @@ public class CaptureManager extends CameraCaptureSession.StateCallback {
 
     private enum mSessionMode {Calibration, Data};
 
-    private static CaptureManager mInstance;
-
     private static mSessionMode mMSessionMode = mSessionMode.Calibration;
 
-    private static Handler mHandler;
+    private static Integer mNframes;
+    private static Long    mFrameExposureNanos;
+    private static List<Surface> mSurfaceList;
 
-    private CameraDevice  mCameraDevice;
-    private List<Surface> mSurfaceList;
 
+    //==============================================================================================
     // Logging
     private static final ShrampLogger mLogger = new ShrampLogger(ShrampLogger.DEFAULT_STREAM);
     private static final DecimalFormat mNanosFormatter = (DecimalFormat) NumberFormat.getInstance(Locale.US);
     private static final DecimalFormat mFormatter = new DecimalFormat("##.#");
-
-    private static class CustomSession {
-        static final int N_CALIBRATION_FRAMES = 30;
-        static final int N_DATA_FRAMES        = 30;
-
-        static boolean isCustomSession;
-        static int     nCalibrationFrames;
-        static int     nDataFrames;
-        static Long    frameExposureNanos;
-
-        static void customizeBuilder(CaptureRequest.Builder builder) {
-            if (frameExposureNanos != null) {
-                builder.set(CaptureRequest.SENSOR_FRAME_DURATION, frameExposureNanos);
-                builder.set(CaptureRequest.SENSOR_EXPOSURE_TIME, frameExposureNanos);
-            }
-        }
-
-        static void clear() {
-            isCustomSession    = false;
-            nCalibrationFrames = N_CALIBRATION_FRAMES;
-            nDataFrames        = N_DATA_FRAMES;
-            frameExposureNanos = null;
-        }
-    }
+    //==============================================================================================
 
 
     //******************************************************************************************
@@ -74,26 +93,39 @@ public class CaptureManager extends CameraCaptureSession.StateCallback {
 
     private CaptureManager() {
         super();
-        CustomSession.clear();
+        clear();
     }
 
-    public CaptureManager(CameraDevice cameraDevice, List<Surface> surfaceList) {
-        this();
-        mInstance = this;
-        mCameraDevice = cameraDevice;
-        mSurfaceList  = surfaceList;
-        mHandler = HandlerManager.newHandler("CaptureSession", Process.THREAD_PRIORITY_VIDEO);
+    private static void refreshSurfaces() {
+        mSurfaceList = SurfaceManager.getOpenSurfaces();
     }
 
-    public void createCaptureSession() {
-        mLogger.log("Configuring capture session");
-        try {
-            // Execution continues in onConfigured()
-            mCameraDevice.createCaptureSession(mSurfaceList, this, mHandler);
+    private static void clear() {
+        mNframes = DEFAULT_N_FRAMES;
+        mFrameExposureNanos = DEFAULT_FRAME_EXPOSURE_NANOS;
+        mSurfaceList = null;
+    }
+
+    private static CaptureRequest buildCaptureRequest() {
+        RequestMaker.makeDefault();
+        CaptureRequest.Builder builder = CameraController.getCaptureRequestBuilder();
+        assert builder != null;
+
+        for (Surface surface : mSurfaceList) {
+            builder.addTarget(surface);
         }
-        catch (CameraAccessException e) {
-            // TODO: error
-        }
+
+        // NOTE: applied times might not alter the capture parameters if not manual sensor able
+        builder.set(CaptureRequest.SENSOR_FRAME_DURATION, mFrameExposureNanos);
+        builder.set(CaptureRequest.SENSOR_EXPOSURE_TIME,  mFrameExposureNanos);
+
+        CameraController.setCaptureRequestBuilder(builder);
+        return builder.build();
+    }
+
+    public static void startCaptureSession() {
+        refreshSurfaces();
+        CameraController.createCaptureSession(mSurfaceList, mInstance, mHandler);
     }
 
     /**
@@ -105,6 +137,14 @@ public class CaptureManager extends CameraCaptureSession.StateCallback {
     @Override
     public void onConfigured(CameraCaptureSession session) {
         //super.onConfigured(session); is abstract
+
+        // bla bla bla set frame and exposure time etc
+
+        // then call startrepeatingrequest
+        CalibrationRun calibrationRun = new CalibrationRun(mNframes);
+        startRepeatingRequest(session, calibrationRun);
+        /*
+
         switch (mMSessionMode) {
             case Calibration: {
                 mLogger.log("Beginning calibration run");
@@ -122,22 +162,13 @@ public class CaptureManager extends CameraCaptureSession.StateCallback {
                 // TODO: error
             }
         }
+        */
     }
 
     private void startRepeatingRequest(CameraCaptureSession session,
                                        CameraCaptureSession.CaptureCallback callback) {
 
-        CaptureRequest.Builder builder = ShrampCamManager.getCaptureRequestBuilder();
-        CustomSession.customizeBuilder(builder);
-
-        if (!CustomSession.isCustomSession) {
-            for (Surface surface : mSurfaceList) {
-                builder.addTarget(surface);
-            }
-        }
-        CustomSession.clear();
-
-        CaptureRequest captureRequest = builder.build();
+        CaptureRequest captureRequest = buildCaptureRequest();
 
         try {
             // Execution continues in CaptureCallback.onCaptureStarted()
@@ -222,26 +253,27 @@ public class CaptureManager extends CameraCaptureSession.StateCallback {
         mLogger.log(string);
 
         // TODO: if duty is less than 95%, try again with fps at the average
+
         if (averageDuty < 0.95) {
-            CustomSession.isCustomSession = true;
-            CustomSession.frameExposureNanos = Double.doubleToLongBits(Math.floor(1e9 / averageFps));
+            mFrameExposureNanos = (long) (Math.floor(1e9 / averageFps));
 
             mLogger.log("Restarting session with new frame rate target: "
-                    + mFormatter.format(1. / ( CustomSession.frameExposureNanos * 1e-9) )
+                    + mFormatter.format(1. / ( mFrameExposureNanos * 1e-9) )
                     + " [frames / sec]");
+
 
             Runnable waitForImageProcessor = new Runnable() {
                 Runnable restartCapture = new Runnable() {
                     @Override
                     public void run() {
-                        mInstance.createCaptureSession();
+                        startCaptureSession();
                     }
                 };
 
                 @Override
                 public void run() {
                     // TODO: reset image processor
-                    //CaptureOverseer.post(restartCapture);
+                    CaptureOverseer.post(restartCapture);
                 }
             };
 

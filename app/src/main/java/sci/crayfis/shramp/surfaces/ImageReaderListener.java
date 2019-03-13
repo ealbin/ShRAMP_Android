@@ -12,6 +12,7 @@ import android.view.Surface;
 import java.nio.ByteBuffer;
 
 import sci.crayfis.shramp.CaptureOverseer;
+import sci.crayfis.shramp.analysis.ImageProcessor;
 import sci.crayfis.shramp.util.HandlerManager;
 
 /**
@@ -140,7 +141,7 @@ final class ImageReaderListener implements ImageReader.OnImageAvailableListener 
             imageBytes.get(data);
             image.close();
 
-            //CaptureOverseer.processImage(data);
+            ImageProcessor.processImage(data);
         } catch (IllegalStateException e) {
             // TODO: error
             if (image != null) {

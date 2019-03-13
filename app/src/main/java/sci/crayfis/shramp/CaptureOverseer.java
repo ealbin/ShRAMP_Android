@@ -145,7 +145,11 @@ public final class CaptureOverseer extends Activity {
 
     public static void prepareImageProcessing() {
         mImageProcessor = new ImageProcessor(mInstance);
+        CaptureManager.startCaptureSession();
+    }
 
+    public static void post(Runnable runnable) {
+        mHandler.post(runnable);
     }
 
     public static void prepareCaptureRequest() {

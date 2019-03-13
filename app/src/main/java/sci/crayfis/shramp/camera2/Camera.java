@@ -191,6 +191,16 @@ final class Camera extends CameraDevice.StateCallback{
         return mCameraId;
     }
 
+    // getCaptureRequestBuilder.....................................................................
+    /**
+     * TODO: description, comments and logging
+     * @return
+     */
+    @Nullable
+    CaptureRequest.Builder getCaptureRequestBuilder() {
+        return mCaptureRequestBuilder;
+    }
+
     // getCharacteristicsMap........................................................................
     /**
      * TODO: description, comments and logging

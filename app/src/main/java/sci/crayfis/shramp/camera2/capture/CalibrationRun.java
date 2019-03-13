@@ -14,6 +14,7 @@ import android.view.Surface;
 import java.text.DecimalFormat;
 
 import sci.crayfis.shramp.CaptureOverseer;
+import sci.crayfis.shramp.analysis.ImageProcessor;
 import sci.crayfis.shramp.logging.ShrampLogger;
 
 @TargetApi(21)
@@ -97,7 +98,7 @@ class CalibrationRun extends CameraCaptureSession.CaptureCallback {
                                    TotalCaptureResult result) {
         super.onCaptureCompleted(session, request, result);
         long now = SystemClock.elapsedRealtimeNanos();
-        //CaptureOverseer.processImage(result);
+        ImageProcessor.processImage(result);
 
         Long timestamp = result.get(CaptureResult.SENSOR_TIMESTAMP);
         assert timestamp != null;

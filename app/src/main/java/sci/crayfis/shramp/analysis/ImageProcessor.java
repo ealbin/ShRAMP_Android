@@ -237,6 +237,10 @@ public class ImageProcessor {
             nMeanAlloc   = Allocation.createTyped(mRS, mDoubleType, Allocation.USAGE_SCRIPT);
             nStdDevAlloc = Allocation.createTyped(mRS, mDoubleType, Allocation.USAGE_SCRIPT);
             nStdErrAlloc = Allocation.createTyped(mRS, mDoubleType, Allocation.USAGE_SCRIPT);
+
+            nNframes = 0L;
+            nExposureSum = 0.;
+            nExposure3Sum = 0.;
         }
 
         //******************************************************************************************

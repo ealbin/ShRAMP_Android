@@ -121,6 +121,16 @@ final public class SurfaceManager {
     // Public
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+    // getOpenSurfaces..............................................................................
+    /**
+     * TODO: description, comments and logging
+     * @return
+     */
+    @NonNull
+    public static List<Surface> getOpenSurfaces() {
+        return mSurfaces;
+    }
+
     // getOutputSurfaceClasses......................................................................
     /**
      * TODO: description, comments and logging
@@ -191,6 +201,9 @@ final public class SurfaceManager {
      * @param surface
      */
     static void surfaceHasOpened(@NonNull Surface surface, @NonNull Class klass) {
+
+        mSurfaces.add(surface);
+
         if (klass == TextureViewListener.class) {
             mInstance.mTextureViewIsReady = true;
         }
