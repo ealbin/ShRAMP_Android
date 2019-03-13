@@ -185,52 +185,6 @@ public final class MaineShRAMP extends Activity implements AsyncResponse {
         MaineShRAMP.mLogger.log("return;");
     }
 
-    //----------------------------------------------------------------------------------------------
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-    //TextureView mTextureView;
-
-    /**
-     * After permissions are granted, begin app operations here.
-     */
-    /*
-    public void startApp(){
-
-        // set ssh listener to this class for information exchange
-        SSHrampSession_reference.mainactivity = this;
-
-        //Intent intent = new Intent(this, DAQActivity.class);
-        //startActivity(intent);
-
-        TextView textOut = (TextView) findViewById(R.id.textOut);
-        textOut.append("Welcome to ShRAMP!\n");
-        textOut.append("(Shower Reconstructing Application for Mobile Phones)\n");
-        textOut.append("----------------------------------------------------------\n\n");
-        textOut.append("Capturing a camera frame..  \n");
-
-
-
-//        mCamera = new Camera(this, mQuit_action);
-
-        //SurfaceView surface_view = findViewById(R.layout.activity_main.);
-
-        //startActivity( new Intent(this, CameraSetup.class) );
-
-        /*
-        if (haveSSHKey()) {
-            ssh.execute();
-        }
-        */
-        //mLogger.log("return;");
-    //}
-
-    /*
-    public void setView(View view) {
-        setContentView(view);
-    }
-    */
 
 
     // SSHrampSession is an AsyncTask, holding this reference allows main to

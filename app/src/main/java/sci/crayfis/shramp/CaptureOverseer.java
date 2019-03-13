@@ -152,94 +152,11 @@ public final class CaptureOverseer extends Activity {
         mHandler.post(runnable);
     }
 
-    public static void prepareCaptureRequest() {
-
-    }
-
-//    public static void defaultCapture() {
-//    }
-
-    /**
-     * Camera is ready for capture, create surfaces to output to.
-     * Execution continues surfacesReady()
-     * @param cameraDevice configured and ready for capture
-     */
-    /*
-    public static void cameraReady(CameraDevice cameraDevice) {
-        long startTime = SystemClock.elapsedRealtimeNanos();
-
-        mLogger.log("Camera ready, setting up surfaces");
-
-        mCameraDevice = cameraDevice;
-
-        final int imageFormat  = ShrampCamManager.getImageFormat();
-        final int bitsPerPixel = ShrampCamManager.getImageBitsPerPixel();
-        final Size imageSize   = ShrampCamManager.getImageSize();
-         */
-        // Set image processor
-        //mImageProcessor = new ImageProcessor(mInstance, imageFormat, bitsPerPixel, imageSize);
-
-        /*
-        final Runnable openSurfaces = new Runnable() {
-            @Override
-            public void run() {
-                SurfaceManager.getInstance().openSurfaces(mInstance, imageFormat,
-                                                          bitsPerPixel, imageSize);
-            }
-        };
-        */
-        // Turning control over to the SurfaceManager to set up output surfaces.
-        // Execution continues in surfacesReady()
-        // Open surfaces on the activity thread
-        //new Handler(mInstance.getMainLooper()).post(openSurfaces);
-
-        //String elapsed = mNanosFormatter.format(SystemClock.elapsedRealtimeNanos() - startTime);
-        //mLogger.log("return; elapsed = " + elapsed + " [ns]");
-    //}
-
-    /**
-     * After surfaces have been successfully configured, prepare camera.
-     * Execution continues in CaptureManager
-     * @param surfaces surfaces ready for output
-     */
-    /*
-    public static void surfacesReady(List<Surface> surfaces) {
-        long startTime = SystemClock.elapsedRealtimeNanos();
-
-        mLogger.log("All surfaces are ready, starting capture");
-
-        // Begin data taking
-        mCaptureManager = new CaptureManager(mCameraDevice, surfaces);
-        mCaptureManager.createCaptureSession();
-
-        String elapsed = mNanosFormatter.format(SystemClock.elapsedRealtimeNanos() - startTime);
-        mLogger.log("return; elapsed = " + elapsed + " [ns]");
-    }
-    */
-    //----------------------------------------------------------------------------------------------
-
-    /*
-    public static void processImage(TotalCaptureResult result) {
-        Log.e(Thread.currentThread().getName(), "CaptureOverseer.processImage(TotalCaptureResult)");
-        mImageProcessor.processImage(result);
-    }
-
-    public static void processImage(byte[] imageBytes) {
-        Log.e(Thread.currentThread().getName(), "CaptureOverseer.processImage(byte[])");
-        mImageProcessor.processImage(imageBytes);
-    }
-
     public static void quitSafely() {
-        mShrampCamManager.closeBackCamera();
+        CameraController.closeCamera();
         HandlerManager.finish();
         mInstance.finish();
     }
-
-    public static void post(Runnable runnable) {
-        mHandler.post(runnable);
-    }
-    */
-
 
 
 

@@ -39,6 +39,9 @@ rs_allocation gStdDev;
 // Renderscript Kernels
 //---------------------
 
+// Stream processing
+//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
 void RS_KERNEL update(ushort val, uint32_t x, uint32_t y) {
     double old_exp_val  = rsGetElementAt_double(gExposureValue, x, y);
     double old_exp2_val = rsGetElementAt_double(gExposure2Value, x, y);
@@ -46,14 +49,15 @@ void RS_KERNEL update(ushort val, uint32_t x, uint32_t y) {
 
     double this_exp_val  = gExposureTime * (double) val;
     double this_exp2_val = gExposureTime * gExposureTime * (double) val;
-    double this_exp_val2 = gExposureTime * (double) val * (double) val;
+    double this_exp_val2 = gExposureTime * (double) val  * (double) val;
 
     rsSetElementAt_double(gExposureValue , old_exp_val  + this_exp_val , x, y);
     rsSetElementAt_double(gExposure2Value, old_exp2_val + this_exp2_val, x, y);
     rsSetElementAt_double(gExposureValue2, old_exp_val2 + this_exp_val2, x, y);
 }
 
-//..................................................................................................
+// Session statistics
+//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 double RS_KERNEL getMean(uint32_t x, uint32_t y) {
     double exp_val  = rsGetElementAt_double(gExposureValue, x, y);
