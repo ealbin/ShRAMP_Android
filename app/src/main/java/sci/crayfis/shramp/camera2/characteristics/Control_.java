@@ -83,13 +83,13 @@ abstract class Control_ extends Color_ {
 
                 if (options.contains(OFF)) {
                     value = OFF;
-                    valueString = "OFF";
+                    valueString = "OFF (PREFERRED)";
                 } else if (options.contains(AUTO)) {
                     value = AUTO;
-                    valueString = "AUTO";
+                    valueString = "AUTO (FALLBACK)";
                 } else {
                     value = _60HZ;
-                    valueString = "60HZ";
+                    valueString = "60HZ (LAST CHOICE)";
                 }
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
@@ -135,15 +135,15 @@ abstract class Control_ extends Color_ {
 
                 if (options.contains(OFF)) {
                     value       =  OFF;
-                    valueString = "OFF";
+                    valueString = "OFF (PREFERRED)";
                 }
                 else if (options.contains(AUTO)) {
                     value       =  AUTO;
-                    valueString = "AUTO";
+                    valueString = "AUTO (FALLBACK)";
                 }
                 else {
                     value       = _60HZ;
-                    valueString = "60HZ";
+                    valueString = "60HZ (LAST CHOICE)";
                 }
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
@@ -190,11 +190,11 @@ abstract class Control_ extends Color_ {
 
                 if (options.contains(OFF)) {
                     value       =  OFF;
-                    valueString = "OFF";
+                    valueString = "OFF (PREFERRED)";
                 }
                 else {
                     value       =  ON;
-                    valueString = "ON";
+                    valueString = "ON (FALLBACK)";
                 }
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
@@ -238,6 +238,10 @@ abstract class Control_ extends Color_ {
                         continue;
                     }
 
+                    if (val.getLower() > 30) {
+                        continue;
+                    }
+
                     int thisDiff     =          val.getUpper() -          val.getLower();
                     int tightestDiff = tightAndFast.getUpper() - tightAndFast.getLower();
 
@@ -254,11 +258,11 @@ abstract class Control_ extends Color_ {
                 value = tightAndFast;
                 assert value != null;
 
-                formatter = new ParameterFormatter<Range<Integer>>() {
+                formatter = new ParameterFormatter<Range<Integer>>("tight and fast: ") {
                     @NonNull
                     @Override
                     public String formatValue(@NonNull Range<Integer> value) {
-                        return value.toString();
+                        return getValueString() + value.toString();
                     }
                 };
                 property = new Parameter<>(name, value, units, formatter);
@@ -360,9 +364,9 @@ abstract class Control_ extends Color_ {
                         @Override
                         public String formatValue(@NonNull Boolean value) {
                             if (value) {
-                                return "YES";
+                                return "YES (PREFERRED)";
                             }
-                            return "NO";
+                            return "NO (FALLBACK)";
                         }
                     };
                     property = new Parameter<>(name, value, units, formatter);
@@ -403,11 +407,11 @@ abstract class Control_ extends Color_ {
 
                 if (options.contains(OFF)) {
                     value       =  OFF;
-                    valueString = "OFF";
+                    valueString = "OFF (PREFERRED)";
                 }
                 else {
                     value       =  AUTO;
-                    valueString = "AUTO";
+                    valueString = "AUTO (FALLBACK)";
                 }
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
@@ -456,7 +460,7 @@ abstract class Control_ extends Color_ {
                 Integer AQUA       = CameraMetadata.CONTROL_EFFECT_MODE_AQUA;
 
                 value       =  OFF;
-                valueString = "OFF";
+                valueString = "OFF (PREFERRED)";
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
                     @NonNull
@@ -501,11 +505,11 @@ abstract class Control_ extends Color_ {
 
                     if (options.contains(OFF)) {
                         value = OFF;
-                        valueString = "OFF";
+                        valueString = "OFF (PREFERRED)";
                     }
                     else {
                         value = AUTO;
-                        valueString = "AUTO";
+                        valueString = "AUTO (FALLBACK)";
                     }
 
                     formatter = new ParameterFormatter<Integer>(valueString) {
@@ -568,7 +572,7 @@ abstract class Control_ extends Color_ {
                 }
 
                 value       =  DISABLED;
-                valueString = "DISABLED";
+                valueString = "DISABLED (PREFERRED)";
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
                     @NonNull
@@ -609,7 +613,7 @@ abstract class Control_ extends Color_ {
                 Integer ON  = CameraMetadata.CONTROL_VIDEO_STABILIZATION_MODE_ON;
 
                 value       =  OFF;
-                valueString = "OFF";
+                valueString = "OFF (PREFERRED)";
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
                     @NonNull
@@ -658,11 +662,11 @@ abstract class Control_ extends Color_ {
 
                 if (options.contains(OFF)) {
                     value       =  OFF;
-                    valueString = "OFF";
+                    valueString = "OFF (PREFERRED)";
                 }
                 else {
                     value       =  AUTO;
-                    valueString = "AUTO";
+                    valueString = "AUTO (FALLBACK)";
                 }
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
@@ -704,9 +708,9 @@ abstract class Control_ extends Color_ {
                         @Override
                         public String formatValue(@NonNull Boolean value) {
                             if (value) {
-                                return "YES";
+                                return "YES (PREFERRED)";
                             }
-                            return "NO";
+                            return "NO (FALLBACK)";
                         }
                     };
                     property = new Parameter<>(name, value, units, formatter);
@@ -849,7 +853,7 @@ abstract class Control_ extends Color_ {
                         @NonNull
                         @Override
                         public String formatValue(@NonNull Integer value) {
-                            return value.toString();
+                            return value.toString() + " / 100";
                         }
                     };
                     property = new Parameter<>(name, value, units, formatter);

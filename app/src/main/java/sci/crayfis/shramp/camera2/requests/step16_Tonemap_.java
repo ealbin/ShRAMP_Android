@@ -111,10 +111,10 @@ abstract class step16_Tonemap_ extends step15_Statistics_ {
                 Parameter<Integer> mode = captureRequestMap.get(CaptureRequest.TONEMAP_MODE);
                 assert mode != null;
 
-                if (mode.toString().equals("CONTRAST_CURVE")) {
+                if (mode.toString().contains("CONTRAST_CURVE")) {
                     float[] linear_response = {0, 0, 1, 1};
                     value = new TonemapCurve(linear_response, linear_response, linear_response);
-                    valueString = "LINEAR RESPONSE";
+                    valueString = "LINEAR RESPONSE (PREFERRED)";
 
                     formatter = new ParameterFormatter<TonemapCurve>(valueString) {
                         @NonNull
@@ -159,9 +159,9 @@ abstract class step16_Tonemap_ extends step15_Statistics_ {
                     Parameter<Integer> mode = captureRequestMap.get(CaptureRequest.TONEMAP_MODE);
                     assert mode != null;
 
-                    if (mode.toString().equals("GAMMA_VALUE")) {
+                    if (mode.toString().contains("GAMMA_VALUE")) {
                         value = 5.f;
-                        valueString = "pow(val, 1./5.)";
+                        valueString = "pow(val, 1./5.) (FALLBACK)";
 
                         formatter = new ParameterFormatter<Float>(valueString) {
                             @NonNull
@@ -207,13 +207,13 @@ abstract class step16_Tonemap_ extends step15_Statistics_ {
                     Parameter<Integer> mode = captureRequestMap.get(CaptureRequest.TONEMAP_MODE);
                     assert mode != null;
 
-                    if (mode.toString().equals("FAST") || mode.toString().equals("HIGH_QUALITY")) {
+                    if (mode.toString().contains("FAST") || mode.toString().contains("HIGH_QUALITY")) {
 
                         Integer SRGB   = CameraMetadata.TONEMAP_PRESET_CURVE_SRGB;
                         Integer REC709 = CameraMetadata.TONEMAP_PRESET_CURVE_REC709;
 
                         value = REC709;
-                        valueString = "REC709";
+                        valueString = "REC709 (LAST CHOICE)";
 
                         formatter = new ParameterFormatter<Integer>(valueString) {
                             @NonNull

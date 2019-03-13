@@ -19,7 +19,7 @@ public abstract class ParameterFormatter<T> {
 
     // PADDING_SIZE.................................................................................
     // TODO: description
-    private final static int PADDING_SIZE = 40;
+    private final static int PADDING_SIZE = 55;
 
     //**********************************************************************************************
     // Class Fields

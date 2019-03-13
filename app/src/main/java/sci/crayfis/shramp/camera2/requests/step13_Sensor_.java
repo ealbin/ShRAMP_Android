@@ -84,9 +84,9 @@ abstract class step13_Sensor_ extends step12_Scaler_ {
                 mode = captureRequestMap.get(CaptureRequest.CONTROL_AE_MODE);
                 assert mode != null;
 
-                if (mode.toString().equals("AUTO")) {
+                if (mode.toString().contains("AUTO")) {
                     setting = new Parameter<>(name);
-                    setting.setValueString("DISABLED");
+                    setting.setValueString("DISABLED (FALLBACK)");
                 }
                 else {
                     CameraCharacteristics.Key<StreamConfigurationMap> cKey;
@@ -107,13 +107,13 @@ abstract class step13_Sensor_ extends step12_Scaler_ {
 
                     value = streamConfigurationMap.getOutputMinFrameDuration(imageFormat, imageSize);
 
-                    formatter = new ParameterFormatter<Long>() {
+                    formatter = new ParameterFormatter<Long>("minimum: ") {
                         @NonNull
                         @Override
                         public String formatValue(@NonNull Long value) {
                             DecimalFormat nanosFormatter;
                             nanosFormatter = (DecimalFormat) NumberFormat.getInstance(Locale.US);
-                            return nanosFormatter.format(value);
+                            return getValueString() + nanosFormatter.format(value);
                         }
                     };
                     setting = new Parameter<>(name, value, units, formatter);
@@ -143,9 +143,9 @@ abstract class step13_Sensor_ extends step12_Scaler_ {
                 mode = captureRequestMap.get(CaptureRequest.CONTROL_AE_MODE);
                 assert mode != null;
 
-                if (mode.toString().equals("AUTO")) {
+                if (mode.toString().contains("AUTO")) {
                     setting = new Parameter<>(name);
-                    setting.setValueString("DISABLED");
+                    setting.setValueString("DISABLED (FALLBACK)");
                 }
                 else {
                     Parameter<Long> frameDuration;
@@ -184,9 +184,9 @@ abstract class step13_Sensor_ extends step12_Scaler_ {
                 mode = captureRequestMap.get(CaptureRequest.CONTROL_AE_MODE);
                 assert mode != null;
 
-                if (mode.toString().equals("AUTO")) {
+                if (mode.toString().contains("AUTO")) {
                     setting = new Parameter<>(name);
-                    setting.setValueString("DISABLED");
+                    setting.setValueString("DISABLED (FALLBACK)");
                 }
                 else {
                     CameraCharacteristics.Key<Range<Integer>> cKey;
@@ -200,11 +200,11 @@ abstract class step13_Sensor_ extends step12_Scaler_ {
                     assert range != null;
                     value = range.getUpper();
 
-                    formatter = new ParameterFormatter<Integer>() {
+                    formatter = new ParameterFormatter<Integer>("maximum: ") {
                         @NonNull
                         @Override
                         public String formatValue(@NonNull Integer value) {
-                            return value.toString();
+                            return getValueString() + value.toString();
                         }
                     };
                     setting = new Parameter<>(name, value, units, formatter);

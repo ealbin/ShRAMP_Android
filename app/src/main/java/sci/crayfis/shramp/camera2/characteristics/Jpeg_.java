@@ -85,11 +85,11 @@ abstract class Jpeg_ extends Info_ {
                 assert smallest != null;
                 value = smallest;
 
-                formatter = new ParameterFormatter<Size>() {
+                formatter = new ParameterFormatter<Size>("smallest: ") {
                     @NonNull
                     @Override
                     public String formatValue(@NonNull Size value) {
-                        return value.toString();
+                        return getValueString() + value.toString();
                     }
                 };
                 property = new Parameter<>(name, value, units, formatter);

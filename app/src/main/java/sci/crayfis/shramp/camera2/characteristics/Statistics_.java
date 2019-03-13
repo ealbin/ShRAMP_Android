@@ -79,7 +79,7 @@ abstract class Statistics_ extends Shading_ {
                 Integer FULL   = CameraMetadata.STATISTICS_FACE_DETECT_MODE_FULL;
 
                 value       =  OFF;
-                valueString = "OFF";
+                valueString = "OFF (PREFERRED)";
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
                     @NonNull
@@ -170,7 +170,7 @@ abstract class Statistics_ extends Shading_ {
                     Integer ON  = CameraMetadata.STATISTICS_LENS_SHADING_MAP_MODE_ON;
 
                     value = OFF;
-                    valueString = "OFF";
+                    valueString = "OFF (PREFERRED)";
 
                     formatter = new ParameterFormatter<Integer>(valueString) {
                         @NonNull
@@ -213,7 +213,7 @@ abstract class Statistics_ extends Shading_ {
                     Integer ON  = CameraMetadata.STATISTICS_OIS_DATA_MODE_ON;
 
                     value = OFF;
-                    valueString = "OFF";
+                    valueString = "OFF (PREFERRED)";
 
                     formatter = new ParameterFormatter<Integer>(valueString) {
                         @NonNull

@@ -21,7 +21,7 @@ import sci.crayfis.shramp.util.ArrayToList;
  * TODO: description, comments and logging
  */
 @TargetApi(21)
-final class RequestMaker extends step16_Tonemap_ {
+final public class RequestMaker extends step16_Tonemap_ {
 
     //**********************************************************************************************
     // Static Class Fields
@@ -122,22 +122,29 @@ final class RequestMaker extends step16_Tonemap_ {
     /**
      * TODO: description, comments and logging
      *
+     * @param label
      * @param map
      * @param keychain
      */
-    public static void write(@NonNull LinkedHashMap<CaptureRequest.Key, Parameter> map,
+    public static void write(@Nullable String label,
+                             @NonNull LinkedHashMap<CaptureRequest.Key, Parameter> map,
                              @Nullable List<CaptureRequest.Key<?>> keychain) {
 
-        Log.e("RequestMaker", "Camera Capture Request Summary:\n");
+        String tag = "RequestMaker";
+        if (label != null) {
+            tag = label;
+        }
+
+        Log.e(tag, "Camera Capture Request Summary:\n");
         for (Parameter parameter : map.values()) {
-            Log.e("RequestMaker", parameter.toString());
+            Log.e(tag, parameter.toString());
         }
 
         if (keychain != null) {
-            Log.e("RequestMaker", "Keys unset:\n");
+            Log.e(tag, "Keys unset:\n");
             for (CaptureRequest.Key<?> key : keychain) {
                 if (!map.containsKey(key)) {
-                    Log.e("RequestMaker", key.getName());
+                    Log.e(tag, key.getName());
                 }
             }
         }

@@ -54,27 +54,6 @@ public final class CharacteristicsReader extends Tonemap_ {
     // Public
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    // log..........................................................................................
-    /**
-     * TODO: description, comments and logging
-     *
-     * @param label
-     * @param characteristicsMap
-     * @return
-     */
-    public static void log(@Nullable String label,
-                           @NonNull LinkedHashMap<CameraCharacteristics.Key, Parameter> characteristicsMap) {
-
-        if (label == null) {
-            label = "CharacteristicsReader";
-        }
-
-        // TODO: implement
-
-        Log.e(label, "TODO: here are the characteristics:");
-        Log.e(label, "bla bla bla bla bla bla bla bla bla");
-    }
-
     // read.........................................................................................
     /**
      * TODO: description, comments and logging
@@ -96,22 +75,29 @@ public final class CharacteristicsReader extends Tonemap_ {
     /**
      * TODO: description, comments and logging
      *
+     * @param label
      * @param map
      * @param keychain
      */
-    public static void write(@NonNull LinkedHashMap<CameraCharacteristics.Key, Parameter> map,
+    public static void write(@Nullable String label,
+                             @NonNull LinkedHashMap<CameraCharacteristics.Key, Parameter> map,
                              @Nullable List<CameraCharacteristics.Key<?>> keychain) {
 
-        Log.e("CharacteristicsReader", "Camera Characteristics Summary:\n");
+        String tag = "CharacteristicsReader";
+        if (label != null) {
+            tag = label;
+        }
+
+        Log.e(tag, "Camera Characteristics Summary:\n");
         for (Parameter parameter : map.values()) {
-            Log.e("CharacteristicsReader", parameter.toString());
+            Log.e(tag, parameter.toString());
         }
 
         if (keychain != null) {
-            Log.e("CharacteristicsReader", "Keys unset:\n");
+            Log.e(tag, "Keys unset:\n");
             for (CameraCharacteristics.Key<?> key : keychain) {
                 if (!map.containsKey(key)) {
-                    Log.e("CharacteristicsReader", key.getName());
+                    Log.e(tag, key.getName());
                 }
             }
         }

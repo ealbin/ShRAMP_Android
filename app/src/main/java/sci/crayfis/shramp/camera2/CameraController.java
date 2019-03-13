@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import sci.crayfis.shramp.camera2.requests.RequestMaker;
 import sci.crayfis.shramp.camera2.util.Parameter;
 import sci.crayfis.shramp.util.HandlerManager;
 
@@ -250,19 +251,6 @@ final public class CameraController {
         return mInstance.mOpenCamera.getOutputSize();
     }
 
-    // logCameraCharacteristics.....................................................................
-    /**
-     * TODO: description, comments and logging
-     */
-    public static void logCameraCharacteristics() {
-        Log.e("CameraController", ".");
-        for (Camera camera : mCameras.values()) {
-            camera.logCharacteristics();
-            Log.e("CameraController", ".");
-        }
-        Log.e("CameraController", ".");
-    }
-
     // openCamera...................................................................................
     /**
      * TODO: description, comments and logging
@@ -273,7 +261,7 @@ final public class CameraController {
      */
     public static boolean openCamera(@NonNull Select select,
                                      @Nullable Runnable runnable, @Nullable Handler handler) {
-        Log.e("CameraControllerClass", "openCamera()");
+        Log.e("CameraController", "openCamera()");
 
         Camera camera = mCameras.get(select);
         if (camera == null) {
@@ -344,6 +332,19 @@ final public class CameraController {
         mInstance.mOpenCamera.setCaptureRequestTemplate(template);
     }
 
+    // writeCameraCharacteristics...................................................................
+    /**
+     * TODO: description, comments and logging
+     */
+    public static void writeCameraCharacteristics() {
+        Log.e("CameraController", ".");
+        for (Camera camera : mCameras.values()) {
+            camera.writeCharacteristics();
+            Log.e("CameraController", ".");
+        }
+        Log.e("CameraController", ".");
+    }
+
     // Package-private
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
@@ -354,6 +355,8 @@ final public class CameraController {
      */
     static void cameraHasOpened(@NonNull Camera camera) {
         mInstance.mOpenCamera = camera;
+        RequestMaker.makeDefault();
+        camera.writeRequest();
         if (mInstance.mNextRunnable != null) {
             if (mInstance.mNextHandler != null) {
                 mInstance.mNextHandler.post(mInstance.mNextRunnable);

@@ -79,11 +79,11 @@ abstract class Hot_ extends Flash_ {
 
                 if (options.contains(OFF)) {
                     value       =  OFF;
-                    valueString = "OFF";
+                    valueString = "OFF (PREFERRED)";
                 }
                 else {
                     value       =  FAST;
-                    valueString = "FAST";
+                    valueString = "FAST (FALLBACK)";
                 }
 
                 formatter = new ParameterFormatter<Integer>(valueString) {

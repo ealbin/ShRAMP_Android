@@ -116,9 +116,9 @@ abstract class step15_Statistics_ extends step14_Shading_ {
                     @Override
                     public String formatValue(@NonNull Boolean value) {
                         if (value) {
-                            return "ON";
+                            return "ON (FALLBACK)";
                         }
-                        return "OFF";
+                        return "OFF (PREFERRED)";
                     }
                 };
                 setting = new Parameter<>(name, value, units, formatter);
@@ -152,7 +152,7 @@ abstract class step15_Statistics_ extends step14_Shading_ {
                 Integer ON  = CameraMetadata.STATISTICS_LENS_SHADING_MAP_MODE_ON;
 
                 value = OFF;
-                valueString = "OFF";
+                valueString = "OFF (PREFERRED)";
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
                     @NonNull
@@ -196,7 +196,7 @@ abstract class step15_Statistics_ extends step14_Shading_ {
                 Integer ON  = CameraMetadata.STATISTICS_OIS_DATA_MODE_ON;
 
                 value = OFF;
-                valueString = "OFF";
+                valueString = "OFF (PREFERRED)";
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
                     @NonNull

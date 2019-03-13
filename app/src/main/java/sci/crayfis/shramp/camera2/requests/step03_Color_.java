@@ -145,14 +145,14 @@ abstract class step03_Color_ extends step02_Black_ {
                 mode = captureRequestMap.get(CaptureRequest.CONTROL_AWB_MODE);
                 assert mode != null;
 
-                if (mode.toString().equals("OFF")) {
+                if (mode.toString().contains("DISABLED")) {
 
                     Integer TRANSFORM_MATRIX = CameraMetadata.COLOR_CORRECTION_MODE_TRANSFORM_MATRIX;
                     Integer FAST             = CameraMetadata.COLOR_CORRECTION_MODE_FAST;
                     Integer HIGH_QUALITY     = CameraMetadata.COLOR_CORRECTION_MODE_HIGH_QUALITY;
 
                     value = TRANSFORM_MATRIX;
-                    valueString = "TRANSFORM_MATRIX";
+                    valueString = "TRANSFORM_MATRIX (PREFERRED)";
 
                     formatter = new ParameterFormatter<Integer>(valueString) {
                         @NonNull
@@ -167,7 +167,7 @@ abstract class step03_Color_ extends step02_Black_ {
                 }
                 else {
                     setting = new Parameter<>(name);
-                    setting.setValueString("DISABLED");
+                    setting.setValueString("DISABLED (FALLBACK)");
                 }
             }
             else {
@@ -203,9 +203,9 @@ abstract class step03_Color_ extends step02_Black_ {
                 mode = captureRequestMap.get(CaptureRequest.COLOR_CORRECTION_MODE);
                 assert mode != null;
 
-                if (mode.toString().equals("DISABLED")) {
+                if (mode.toString().contains("DISABLED")) {
                     setting = new Parameter<>(name);
-                    setting.setValueString("DISABLED");
+                    setting.setValueString("DISABLED (FALLBACK)");
                 }
                 else {
                     formatter = new ParameterFormatter<ColorSpaceTransform>(valueString) {

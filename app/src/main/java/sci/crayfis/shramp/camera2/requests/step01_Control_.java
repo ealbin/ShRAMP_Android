@@ -104,10 +104,10 @@ abstract class step01_Control_ {
                             || property.toString().equals("EXTERNAL")) {
 
                         value = AUTO;
-                        valueString = "AUTO";
+                        valueString = "AUTO (FALLBACK)";
                     } else {
                         value = OFF;
-                        valueString = "OFF";
+                        valueString = "OFF (PREFERRED)";
                     }
                     formatter = new ParameterFormatter<Integer>(valueString) {
                         @NonNull
@@ -165,11 +165,11 @@ abstract class step01_Control_ {
 
                 if (abilities.contains(CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_MANUAL_SENSOR)) {
                     value = MANUAL;
-                    valueString = "MANUAL";
+                    valueString = "MANUAL (PREFERRED)";
                 }
                 else {
                     value = PREVIEW;
-                    valueString = "PREVIEW";
+                    valueString = "PREVIEW (FALLBACK)";
                 }
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
@@ -209,7 +209,7 @@ abstract class step01_Control_ {
                 mode = captureRequestMap.get(CaptureRequest.CONTROL_MODE);
                 assert mode != null;
 
-                if (mode.toString().equals("AUTO")) {
+                if (mode.toString().contains("AUTO")) {
                     CameraCharacteristics.Key<int[]> cKey;
 
                     cKey = CameraCharacteristics.CONTROL_AWB_AVAILABLE_MODES;
@@ -223,7 +223,7 @@ abstract class step01_Control_ {
                 }
                 else {
                     setting = new Parameter<>(name);
-                    setting.setValueString("DISABLED");
+                    setting.setValueString("DISABLED (PREFERRED)");
                 }
             }
             else {
@@ -251,9 +251,9 @@ abstract class step01_Control_ {
                 mode = captureRequestMap.get(CaptureRequest.CONTROL_AWB_MODE);
                 assert mode != null;
 
-                if (!mode.toString().equals("AUTO")) {
+                if (!mode.toString().contains("AUTO")) {
                     setting = new Parameter<>(name);
-                    setting.setValueString("DISABLED");
+                    setting.setValueString("DISABLED (PREFERRED)");
                 }
                 else if (Build.VERSION.SDK_INT >= 23) {
                     CameraCharacteristics.Key<Boolean> cKey;
@@ -268,9 +268,9 @@ abstract class step01_Control_ {
                         @Override
                         public String formatValue(@NonNull Boolean value) {
                             if (value) {
-                                return "LOCKED";
+                                return "LOCKED (PREFERRED)";
                             }
-                            return "NOT LOCKED";
+                            return "NOT LOCKED (FALLBACK)";
                         }
                     };
                     setting = new Parameter<>(name, property.getValue(), units, formatter);
@@ -344,7 +344,7 @@ abstract class step01_Control_ {
                 mode = captureRequestMap.get(CaptureRequest.CONTROL_MODE);
                 assert mode != null;
 
-                if (mode.toString().equals("AUTO")) {
+                if (mode.toString().contains("AUTO")) {
                     CameraCharacteristics.Key<int[]> cKey;
 
                     cKey = CameraCharacteristics.CONTROL_AF_AVAILABLE_MODES;
@@ -358,7 +358,7 @@ abstract class step01_Control_ {
                 }
                 else {
                     setting = new Parameter<>(name);
-                    setting.setValueString("DISABLED");
+                    setting.setValueString("DISABLED (PREFERRED)");
                 }
             }
             else {
@@ -447,7 +447,7 @@ abstract class step01_Control_ {
                 mode = captureRequestMap.get(CaptureRequest.CONTROL_MODE);
                 assert mode != null;
 
-                if (mode.toString().equals("AUTO")) {
+                if (mode.toString().contains("AUTO")) {
                     CameraCharacteristics.Key<int[]> cKey;
 
                     cKey = CameraCharacteristics.CONTROL_AE_AVAILABLE_MODES;
@@ -461,7 +461,7 @@ abstract class step01_Control_ {
                 }
                 else {
                     setting = new Parameter<>(name);
-                    setting.setValueString("DISABLED");
+                    setting.setValueString("DISABLED (PREFERRED)");
                 }
             }
             else {
@@ -489,9 +489,9 @@ abstract class step01_Control_ {
                 mode = captureRequestMap.get(CaptureRequest.CONTROL_AE_MODE);
                 assert mode != null;
 
-                if (!mode.toString().equals("AUTO")) {
+                if (!mode.toString().contains("AUTO")) {
                     setting = new Parameter<>(name);
-                    setting.setValueString("DISABLED");
+                    setting.setValueString("DISABLED (PREFERRED)");
                 }
                 else if (Build.VERSION.SDK_INT >= 23) {
                     CameraCharacteristics.Key<Boolean> cKey;
@@ -506,9 +506,9 @@ abstract class step01_Control_ {
                         @Override
                         public String formatValue(@NonNull Boolean value) {
                             if (value) {
-                                return "LOCKED";
+                                return "LOCKED (PREFERRED)";
                             }
-                            return "NOT LOCKED";
+                            return "NOT LOCKED (FALLBACK)";
                         }
                     };
                     setting = new Parameter<>(name, property.getValue(), units, formatter);
@@ -610,7 +610,7 @@ abstract class step01_Control_ {
                 mode = captureRequestMap.get(CaptureRequest.CONTROL_AE_MODE);
                 assert mode != null;
 
-                if (mode.toString().equals("AUTO")) {
+                if (mode.toString().contains("AUTO")) {
                     CameraCharacteristics.Key<int[]> cKey;
 
                     cKey = CameraCharacteristics.CONTROL_AE_AVAILABLE_ANTIBANDING_MODES;
@@ -624,7 +624,7 @@ abstract class step01_Control_ {
                 }
                 else {
                     setting = new Parameter<>(name);
-                    setting.setValueString("DISABLED");
+                    setting.setValueString("DISABLED (PREFERRED)");
                 }
             }
             else {
@@ -651,7 +651,7 @@ abstract class step01_Control_ {
                 mode = captureRequestMap.get(CaptureRequest.CONTROL_AE_MODE);
                 assert mode != null;
 
-                if (mode.toString().equals("AUTO")) {
+                if (mode.toString().contains("AUTO")) {
                     CameraCharacteristics.Key<Range<Integer>> cKey;
 
                     cKey = CameraCharacteristics.CONTROL_AE_COMPENSATION_RANGE;
@@ -665,7 +665,7 @@ abstract class step01_Control_ {
                 }
                 else {
                     setting = new Parameter<>(name);
-                    setting.setValueString("DISABLED");
+                    setting.setValueString("DISABLED (PREFERRED)");
                 }
             }
             else {
@@ -692,7 +692,7 @@ abstract class step01_Control_ {
                 mode = captureRequestMap.get(CaptureRequest.CONTROL_AE_MODE);
                 assert mode != null;
 
-                if (mode.toString().equals("AUTO")) {
+                if (mode.toString().contains("AUTO")) {
                     CameraCharacteristics.Key<Range<Integer>[]> cKey;
 
                     cKey = CameraCharacteristics.CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES;
@@ -706,7 +706,7 @@ abstract class step01_Control_ {
                 }
                 else {
                     setting = new Parameter<>(name);
-                    setting.setValueString("DISABLED");
+                    setting.setValueString("DISABLED (PREFERRED)");
                 }
             }
             else {
@@ -762,7 +762,7 @@ abstract class step01_Control_ {
 
                 if (supportedKeys.contains(rKey)) {
 
-                    formatter = new ParameterFormatter<Boolean>("DISABLED") {
+                    formatter = new ParameterFormatter<Boolean>("DISABLED (PREFERRED)") {
                         @NonNull
                         @Override
                         public String formatValue(@NonNull Boolean value) {

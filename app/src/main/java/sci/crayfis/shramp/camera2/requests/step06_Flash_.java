@@ -95,7 +95,7 @@ abstract class step06_Flash_ extends step05_Edge_ {
                 Integer TORCH  = CameraMetadata.FLASH_MODE_TORCH;
 
                 value = OFF;
-                valueString = "OFF";
+                valueString = "OFF (PREFERRED)";
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
                     @NonNull

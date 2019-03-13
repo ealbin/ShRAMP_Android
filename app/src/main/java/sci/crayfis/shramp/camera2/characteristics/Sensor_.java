@@ -13,8 +13,11 @@ import android.util.Range;
 import android.util.Size;
 import android.util.SizeF;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 
 import sci.crayfis.shramp.camera2.util.Parameter;
 import sci.crayfis.shramp.camera2.util.ParameterFormatter;
@@ -88,7 +91,7 @@ abstract class Sensor_ extends Scaler_ {
                 Integer CUSTOM1                 = CameraMetadata.SENSOR_TEST_PATTERN_MODE_CUSTOM1;
 
                 value       =  OFF;
-                valueString = "OFF";
+                valueString = "OFF (PREFERRED)";
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
                     @NonNull
@@ -449,7 +452,10 @@ abstract class Sensor_ extends Scaler_ {
                     @NonNull
                     @Override
                     public String formatValue(@NonNull Range<Long> value) {
-                        return value.toString();
+                        DecimalFormat nanosFormatter;
+                        nanosFormatter = (DecimalFormat) NumberFormat.getInstance(Locale.US);
+                        return "( " + nanosFormatter.format(value.getLower()) + " to "
+                                    + nanosFormatter.format(value.getUpper()) + " )";
                     }
                 };
                 property = new Parameter<>(name, value, units, formatter);
@@ -520,7 +526,9 @@ abstract class Sensor_ extends Scaler_ {
                     @NonNull
                     @Override
                     public String formatValue(@NonNull Long value) {
-                        return value.toString();
+                        DecimalFormat nanosFormatter;
+                        nanosFormatter = (DecimalFormat) NumberFormat.getInstance(Locale.US);
+                        return nanosFormatter.format(value);
                     }
                 };
                 property = new Parameter<>(name, value, units, formatter);

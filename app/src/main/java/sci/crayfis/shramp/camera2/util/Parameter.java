@@ -3,6 +3,7 @@ package sci.crayfis.shramp.camera2.util;
 import android.annotation.TargetApi;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 /**
  * TODO: description, comments and logging
@@ -42,10 +43,6 @@ public class Parameter<T> {
     // TODO: description
     private String mUnits;
 
-    // mIsSupported.................................................................................
-    // TODO: description
-    private Boolean mIsSupported;
-
     // mParameterFormatter..........................................................................
     // TODO: description
     private ParameterFormatter<T> mParameterFormatter;
@@ -70,7 +67,6 @@ public class Parameter<T> {
         mValue       = null;
         mDescription = description;
         mUnits       = null;
-        mIsSupported = false;
         mParameterFormatter = mDefaultFormat;
     }
 
@@ -87,8 +83,7 @@ public class Parameter<T> {
         mValue       = value;
         mDescription = description;
         mUnits       = units;
-        mIsSupported = true;
-        if (mParameterFormatter == null) {
+        if (parameterFormatter == null) {
             mParameterFormatter = mDefaultFormat;
         }
         else {

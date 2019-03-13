@@ -117,7 +117,7 @@ public final class CaptureOverseer extends Activity {
         assert cameraManager != null;
 
         CameraController.discoverCameras(cameraManager);
-        CameraController.logCameraCharacteristics();
+        CameraController.writeCameraCharacteristics();
 
         Runnable next = new Runnable() {
             @Override
@@ -145,6 +145,10 @@ public final class CaptureOverseer extends Activity {
 
     public static void prepareImageProcessing() {
         mImageProcessor = new ImageProcessor(mInstance);
+
+    }
+
+    public static void prepareCaptureRequest() {
 
     }
 

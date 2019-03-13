@@ -86,15 +86,15 @@ abstract class Noise_ extends Logical_ {
 
                 if (options.contains(OFF)) {
                     value       =  OFF;
-                    valueString = "OFF";
+                    valueString = "OFF (PREFERRED)";
                 }
                 else if (MINIMAL != null && options.contains(MINIMAL)) {
                     value       =  MINIMAL;
-                    valueString = "MINIMAL";
+                    valueString = "MINIMAL (FALLBACK)";
                 }
                 else {
                     value       =  FAST;
-                    valueString = "FAST";
+                    valueString = "FAST (LAST CHOICE)";
                 }
 
                 formatter = new ParameterFormatter<Integer>(valueString) {

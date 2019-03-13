@@ -81,7 +81,7 @@ abstract class step14_Shading_ extends step13_Sensor_ {
                 Integer HIGH_QUALITY = CameraMetadata.SHADING_MODE_HIGH_QUALITY;
 
                 value = OFF;
-                valueString = "OFF";
+                valueString = "OFF (PREFERRED)";
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
                     @NonNull

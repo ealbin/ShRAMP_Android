@@ -182,11 +182,11 @@ abstract class Lens_ extends Jpeg_ {
                 assert smallest != null;
                 value = smallest;
 
-                formatter = new ParameterFormatter<Float>() {
+                formatter = new ParameterFormatter<Float>("smallest: ") {
                     @NonNull
                     @Override
                     public String formatValue(@NonNull Float value) {
-                        return value.toString();
+                        return getValueString() + value.toString();
                     }
                 };
                 property = new Parameter<>(name, value, units, formatter);
@@ -228,11 +228,11 @@ abstract class Lens_ extends Jpeg_ {
                 assert biggest != null;
                 value = biggest;
 
-                formatter = new ParameterFormatter<Float>() {
+                formatter = new ParameterFormatter<Float>("biggest: ") {
                     @NonNull
                     @Override
                     public String formatValue(@NonNull Float value) {
-                        return value.toString();
+                        return getValueString() + value.toString();
                     }
                 };
                 property = new Parameter<>(name, value, units, formatter);
@@ -255,7 +255,7 @@ abstract class Lens_ extends Jpeg_ {
 
             key   = CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS;////////////////////////
             name  = key.getName();
-            units = "exposure value";
+            units = "millimeters";
 
             if (keychain.contains(key)) {
                 float[] lengths = cameraCharacteristics.get(key);
@@ -274,11 +274,11 @@ abstract class Lens_ extends Jpeg_ {
                 assert longest != null;
                 value = longest;
 
-                formatter = new ParameterFormatter<Float>() {
+                formatter = new ParameterFormatter<Float>("longest: ") {
                     @NonNull
                     @Override
                     public String formatValue(@NonNull Float value) {
-                        return value.toString();
+                        return getValueString() + value.toString();
                     }
                 };
                 property = new Parameter<>(name, value, units, formatter);
@@ -314,11 +314,11 @@ abstract class Lens_ extends Jpeg_ {
 
                 if (options.contains(OFF)) {
                     value       =  OFF;
-                    valueString = "OFF";
+                    valueString = "OFF (PREFERRED)";
                 }
                 else {
                     value       =  ON;
-                    valueString = "ON";
+                    valueString = "ON (FALLBACK)";
                 }
 
                 formatter = new ParameterFormatter<Integer>(valueString) {

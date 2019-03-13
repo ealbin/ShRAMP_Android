@@ -87,11 +87,11 @@ abstract class Tonemap_ extends Sync_ {
 
                 if (options.contains(CONTRAST_CURVE)) {
                     value = CONTRAST_CURVE;
-                    valueString = "CONTRAST_CURVE";
+                    valueString = "CONTRAST_CURVE (PREFERRED)";
                 }
                 else {
                     value = FAST;
-                    valueString = "FAST";
+                    valueString = "FAST (FALLBACK)";
                 }
 
                 formatter = new ParameterFormatter<Integer>(valueString) {

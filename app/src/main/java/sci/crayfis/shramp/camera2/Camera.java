@@ -8,6 +8,7 @@ import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 
 import android.hardware.camera2.params.StreamConfigurationMap;
+import android.net.wifi.aware.Characteristics;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import sci.crayfis.shramp.camera2.characteristics.CharacteristicsReader;
+import sci.crayfis.shramp.camera2.requests.RequestMaker;
 import sci.crayfis.shramp.camera2.util.Parameter;
 import sci.crayfis.shramp.surfaces.SurfaceManager;
 import sci.crayfis.shramp.util.ArrayToList;
@@ -151,6 +153,16 @@ final class Camera extends CameraDevice.StateCallback{
         return mCameraCharacteristics.getAvailableCaptureRequestKeys();
     }
 
+    // getAvailableCharacteristicsKeys..............................................................
+    /**
+     * TODO: description, comments and logging
+     * @return
+     */
+    @NonNull
+    List<CameraCharacteristics.Key<?>> getAvailableCharacteristicsKeys() {
+        return mCameraCharacteristics.getKeys();
+    }
+
     // getBitsPerPixel..............................................................................
     /**
      * TODO: description, comments and logging
@@ -204,15 +216,6 @@ final class Camera extends CameraDevice.StateCallback{
      */
     Size getOutputSize() { return mOutputSize; }
 
-    // logCharacteristics...........................................................................
-    /**
-     * TODO: description, comments and logging
-     */
-    void logCharacteristics() {
-        String label = mName + ", ID: " + mCameraId;
-        CharacteristicsReader.log(label, mCharacteristicsMap);
-    }
-
     // setCaptureRequestBuilder.....................................................................
     /**
      * TODO: description, comments and logging
@@ -238,6 +241,24 @@ final class Camera extends CameraDevice.StateCallback{
      */
     void setCaptureRequestTemplate(@NonNull Integer template) {
         mCaptureRequestTemplate = template;
+    }
+
+    // writeCharacteristics.........................................................................
+    /**
+     * TODO: description, comments and logging
+     */
+    void writeCharacteristics() {
+        String label = mName + ", ID: " + mCameraId;
+        CharacteristicsReader.write(label, mCharacteristicsMap, getAvailableCharacteristicsKeys());
+    }
+
+    // writeRequest.................................................................................
+    /**
+     * TODO: description, comments and logging
+     */
+    void writeRequest() {
+        String label = mName + ", ID: " + mCameraId;
+        RequestMaker.write(label, mCaptureRequestMap, getAvailableCaptureRequestKeys());
     }
 
     // Private
@@ -371,6 +392,7 @@ final class Camera extends CameraDevice.StateCallback{
     @Override
     public void onOpened(@NonNull CameraDevice camera) {
         mCameraDevice = camera;
+
         CameraController.cameraHasOpened(this);
         Log.e("CameraClass", "Camera: " + mName + " is open");
     }
