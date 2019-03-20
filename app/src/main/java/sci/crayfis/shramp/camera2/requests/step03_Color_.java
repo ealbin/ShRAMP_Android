@@ -45,9 +45,9 @@ abstract class step03_Color_ extends step02_Black_ {
     // makeDefault..................................................................................
     /**
      * TODO: description, comments and logging
-     * @param builder
-     * @param characteristicsMap
-     * @param captureRequestMap
+     * @param builder bla
+     * @param characteristicsMap bla
+     * @param captureRequestMap bla
      */
     @SuppressWarnings("unchecked")
     @Override
@@ -68,8 +68,8 @@ abstract class step03_Color_ extends step02_Black_ {
 
             String  name;
 
-            rKey  = CaptureRequest.COLOR_CORRECTION_ABERRATION_MODE;////////////////////////////////
-            name  = rKey.getName();
+            rKey = CaptureRequest.COLOR_CORRECTION_ABERRATION_MODE;/////////////////////////////////
+            name = rKey.getName();
 
             if (supportedKeys.contains(rKey)) {
 
@@ -133,11 +133,9 @@ abstract class step03_Color_ extends step02_Black_ {
             String  name;
             Integer value;
             String  valueString;
-            String  units;
 
-            rKey  = CaptureRequest.COLOR_CORRECTION_MODE;///////////////////////////////////////////
-            name  = rKey.getName();
-            units = null;
+            rKey = CaptureRequest.COLOR_CORRECTION_MODE;////////////////////////////////////////////
+            name = rKey.getName();
 
             if (supportedKeys.contains(rKey)) {
 
@@ -148,8 +146,8 @@ abstract class step03_Color_ extends step02_Black_ {
                 if (mode.toString().contains("DISABLED")) {
 
                     Integer TRANSFORM_MATRIX = CameraMetadata.COLOR_CORRECTION_MODE_TRANSFORM_MATRIX;
-                    Integer FAST             = CameraMetadata.COLOR_CORRECTION_MODE_FAST;
-                    Integer HIGH_QUALITY     = CameraMetadata.COLOR_CORRECTION_MODE_HIGH_QUALITY;
+                    //Integer FAST             = CameraMetadata.COLOR_CORRECTION_MODE_FAST;
+                    //Integer HIGH_QUALITY     = CameraMetadata.COLOR_CORRECTION_MODE_HIGH_QUALITY;
 
                     value = TRANSFORM_MATRIX;
                     valueString = "TRANSFORM_MATRIX (PREFERRED)";
@@ -161,7 +159,7 @@ abstract class step03_Color_ extends step02_Black_ {
                             return getValueString();
                         }
                     };
-                    setting = new Parameter<>(name, value, units, formatter);
+                    setting = new Parameter<>(name, value, null, formatter);
 
                     builder.set(rKey, setting.getValue());
                 }
@@ -185,7 +183,6 @@ abstract class step03_Color_ extends step02_Black_ {
             String name;
             ColorSpaceTransform value;
             String valueString;
-            String units;
 
             key   = CaptureRequest.COLOR_CORRECTION_TRANSFORM;//////////////////////////////////////
             name  = key.getName();
@@ -195,7 +192,6 @@ abstract class step03_Color_ extends step02_Black_ {
                                                 0, 1, 0, 1, 1, 1     // 0/1 , 0/1 , 1/1 = 0 0 1
                                             });
             valueString = "(1 0 0),(0 1 0),(0 0 1)";
-            units = null;
 
             if (supportedKeys.contains(key)) {
 
@@ -215,7 +211,7 @@ abstract class step03_Color_ extends step02_Black_ {
                             return getValueString();
                         }
                     };
-                    setting = new Parameter<>(name, value, units, formatter);
+                    setting = new Parameter<>(name, value, null, formatter);
 
                     builder.set(key, value);
                 }

@@ -41,8 +41,8 @@ abstract class Reprocess_ extends Noise_ {
     // read.........................................................................................
     /**
      * TODO: description, comments and logging
-     * @param cameraCharacteristics
-     * @param characteristicsMap
+     * @param cameraCharacteristics bla
+     * @param characteristicsMap bla
      */
     @Override
     protected void read(@NonNull CameraCharacteristics cameraCharacteristics,

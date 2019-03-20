@@ -42,8 +42,8 @@ abstract class Scaler_ extends Request_ {
     // read.........................................................................................
     /**
      * TODO: description, comments and logging
-     * @param cameraCharacteristics
-     * @param characteristicsMap
+     * @param cameraCharacteristics bla
+     * @param characteristicsMap bla
      */
     @Override
     protected void read(@NonNull CameraCharacteristics cameraCharacteristics,
@@ -95,11 +95,9 @@ abstract class Scaler_ extends Request_ {
             String  name;
             Integer value;
             String  valueString;
-            String  units;
 
-            key   = CameraCharacteristics.SCALER_CROPPING_TYPE;/////////////////////////////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.SCALER_CROPPING_TYPE;//////////////////////////////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
@@ -122,7 +120,7 @@ abstract class Scaler_ extends Request_ {
                         return getValueString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);
@@ -138,11 +136,9 @@ abstract class Scaler_ extends Request_ {
 
             String                 name;
             StreamConfigurationMap value;
-            String                 units;
 
-            key   = CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP;//////////////////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP;///////////////////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
@@ -155,7 +151,7 @@ abstract class Scaler_ extends Request_ {
                         return value.toString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);

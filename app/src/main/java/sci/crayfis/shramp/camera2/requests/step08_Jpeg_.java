@@ -44,9 +44,9 @@ abstract class step08_Jpeg_ extends step07_Hot_ {
     // makeDefault..................................................................................
     /**
      * TODO: description, comments and logging
-     * @param builder
-     * @param characteristicsMap
-     * @param captureRequestMap
+     * @param builder bla
+     * @param characteristicsMap bla
+     * @param captureRequestMap bla
      */
     @SuppressWarnings("unchecked")
     @Override
@@ -66,18 +66,14 @@ abstract class step08_Jpeg_ extends step07_Hot_ {
             ParameterFormatter<Location> formatter;
             Parameter<Location> setting;
 
-            String   name;
-            Location value;
-            String   valueString;
-            String   units;
+            String name;
+            String valueString;
 
-            rKey  = CaptureRequest.JPEG_GPS_LOCATION;///////////////////////////////////////////////
-            name  = rKey.getName();
-            units = null;
+            rKey = CaptureRequest.JPEG_GPS_LOCATION;////////////////////////////////////////////////
+            name = rKey.getName();
 
             if (supportedKeys.contains(rKey)) {
 
-                value = null;
                 valueString = "NOT APPLICABLE";
 
                 formatter = new ParameterFormatter<Location>(valueString) {
@@ -87,7 +83,7 @@ abstract class step08_Jpeg_ extends step07_Hot_ {
                         return getValueString();
                     }
                 };
-                setting = new Parameter<>(name, value, units, formatter);
+                setting = new Parameter<>(name, null, null, formatter);
             }
             else {
                 setting = new Parameter<>(name);
@@ -101,10 +97,9 @@ abstract class step08_Jpeg_ extends step07_Hot_ {
             ParameterFormatter<Integer> formatter;
             Parameter<Integer> setting;
 
-            String  name;
-            Integer value;
-            String  valueString;
-            String  units;
+            String name;
+            String valueString;
+            String units;
 
             rKey  = CaptureRequest.JPEG_ORIENTATION;////////////////////////////////////////////////
             name  = rKey.getName();
@@ -112,7 +107,6 @@ abstract class step08_Jpeg_ extends step07_Hot_ {
 
             if (supportedKeys.contains(rKey)) {
 
-                value = null;
                 valueString = "NOT APPLICABLE";
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
@@ -122,7 +116,7 @@ abstract class step08_Jpeg_ extends step07_Hot_ {
                         return getValueString();
                     }
                 };
-                setting = new Parameter<>(name, value, units, formatter);
+                setting = new Parameter<>(name, null, units, formatter);
             }
             else {
                 setting = new Parameter<>(name);
@@ -137,7 +131,6 @@ abstract class step08_Jpeg_ extends step07_Hot_ {
             Parameter<Byte> setting;
 
             String name;
-            Byte   value;
             String valueString;
             String units;
 
@@ -147,7 +140,6 @@ abstract class step08_Jpeg_ extends step07_Hot_ {
 
             if (supportedKeys.contains(rKey)) {
 
-                value = null;
                 valueString = "NOT APPLICABLE";
 
                 formatter = new ParameterFormatter<Byte>(valueString) {
@@ -157,7 +149,7 @@ abstract class step08_Jpeg_ extends step07_Hot_ {
                         return getValueString();
                     }
                 };
-                setting = new Parameter<>(name, value, units, formatter);
+                setting = new Parameter<>(name, null, units, formatter);
             }
             else {
                 setting = new Parameter<>(name);
@@ -172,7 +164,6 @@ abstract class step08_Jpeg_ extends step07_Hot_ {
             Parameter<Byte> setting;
 
             String name;
-            Byte   value;
             String valueString;
             String units;
 
@@ -182,7 +173,6 @@ abstract class step08_Jpeg_ extends step07_Hot_ {
 
             if (supportedKeys.contains(rKey)) {
 
-                value = null;
                 valueString = "NOT APPLICABLE";
 
                 formatter = new ParameterFormatter<Byte>(valueString) {
@@ -192,7 +182,7 @@ abstract class step08_Jpeg_ extends step07_Hot_ {
                         return getValueString();
                     }
                 };
-                setting = new Parameter<>(name, value, units, formatter);
+                setting = new Parameter<>(name, null, units, formatter);
             }
             else {
                 setting = new Parameter<>(name);
@@ -207,7 +197,6 @@ abstract class step08_Jpeg_ extends step07_Hot_ {
             Parameter<Size> setting;
 
             String name;
-            Size   value;
             String valueString;
             String units;
 
@@ -217,7 +206,6 @@ abstract class step08_Jpeg_ extends step07_Hot_ {
 
             if (supportedKeys.contains(rKey)) {
 
-                value = null;
                 valueString = "NOT APPLICABLE";
 
                 formatter = new ParameterFormatter<Size>(valueString) {
@@ -227,7 +215,7 @@ abstract class step08_Jpeg_ extends step07_Hot_ {
                         return getValueString();
                     }
                 };
-                setting = new Parameter<>(name, value, units, formatter);
+                setting = new Parameter<>(name, null, units, formatter);
             }
             else {
                 setting = new Parameter<>(name);

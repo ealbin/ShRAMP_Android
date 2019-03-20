@@ -17,6 +17,7 @@ import sci.crayfis.shramp.util.ArrayToList;
 /**
  * TODO: description, comments and logging
  */
+@SuppressWarnings("unchecked")
 @TargetApi(21)
 abstract class Lens_ extends Jpeg_ {
 
@@ -43,8 +44,8 @@ abstract class Lens_ extends Jpeg_ {
     // read.........................................................................................
     /**
      * TODO: description, comments and logging
-     * @param cameraCharacteristics
-     * @param characteristicsMap
+     * @param cameraCharacteristics bla
+     * @param characteristicsMap bla
      */
     @Override
     protected void read(@NonNull CameraCharacteristics cameraCharacteristics,
@@ -65,7 +66,7 @@ abstract class Lens_ extends Jpeg_ {
             String  units;
 
             if (Build.VERSION.SDK_INT >= 28) {
-                key   = CameraCharacteristics.LENS_DISTORTION;////////////////////////////////////////
+                key   = CameraCharacteristics.LENS_DISTORTION;//////////////////////////////////////
                 name  = key.getName();
                 units = "unitless correction coefficients";
 
@@ -109,11 +110,9 @@ abstract class Lens_ extends Jpeg_ {
             String  name;
             Integer value;
             String  valueString;
-            String  units;
 
-            key   = CameraCharacteristics.LENS_FACING;//////////////////////////////////////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.LENS_FACING;///////////////////////////////////////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
@@ -143,7 +142,7 @@ abstract class Lens_ extends Jpeg_ {
                         return getValueString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);
@@ -298,11 +297,9 @@ abstract class Lens_ extends Jpeg_ {
             String  name;
             Integer value;
             String  valueString;
-            String  units;
 
-            key   = CameraCharacteristics.LENS_INFO_AVAILABLE_OPTICAL_STABILIZATION;////////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.LENS_INFO_AVAILABLE_OPTICAL_STABILIZATION;/////////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 int[]  modes  = cameraCharacteristics.get(key);
@@ -328,7 +325,7 @@ abstract class Lens_ extends Jpeg_ {
                         return getValueString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);
@@ -345,11 +342,9 @@ abstract class Lens_ extends Jpeg_ {
             String  name;
             Integer value;
             String  valueString;
-            String  units;
 
-            key   = CameraCharacteristics.LENS_INFO_FOCUS_DISTANCE_CALIBRATION;/////////////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.LENS_INFO_FOCUS_DISTANCE_CALIBRATION;//////////////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
@@ -376,7 +371,7 @@ abstract class Lens_ extends Jpeg_ {
                         return getValueString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);
@@ -401,10 +396,14 @@ abstract class Lens_ extends Jpeg_ {
             if (keychain.contains(key)) {
 
                 if (characteristicsMap.containsKey(CameraCharacteristics.LENS_INFO_FOCUS_DISTANCE_CALIBRATION)) {
-                    Integer calibration = (Integer) characteristicsMap.get(CameraCharacteristics.LENS_INFO_FOCUS_DISTANCE_CALIBRATION).getValue();
+                    Parameter<Integer> calibration;
+                    calibration = characteristicsMap.get(CameraCharacteristics.LENS_INFO_FOCUS_DISTANCE_CALIBRATION);
                     assert calibration != null;
 
-                    if (!calibration.equals(CameraMetadata.LENS_INFO_FOCUS_DISTANCE_CALIBRATION_UNCALIBRATED)){
+                    Integer calValue = calibration.getValue();
+                    assert calValue != null;
+
+                    if (!calValue.equals(CameraMetadata.LENS_INFO_FOCUS_DISTANCE_CALIBRATION_UNCALIBRATED)){
                         units = "diopters";
                     }
                     else {
@@ -447,10 +446,14 @@ abstract class Lens_ extends Jpeg_ {
             if (keychain.contains(key)) {
 
                 if (characteristicsMap.containsKey(CameraCharacteristics.LENS_INFO_FOCUS_DISTANCE_CALIBRATION)) {
-                    Integer calibration = (Integer) characteristicsMap.get(CameraCharacteristics.LENS_INFO_FOCUS_DISTANCE_CALIBRATION).getValue();
+                    Parameter<Integer> calibration;
+                    calibration = characteristicsMap.get(CameraCharacteristics.LENS_INFO_FOCUS_DISTANCE_CALIBRATION);
                     assert calibration != null;
 
-                    if (!calibration.equals(CameraMetadata.LENS_INFO_FOCUS_DISTANCE_CALIBRATION_UNCALIBRATED)){
+                    Integer calValue = calibration.getValue();
+                    assert calValue != null;
+
+                    if (!calValue.equals(CameraMetadata.LENS_INFO_FOCUS_DISTANCE_CALIBRATION_UNCALIBRATED)){
                         units = "diopters";
                     }
                     else {
@@ -487,7 +490,7 @@ abstract class Lens_ extends Jpeg_ {
             String  units;
 
             if (Build.VERSION.SDK_INT >= 23) {
-                key   = CameraCharacteristics.LENS_INTRINSIC_CALIBRATION;/////////////////////////////
+                key   = CameraCharacteristics.LENS_INTRINSIC_CALIBRATION;///////////////////////////
                 name  = key.getName();
                 units = "pixels";
 
@@ -495,7 +498,7 @@ abstract class Lens_ extends Jpeg_ {
                     float[] coefficients  = cameraCharacteristics.get(key);
                     assert  coefficients != null;
 
-                    value = (Float[]) ArrayToList.convert(coefficients).toArray(new Float[0]);
+                    value = ArrayToList.convert(coefficients).toArray(new Float[0]);
                     assert value != null;
 
                     formatter = new ParameterFormatter<Float[]>() {
@@ -531,12 +534,10 @@ abstract class Lens_ extends Jpeg_ {
             String  name;
             Integer value;
             String  valueString;
-            String  units;
 
             if (Build.VERSION.SDK_INT >= 28) {
-                key   = CameraCharacteristics.LENS_POSE_REFERENCE;//////////////////////////////////
-                name  = key.getName();
-                units = null;
+                key  = CameraCharacteristics.LENS_POSE_REFERENCE;///////////////////////////////////
+                name = key.getName();
 
                 if (keychain.contains(key)) {
                     value = cameraCharacteristics.get(key);
@@ -558,7 +559,7 @@ abstract class Lens_ extends Jpeg_ {
                             return getValueString();
                         }
                     };
-                    property = new Parameter<>(name, value, units, formatter);
+                    property = new Parameter<>(name, value, null, formatter);
                 }
                 else {
                     property = new Parameter<>(name);
@@ -586,7 +587,7 @@ abstract class Lens_ extends Jpeg_ {
                     float[] coefficients  = cameraCharacteristics.get(key);
                     assert  coefficients != null;
 
-                    value = (Float[]) ArrayToList.convert(coefficients).toArray(new Float[0]);
+                    value = ArrayToList.convert(coefficients).toArray(new Float[0]);
                     assert value != null;
 
                     formatter = new ParameterFormatter<Float[]>() {
@@ -632,7 +633,7 @@ abstract class Lens_ extends Jpeg_ {
                     float[] coefficients  = cameraCharacteristics.get(key);
                     assert  coefficients != null;
 
-                    value = (Float[]) ArrayToList.convert(coefficients).toArray(new Float[0]);
+                    value = ArrayToList.convert(coefficients).toArray(new Float[0]);
                     assert value != null;
 
                     formatter = new ParameterFormatter<Float[]>() {

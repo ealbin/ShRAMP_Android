@@ -43,8 +43,8 @@ abstract class Edge_ extends Distortion_ {
     // read.........................................................................................
     /**
      * TODO: description, comments and logging
-     * @param cameraCharacteristics
-     * @param characteristicsMap
+     * @param cameraCharacteristics bla
+     * @param characteristicsMap bla
      */
     @Override
     protected void read(@NonNull CameraCharacteristics cameraCharacteristics,
@@ -63,11 +63,9 @@ abstract class Edge_ extends Distortion_ {
             String  name;
             Integer value;
             String  valueString;
-            String  units;
 
-            key   = CameraCharacteristics.EDGE_AVAILABLE_EDGE_MODES;////////////////////////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.EDGE_AVAILABLE_EDGE_MODES;/////////////////////////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 int[]  modes  = cameraCharacteristics.get(key);
@@ -76,12 +74,11 @@ abstract class Edge_ extends Distortion_ {
 
                 Integer OFF              = CameraMetadata.EDGE_MODE_OFF;
                 Integer FAST             = CameraMetadata.EDGE_MODE_FAST;
-                Integer HIGH_QUALITY     = CameraMetadata.EDGE_MODE_HIGH_QUALITY;
-                Integer ZERO_SHUTTER_LAG = null;
-
-                if ( Build.VERSION.SDK_INT >= 23) {
-                    ZERO_SHUTTER_LAG = CameraMetadata.EDGE_MODE_ZERO_SHUTTER_LAG;
-                }
+                //Integer HIGH_QUALITY     = CameraMetadata.EDGE_MODE_HIGH_QUALITY;
+                //Integer ZERO_SHUTTER_LAG = null;
+                //if ( Build.VERSION.SDK_INT >= 23) {
+                //    ZERO_SHUTTER_LAG = CameraMetadata.EDGE_MODE_ZERO_SHUTTER_LAG;
+                //}
 
                 if (options.contains(OFF)) {
                     value       =  OFF;
@@ -99,7 +96,7 @@ abstract class Edge_ extends Distortion_ {
                         return getValueString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);

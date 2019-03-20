@@ -44,9 +44,9 @@ abstract class step15_Statistics_ extends step14_Shading_ {
     // makeDefault..................................................................................
     /**
      * TODO: description, comments and logging
-     * @param builder
-     * @param characteristicsMap
-     * @param captureRequestMap
+     * @param builder bla
+     * @param characteristicsMap bla
+     * @param captureRequestMap bla
      */
     @SuppressWarnings("unchecked")
     @Override
@@ -98,16 +98,14 @@ abstract class step15_Statistics_ extends step14_Shading_ {
 
             String  name;
             Boolean value;
-            String  units;
 
-            rKey  = CaptureRequest.STATISTICS_HOT_PIXEL_MAP_MODE;///////////////////////////////////
-            name  = rKey.getName();
-            units = null;
+            rKey = CaptureRequest.STATISTICS_HOT_PIXEL_MAP_MODE;////////////////////////////////////
+            name = rKey.getName();
 
             if (supportedKeys.contains(rKey)) {
 
                 Boolean OFF = false;
-                Boolean ON  = true;
+                //Boolean ON  = true;
 
                 value = OFF;
 
@@ -121,7 +119,7 @@ abstract class step15_Statistics_ extends step14_Shading_ {
                         return "OFF (PREFERRED)";
                     }
                 };
-                setting = new Parameter<>(name, value, units, formatter);
+                setting = new Parameter<>(name, value, null, formatter);
 
                 builder.set(rKey, setting.getValue());
             }
@@ -140,16 +138,14 @@ abstract class step15_Statistics_ extends step14_Shading_ {
             String  name;
             Integer value;
             String  valueString;
-            String  units;
 
-            rKey  = CaptureRequest.STATISTICS_LENS_SHADING_MAP_MODE;////////////////////////////////
-            name  = rKey.getName();
-            units = null;
+            rKey = CaptureRequest.STATISTICS_LENS_SHADING_MAP_MODE;/////////////////////////////////
+            name = rKey.getName();
 
             if (supportedKeys.contains(rKey)) {
 
                 Integer OFF = CameraMetadata.STATISTICS_LENS_SHADING_MAP_MODE_OFF;
-                Integer ON  = CameraMetadata.STATISTICS_LENS_SHADING_MAP_MODE_ON;
+                //Integer ON  = CameraMetadata.STATISTICS_LENS_SHADING_MAP_MODE_ON;
 
                 value = OFF;
                 valueString = "OFF (PREFERRED)";
@@ -161,7 +157,7 @@ abstract class step15_Statistics_ extends step14_Shading_ {
                         return getValueString();
                     }
                 };
-                setting = new Parameter<>(name, value, units, formatter);
+                setting = new Parameter<>(name, value, null, formatter);
 
                 builder.set(rKey, setting.getValue());
             }
@@ -180,20 +176,18 @@ abstract class step15_Statistics_ extends step14_Shading_ {
             String  name;
             Integer value;
             String  valueString;
-            String  units;
 
             if (Build.VERSION.SDK_INT < 28) {
                 return;
             }
 
-            rKey  = CaptureRequest.STATISTICS_OIS_DATA_MODE;////////////////////////////////////////
-            name  = rKey.getName();
-            units = null;
+            rKey = CaptureRequest.STATISTICS_OIS_DATA_MODE;/////////////////////////////////////////
+            name = rKey.getName();
 
             if (supportedKeys.contains(rKey)) {
 
                 Integer OFF = CameraMetadata.STATISTICS_OIS_DATA_MODE_OFF;
-                Integer ON  = CameraMetadata.STATISTICS_OIS_DATA_MODE_ON;
+                //Integer ON  = CameraMetadata.STATISTICS_OIS_DATA_MODE_ON;
 
                 value = OFF;
                 valueString = "OFF (PREFERRED)";
@@ -205,7 +199,7 @@ abstract class step15_Statistics_ extends step14_Shading_ {
                         return getValueString();
                     }
                 };
-                setting = new Parameter<>(name, value, units, formatter);
+                setting = new Parameter<>(name, value, null, formatter);
 
                 builder.set(rKey, setting.getValue());
             }

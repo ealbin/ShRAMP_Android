@@ -41,9 +41,9 @@ abstract class step05_Edge_ extends step04_Distortion_ {
     // makeDefault..................................................................................
     /**
      * TODO: description, comments and logging
-     * @param builder
-     * @param characteristicsMap
-     * @param captureRequestMap
+     * @param builder bla
+     * @param characteristicsMap bla
+     * @param captureRequestMap bla
      */
     @SuppressWarnings("unchecked")
     @Override
@@ -62,10 +62,10 @@ abstract class step05_Edge_ extends step04_Distortion_ {
             CaptureRequest.Key<Integer> rKey;
             Parameter<Integer> setting;
 
-            String  name;
+            String name;
 
-            rKey  = CaptureRequest.EDGE_MODE;///////////////////////////////////////////////////////
-            name  = rKey.getName();
+            rKey = CaptureRequest.EDGE_MODE;////////////////////////////////////////////////////////
+            name = rKey.getName();
 
             if (supportedKeys.contains(rKey)) {
 

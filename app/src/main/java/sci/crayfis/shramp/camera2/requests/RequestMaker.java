@@ -64,6 +64,7 @@ final public class RequestMaker extends step16_Tonemap_ {
      */
     @SuppressWarnings("unchecked")
     public static void makeDefault() {
+        Log.e(Thread.currentThread().getName(), "RequestMaker makeDefault");
 
         LinkedHashMap<CaptureRequest.Key, Parameter> captureRequestMap = new LinkedHashMap<>();
 
@@ -72,6 +73,7 @@ final public class RequestMaker extends step16_Tonemap_ {
 
         LinkedHashMap<CameraCharacteristics.Key, Parameter> characteristicsMap;
         characteristicsMap = CameraController.getOpenedCharacteristicsMap();
+        assert characteristicsMap != null;
 
         List<CaptureRequest.Key<?>> supportedKeys;
         supportedKeys = CameraController.getAvailableCaptureRequestKeys();
@@ -122,14 +124,15 @@ final public class RequestMaker extends step16_Tonemap_ {
     /**
      * TODO: description, comments and logging
      *
-     * @param label
-     * @param map
-     * @param keychain
+     * @param label bla
+     * @param map bla
+     * @param keychain bla
      */
     public static void write(@Nullable String label,
                              @NonNull LinkedHashMap<CaptureRequest.Key, Parameter> map,
                              @Nullable List<CaptureRequest.Key<?>> keychain) {
 
+        Log.e(Thread.currentThread().getName(), ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
         String tag = "RequestMaker";
         if (label != null) {
             tag = label;
@@ -148,6 +151,7 @@ final public class RequestMaker extends step16_Tonemap_ {
                 }
             }
         }
+        Log.e(Thread.currentThread().getName(), ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
     }
 
     //**********************************************************************************************
@@ -160,9 +164,9 @@ final public class RequestMaker extends step16_Tonemap_ {
     // makeDefault..................................................................................
     /**
      * TODO: description, comments and logging
-     * @param builder
-     * @param characteristicsMap
-     * @param captureRequestMap
+     * @param builder bla
+     * @param characteristicsMap bla
+     * @param captureRequestMap bla
      */
     @SuppressWarnings("unchecked")
     @Override

@@ -41,8 +41,8 @@ abstract class Jpeg_ extends Info_ {
     // read.........................................................................................
     /**
      * TODO: description, comments and logging
-     * @param cameraCharacteristics
-     * @param characteristicsMap
+     * @param cameraCharacteristics bla
+     * @param characteristicsMap bla
      */
     @Override
     protected void read(@NonNull CameraCharacteristics cameraCharacteristics,
@@ -62,7 +62,7 @@ abstract class Jpeg_ extends Info_ {
             Size    value;
             String  units;
 
-            key   = CameraCharacteristics.JPEG_AVAILABLE_THUMBNAIL_SIZES;////////////////////////////
+            key   = CameraCharacteristics.JPEG_AVAILABLE_THUMBNAIL_SIZES;///////////////////////////
             name  = key.getName();
             units = "pixels";
 
@@ -79,7 +79,7 @@ abstract class Jpeg_ extends Info_ {
                     long thisArea     =     size.getWidth() *     size.getHeight();
                     long smallestArea = smallest.getWidth() * smallest.getHeight();
                     if (thisArea < smallestArea) {
-                        smallestArea = thisArea;
+                        smallest = size;
                     }
                 }
                 assert smallest != null;

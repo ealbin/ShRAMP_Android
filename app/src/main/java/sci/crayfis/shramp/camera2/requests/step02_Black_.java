@@ -42,9 +42,9 @@ abstract class step02_Black_ extends step01_Control_ {
     // makeDefault..................................................................................
     /**
      * TODO: description, comments and logging
-     * @param builder
-     * @param characteristicsMap
-     * @param captureRequestMap
+     * @param builder bla
+     * @param characteristicsMap bla
+     * @param captureRequestMap bla
      */
     @SuppressWarnings("unchecked")
     @Override
@@ -67,15 +67,13 @@ abstract class step02_Black_ extends step01_Control_ {
             String  name;
             Boolean value;
             String  valueString;
-            String  units;
 
-            rKey  = CaptureRequest.BLACK_LEVEL_LOCK;////////////////////////////////////////////////
-            name  = rKey.getName();
-            units = null;
+            rKey = CaptureRequest.BLACK_LEVEL_LOCK;/////////////////////////////////////////////////
+            name = rKey.getName();
 
             if (supportedKeys.contains(rKey)) {
 
-                Boolean OFF = false;
+                //Boolean OFF = false;
                 Boolean ON  = true;
 
                 value = ON;
@@ -88,7 +86,7 @@ abstract class step02_Black_ extends step01_Control_ {
                         return getValueString();
                     }
                 };
-                setting = new Parameter<>(name, value, units, formatter);
+                setting = new Parameter<>(name, value, null, formatter);
 
                 builder.set(rKey, setting.getValue());
             }

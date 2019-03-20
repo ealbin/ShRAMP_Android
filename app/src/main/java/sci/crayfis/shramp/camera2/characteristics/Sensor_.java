@@ -52,8 +52,8 @@ abstract class Sensor_ extends Scaler_ {
     // read.........................................................................................
     /**
      * TODO: description, comments and logging
-     * @param cameraCharacteristics
-     * @param characteristicsMap
+     * @param cameraCharacteristics bla
+     * @param characteristicsMap bla
      */
     @Override
     protected void read(@NonNull CameraCharacteristics cameraCharacteristics,
@@ -72,11 +72,9 @@ abstract class Sensor_ extends Scaler_ {
             String  name;
             Integer value;
             String  valueString;
-            String  units;
 
-            key   = CameraCharacteristics.SENSOR_AVAILABLE_TEST_PATTERN_MODES;//////////////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.SENSOR_AVAILABLE_TEST_PATTERN_MODES;///////////////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 int[]  modes  = cameraCharacteristics.get(key);
@@ -84,11 +82,11 @@ abstract class Sensor_ extends Scaler_ {
                 List<Integer> options = ArrayToList.convert(modes);
 
                 Integer OFF                     = CameraMetadata.SENSOR_TEST_PATTERN_MODE_OFF;
-                Integer SOLID_COLOR             = CameraMetadata.SENSOR_TEST_PATTERN_MODE_SOLID_COLOR;
-                Integer COLOR_BARS              = CameraMetadata.SENSOR_TEST_PATTERN_MODE_COLOR_BARS;
-                Integer COLOR_BARS_FADE_TO_GRAY = CameraMetadata.SENSOR_TEST_PATTERN_MODE_COLOR_BARS_FADE_TO_GRAY;
-                Integer PN9                     = CameraMetadata.SENSOR_TEST_PATTERN_MODE_PN9;
-                Integer CUSTOM1                 = CameraMetadata.SENSOR_TEST_PATTERN_MODE_CUSTOM1;
+                //Integer SOLID_COLOR             = CameraMetadata.SENSOR_TEST_PATTERN_MODE_SOLID_COLOR;
+                //Integer COLOR_BARS              = CameraMetadata.SENSOR_TEST_PATTERN_MODE_COLOR_BARS;
+                //Integer COLOR_BARS_FADE_TO_GRAY = CameraMetadata.SENSOR_TEST_PATTERN_MODE_COLOR_BARS_FADE_TO_GRAY;
+                //Integer PN9                     = CameraMetadata.SENSOR_TEST_PATTERN_MODE_PN9;
+                //Integer CUSTOM1                 = CameraMetadata.SENSOR_TEST_PATTERN_MODE_CUSTOM1;
 
                 value       =  OFF;
                 valueString = "OFF (PREFERRED)";
@@ -100,7 +98,7 @@ abstract class Sensor_ extends Scaler_ {
                         return getValueString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);
@@ -116,11 +114,9 @@ abstract class Sensor_ extends Scaler_ {
 
             String            name;
             BlackLevelPattern value;
-            String            units;
 
-            key   = CameraCharacteristics.SENSOR_BLACK_LEVEL_PATTERN;///////////////////////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.SENSOR_BLACK_LEVEL_PATTERN;////////////////////////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
@@ -133,7 +129,7 @@ abstract class Sensor_ extends Scaler_ {
                         return value.toString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);
@@ -149,11 +145,9 @@ abstract class Sensor_ extends Scaler_ {
 
             String              name;
             ColorSpaceTransform value;
-            String              units;
 
-            key   = CameraCharacteristics.SENSOR_CALIBRATION_TRANSFORM1;////////////////////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.SENSOR_CALIBRATION_TRANSFORM1;/////////////////////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
@@ -166,7 +160,7 @@ abstract class Sensor_ extends Scaler_ {
                         return value.toString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);
@@ -182,11 +176,9 @@ abstract class Sensor_ extends Scaler_ {
 
             String              name;
             ColorSpaceTransform value;
-            String              units;
 
-            key   = CameraCharacteristics.SENSOR_CALIBRATION_TRANSFORM2;////////////////////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.SENSOR_CALIBRATION_TRANSFORM2;/////////////////////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
@@ -199,7 +191,7 @@ abstract class Sensor_ extends Scaler_ {
                         return value.toString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);
@@ -215,11 +207,9 @@ abstract class Sensor_ extends Scaler_ {
 
             String              name;
             ColorSpaceTransform value;
-            String              units;
 
-            key   = CameraCharacteristics.SENSOR_COLOR_TRANSFORM1;//////////////////////////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.SENSOR_COLOR_TRANSFORM1;///////////////////////////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
@@ -232,7 +222,7 @@ abstract class Sensor_ extends Scaler_ {
                         return value.toString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);
@@ -248,11 +238,9 @@ abstract class Sensor_ extends Scaler_ {
 
             String              name;
             ColorSpaceTransform value;
-            String              units;
 
-            key   = CameraCharacteristics.SENSOR_COLOR_TRANSFORM2;//////////////////////////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.SENSOR_COLOR_TRANSFORM2;///////////////////////////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
@@ -265,7 +253,7 @@ abstract class Sensor_ extends Scaler_ {
                         return value.toString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);
@@ -281,11 +269,9 @@ abstract class Sensor_ extends Scaler_ {
 
             String              name;
             ColorSpaceTransform value;
-            String              units;
 
-            key   = CameraCharacteristics.SENSOR_FORWARD_MATRIX1;///////////////////////////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.SENSOR_FORWARD_MATRIX1;////////////////////////////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
@@ -298,7 +284,7 @@ abstract class Sensor_ extends Scaler_ {
                         return value.toString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);
@@ -314,11 +300,9 @@ abstract class Sensor_ extends Scaler_ {
 
             String              name;
             ColorSpaceTransform value;
-            String              units;
 
-            key   = CameraCharacteristics.SENSOR_FORWARD_MATRIX2;///////////////////////////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.SENSOR_FORWARD_MATRIX2;////////////////////////////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
@@ -331,7 +315,7 @@ abstract class Sensor_ extends Scaler_ {
                         return value.toString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);
@@ -381,11 +365,9 @@ abstract class Sensor_ extends Scaler_ {
             String  name;
             Integer value;
             String  valueString;
-            String  units;
 
-            key   = CameraCharacteristics.SENSOR_INFO_COLOR_FILTER_ARRANGEMENT;/////////////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.SENSOR_INFO_COLOR_FILTER_ARRANGEMENT;//////////////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
@@ -422,7 +404,7 @@ abstract class Sensor_ extends Scaler_ {
                         return getValueString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);
@@ -474,12 +456,10 @@ abstract class Sensor_ extends Scaler_ {
 
             String name;
             Boolean value;
-            String units;
 
             if (Build.VERSION.SDK_INT >= 23) {
-                key   = CameraCharacteristics.SENSOR_INFO_LENS_SHADING_APPLIED;/////////////////////
-                name  = key.getName();
-                units = null;
+                key  = CameraCharacteristics.SENSOR_INFO_LENS_SHADING_APPLIED;//////////////////////
+                name = key.getName();
 
                 if (keychain.contains(key)) {
                     value = cameraCharacteristics.get(key);
@@ -495,7 +475,7 @@ abstract class Sensor_ extends Scaler_ {
                             return "NO";
                         }
                     };
-                    property = new Parameter<>(name, value, units, formatter);
+                    property = new Parameter<>(name, value, null, formatter);
                 }
                 else {
                     property = new Parameter<>(name);
@@ -682,11 +662,9 @@ abstract class Sensor_ extends Scaler_ {
             String  name;
             Integer value;
             String  valueString;
-            String  units;
 
-            key   = CameraCharacteristics.SENSOR_INFO_TIMESTAMP_SOURCE;/////////////////////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.SENSOR_INFO_TIMESTAMP_SOURCE;//////////////////////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
@@ -709,7 +687,7 @@ abstract class Sensor_ extends Scaler_ {
                         return getValueString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);
@@ -725,11 +703,9 @@ abstract class Sensor_ extends Scaler_ {
 
             String  name;
             Integer value;
-            String  units;
 
-            key   = CameraCharacteristics.SENSOR_INFO_WHITE_LEVEL;//////////////////////////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.SENSOR_INFO_WHITE_LEVEL;///////////////////////////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
@@ -742,7 +718,7 @@ abstract class Sensor_ extends Scaler_ {
                         return value.toString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);
@@ -864,15 +840,11 @@ abstract class Sensor_ extends Scaler_ {
             String  name;
             Integer value;
             String  valueString;
-            String  units;
 
-            key   = CameraCharacteristics.SENSOR_REFERENCE_ILLUMINANT1;/////////////////////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.SENSOR_REFERENCE_ILLUMINANT1;//////////////////////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
-                value = cameraCharacteristics.get(key);
-                assert value != null;
 
                 Integer DAYLIGHT               = CameraMetadata.SENSOR_REFERENCE_ILLUMINANT1_DAYLIGHT;
                 Integer FLUORESCENT            = CameraMetadata.SENSOR_REFERENCE_ILLUMINANT1_FLUORESCENT;
@@ -893,6 +865,9 @@ abstract class Sensor_ extends Scaler_ {
                 Integer D75                    = CameraMetadata.SENSOR_REFERENCE_ILLUMINANT1_D75;
                 Integer D50                    = CameraMetadata.SENSOR_REFERENCE_ILLUMINANT1_D50;
                 Integer ISO_STUDIO_TUNGSTEN    = CameraMetadata.SENSOR_REFERENCE_ILLUMINANT1_ISO_STUDIO_TUNGSTEN;
+
+                value = cameraCharacteristics.get(key);
+                assert value != null;
 
                 valueString = null;
                 if (value.equals(DAYLIGHT)) {
@@ -961,7 +936,7 @@ abstract class Sensor_ extends Scaler_ {
                         return getValueString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);
@@ -978,11 +953,9 @@ abstract class Sensor_ extends Scaler_ {
             String name;
             Byte   value;
             String valueString;
-            String units;
 
-            key   = CameraCharacteristics.SENSOR_REFERENCE_ILLUMINANT2;/////////////////////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.SENSOR_REFERENCE_ILLUMINANT2;//////////////////////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
@@ -1076,7 +1049,7 @@ abstract class Sensor_ extends Scaler_ {
                         return getValueString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);

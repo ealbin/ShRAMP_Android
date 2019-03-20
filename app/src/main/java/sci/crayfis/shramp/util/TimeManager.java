@@ -3,6 +3,7 @@ package sci.crayfis.shramp.util;
 import android.annotation.TargetApi;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import java.util.Calendar;
 import java.util.Locale;
@@ -60,6 +61,7 @@ public class TimeManager {
      * TODO: description, comments and logging
      */
     private TimeManager() {
+        //Log.e(Thread.currentThread().getName(), "TimeManager TimeManager");
 
         // Make sure time zone is Pacific Standard Time (no daylight savings)
         TimeZone pst = TimeZone.getTimeZone("Etc/GMT+8");
@@ -87,6 +89,7 @@ public class TimeManager {
                 + Integer.toString(minute)  + "-"
                 + Integer.toString(second)  + "-"
                 + Integer.toString(millisecond);
+        Log.e(Thread.currentThread().getName(), "TimeManager mStartDate: " + mStartDate);
     }
 
     //**********************************************************************************************
@@ -99,7 +102,7 @@ public class TimeManager {
     // getInstance..................................................................................
     /**
      * TODO: description, comments and logging
-     * @return
+     * @return bla
      */
     @NonNull
     public static TimeManager getInstance() { return mInstance; }
@@ -114,10 +117,11 @@ public class TimeManager {
     // getElapsedNanos..............................................................................
     /**
      * TODO: description, comments and logging
-     * @param timestamp
-     * @return
+     * @param timestamp bla
+     * @return bla
      */
     public long getElapsedNanos(long timestamp) {
+        //Log.e(Thread.currentThread().getName(), "TimeManager getElapsedNanos");
         if (mFirstTimestamp.equals(0L)) {
             mFirstTimestamp = timestamp;
             return 0L;
@@ -128,19 +132,21 @@ public class TimeManager {
     // getElapsedSystemNanos.......................................................................
     /**
      * TODO: description, comments and logging
-     * @return
+     * @return bla
      */
     public long getElapsedSystemNanos() {
+        //Log.e(Thread.currentThread().getName(), "TimeManager getElapsedSystemNanos");
         return SystemClock.elapsedRealtimeNanos() - mSystemStartNanos;
     }
 
     // getStartDate.................................................................................
     /**
      * TODO: description, comments and logging
-     * @return
+     * @return bla
      */
     @NonNull
     public String getStartDate() {
+        //Log.e(Thread.currentThread().getName(), "TimeManager getStartDate");
         return mStartDate;
     }
 

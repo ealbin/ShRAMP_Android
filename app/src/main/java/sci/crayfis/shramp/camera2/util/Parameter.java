@@ -3,7 +3,6 @@ package sci.crayfis.shramp.camera2.util;
 import android.annotation.TargetApi;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 /**
  * TODO: description, comments and logging
@@ -61,7 +60,7 @@ public class Parameter<T> {
     // Parameter....................................................................................
     /**
      * TODO: description, comments and logging
-     * @param description
+     * @param description bla
      */
     public Parameter(@NonNull String description) {
         mValue       = null;
@@ -73,10 +72,10 @@ public class Parameter<T> {
     // Parameter....................................................................................
     /**
      * TODO: description, comments and logging
-     * @param description
-     * @param value
-     * @param units
-     * @param parameterFormatter
+     * @param description bla
+     * @param value bla
+     * @param units bla
+     * @param parameterFormatter bla
      */
     public Parameter(@NonNull String description, @Nullable T value,
                      @Nullable String units, @Nullable ParameterFormatter<T> parameterFormatter) {
@@ -110,7 +109,7 @@ public class Parameter<T> {
     // getDescription...............................................................................
     /**
      * TODO: description, comments and logging
-     * @return
+     * @return bla
      */
     @NonNull
     public String getDescription() { return mDescription; }
@@ -118,7 +117,7 @@ public class Parameter<T> {
     // getFormatter.................................................................................
     /**
      * TODO: description, comments and logging
-     * @return
+     * @return bla
      */
     @NonNull
     public ParameterFormatter<T> getFormatter() { return mParameterFormatter; }
@@ -126,7 +125,7 @@ public class Parameter<T> {
     // getUnits.....................................................................................
     /**
      * TODO: description, comments and logging
-     * @return
+     * @return bla
      */
     @Nullable
     public String getUnits() { return  mUnits; }
@@ -134,7 +133,7 @@ public class Parameter<T> {
     // getValue.....................................................................................
     /**
      * TODO: description, comments and logging
-     * @return
+     * @return bla
      */
     @Nullable
     public T getValue() { return  mValue; }
@@ -142,21 +141,21 @@ public class Parameter<T> {
     // setFormatter.................................................................................
     /**
      * TODO: description, comments and logging
-     * @param parameterFormatter
+     * @param parameterFormatter bla
      */
     public void setFormatter(ParameterFormatter<T> parameterFormatter) { mParameterFormatter = parameterFormatter; }
 
     // setUnits.....................................................................................
     /**
      * TODO: description, comments and logging
-     * @param units
+     * @param units bla
      */
     public void setUnits(String units) { mUnits = units; }
 
     // setValueString...............................................................................
     /**
      * TODO: description, comments and logging
-     * @param valueString
+     * @param valueString bla
      */
     public void setValueString(@NonNull String valueString) { mParameterFormatter.setValueString(valueString); }
 
@@ -170,7 +169,7 @@ public class Parameter<T> {
     // toString.....................................................................................
     /**
      * TODO: description, comments and logging
-     * @return
+     * @return bla
      */
     @NonNull
     @Override

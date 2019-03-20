@@ -85,9 +85,9 @@ public class SizeSortedSet implements SortedSet<Size> {
         // compare..................................................................................
         /**
          * TODO: description, comments and logging
-         * @param s1
-         * @param s2
-         * @return
+         * @param s1 bla
+         * @param s2 bla
+         * @return bla
          */
         @Override
         public int compare(@NonNull Size s1, @NonNull Size s2) {
@@ -113,9 +113,9 @@ public class SizeSortedSet implements SortedSet<Size> {
         // compare..................................................................................
         /**
          * TODO: description, comments and logging
-         * @param s1
-         * @param s2
-         * @return
+         * @param s1 bla
+         * @param s2 bla
+         * @return bla
          */
         @Override
         public int compare(@NonNull Size s1, @NonNull Size s2) {
@@ -157,8 +157,8 @@ public class SizeSortedSet implements SortedSet<Size> {
     // add..........................................................................................
     /**
      * TODO: description, comments and logging
-     * @param size
-     * @return
+     * @param size bla
+     * @return bla
      */
     @Override
     public boolean add(Size size) {
@@ -173,8 +173,8 @@ public class SizeSortedSet implements SortedSet<Size> {
     // addAll.......................................................................................
     /**
      * TODO: description, coments and logging
-     * @param c
-     * @return
+     * @param c bla
+     * @return bla
      */
     @Override
     public boolean addAll(@NonNull Collection<? extends Size> c) {
@@ -202,7 +202,7 @@ public class SizeSortedSet implements SortedSet<Size> {
     // comparator...................................................................................
     /**
      * TODO: description, comments and longging
-     * @return
+     * @return bla
      */
     @NonNull
     @Override
@@ -213,8 +213,8 @@ public class SizeSortedSet implements SortedSet<Size> {
     // contains.....................................................................................
     /**
      * TODO: description, comments and logging
-     * @param o
-     * @return
+     * @param o bla
+     * @return bla
      */
     @Override
     public boolean contains(@Nullable Object o) {
@@ -224,8 +224,8 @@ public class SizeSortedSet implements SortedSet<Size> {
     // containsAll..................................................................................
     /**
      * TODO: description, comments and logging
-     * @param c
-     * @return
+     * @param c bla
+     * @return bla
      */
     @Override
     public boolean containsAll(@NonNull Collection<?> c) {
@@ -235,7 +235,7 @@ public class SizeSortedSet implements SortedSet<Size> {
     // first........................................................................................
     /**
      * TODO: description, comments and logging
-     * @return
+     * @return bla
      */
     @Override
     public Size first() {
@@ -248,8 +248,8 @@ public class SizeSortedSet implements SortedSet<Size> {
     // headSet......................................................................................
     /**
      * TODO: description, comments and logging
-     * @param toElement
-     * @return
+     * @param toElement bla
+     * @return bla
      */
     @NonNull
     @Override
@@ -267,7 +267,7 @@ public class SizeSortedSet implements SortedSet<Size> {
     // isEmpty......................................................................................
     /**
      * TODO: description, comments and logging
-     * @return
+     * @return bla
      */
     @Override
     public boolean isEmpty() {
@@ -277,7 +277,7 @@ public class SizeSortedSet implements SortedSet<Size> {
     // iterator.....................................................................................
     /**
      * TODO: description, comments and logging
-     * @return
+     * @return bla
      */
     @NonNull
     @Override
@@ -288,22 +288,19 @@ public class SizeSortedSet implements SortedSet<Size> {
     // last.........................................................................................
     /**
      * TODO: description, comments and logging
-     * @return
+     * @return bla
      */
     @NonNull
     @Override
     public Size last() {
-        if (mSortedSet.size() > 0) {
-            return mSortedSet.get(mSortedSet.size() - 1);
-        }
-        return null;
+        return mSortedSet.get(mSortedSet.size() - 1);
     }
 
     // remove.......................................................................................
     /**
      * TODO: description, comments and logging
-     * @param o
-     * @return
+     * @param o bla
+     * @return bla
      */
     @Override
     public boolean remove(@Nullable Object o) {
@@ -313,8 +310,8 @@ public class SizeSortedSet implements SortedSet<Size> {
     // removeAll....................................................................................
     /**
      * TODO: description, comments and logging
-     * @param c
-     * @return
+     * @param c bla
+     * @return bla
      */
     @Override
     public boolean removeAll(@NonNull Collection<?> c) {
@@ -324,8 +321,8 @@ public class SizeSortedSet implements SortedSet<Size> {
     // retainAll....................................................................................
     /**
      * TODO: description, comments and logging
-     * @param c
-     * @return
+     * @param c bla
+     * @return bla
      */
     @Override
     public boolean retainAll(@NonNull Collection<?> c) {
@@ -335,7 +332,7 @@ public class SizeSortedSet implements SortedSet<Size> {
     // size.........................................................................................
     /**
      * TODO: description, comments and logging
-     * @return
+     * @return bla
      */
     @Override
     public int size() {
@@ -345,9 +342,9 @@ public class SizeSortedSet implements SortedSet<Size> {
     // subSet.......................................................................................
     /**
      * TODO: description, comments and logging
-     * @param fromElement
-     * @param toElement
-     * @return
+     * @param fromElement bla
+     * @param toElement bla
+     * @return bla
      */
     @NonNull
     @Override
@@ -366,8 +363,8 @@ public class SizeSortedSet implements SortedSet<Size> {
     // tailSet......................................................................................
     /**
      * TODO: description, comments and logging
-     * @param fromElement
-     * @return
+     * @param fromElement bla
+     * @return bla
      */
     @NonNull
     @Override
@@ -385,7 +382,7 @@ public class SizeSortedSet implements SortedSet<Size> {
     // toArray......................................................................................
     /**
      * TODO: description, comments and logging
-     * @return
+     * @return bla
      */
     @Nullable
     @Override
@@ -396,9 +393,9 @@ public class SizeSortedSet implements SortedSet<Size> {
     // toArray......................................................................................
     /**
      * TODO: description, comments and logging
-     * @param a
-     * @param <T>
-     * @return
+     * @param a bla
+     * @param <T> bla
+     * @return bla
      */
     @Nullable
     @Override

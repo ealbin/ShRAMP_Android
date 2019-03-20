@@ -58,8 +58,8 @@ public final class CharacteristicsReader extends Tonemap_ {
     /**
      * TODO: description, comments and logging
      *
-     * @param cameraCharacteristics
-     * @return
+     * @param cameraCharacteristics bla
+     * @return bla
      */
     @NonNull
     public static LinkedHashMap<CameraCharacteristics.Key, Parameter> read(
@@ -67,6 +67,7 @@ public final class CharacteristicsReader extends Tonemap_ {
 
         LinkedHashMap<CameraCharacteristics.Key, Parameter> characteristicsMap
                                                                             = new LinkedHashMap<>();
+        Log.e(Thread.currentThread().getName(), "CharacteristicsReader read");
         mInstance.read(cameraCharacteristics, characteristicsMap);
         return characteristicsMap;
     }
@@ -75,14 +76,15 @@ public final class CharacteristicsReader extends Tonemap_ {
     /**
      * TODO: description, comments and logging
      *
-     * @param label
-     * @param map
-     * @param keychain
+     * @param label bla
+     * @param map bla
+     * @param keychain bla
      */
     public static void write(@Nullable String label,
                              @NonNull LinkedHashMap<CameraCharacteristics.Key, Parameter> map,
                              @Nullable List<CameraCharacteristics.Key<?>> keychain) {
 
+        Log.e(Thread.currentThread().getName(), ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
         String tag = "CharacteristicsReader";
         if (label != null) {
             tag = label;
@@ -101,6 +103,7 @@ public final class CharacteristicsReader extends Tonemap_ {
                 }
             }
         }
+        Log.e(Thread.currentThread().getName(), ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
     }
 
     //**********************************************************************************************
@@ -114,8 +117,8 @@ public final class CharacteristicsReader extends Tonemap_ {
     /**
      * TODO: description, comments and logging
      *
-     * @param cameraCharacteristics
-     * @return
+     * @param cameraCharacteristics bla
+     * @param characteristicsMap bla
      */
     @Override
     protected void read(@NonNull CameraCharacteristics cameraCharacteristics,

@@ -43,9 +43,9 @@ abstract class step06_Flash_ extends step05_Edge_ {
     // makeDefault..................................................................................
     /**
      * TODO: description, comments and logging
-     * @param builder
-     * @param characteristicsMap
-     * @param captureRequestMap
+     * @param builder bla
+     * @param characteristicsMap bla
+     * @param captureRequestMap bla
      */
     @SuppressWarnings("unchecked")
     @Override
@@ -68,11 +68,9 @@ abstract class step06_Flash_ extends step05_Edge_ {
             String  name;
             Integer value;
             String  valueString;
-            String  units;
 
-            rKey  = CaptureRequest.FLASH_MODE;//////////////////////////////////////////////////////
-            name  = rKey.getName();
-            units = null;
+            rKey = CaptureRequest.FLASH_MODE;///////////////////////////////////////////////////////
+            name = rKey.getName();
 
             if (supportedKeys.contains(rKey)) {
 
@@ -91,8 +89,8 @@ abstract class step06_Flash_ extends step05_Edge_ {
                 }
 
                 Integer OFF    = CameraMetadata.FLASH_MODE_OFF;
-                Integer SINGLE = CameraMetadata.FLASH_MODE_SINGLE;
-                Integer TORCH  = CameraMetadata.FLASH_MODE_TORCH;
+                //Integer SINGLE = CameraMetadata.FLASH_MODE_SINGLE;
+                //Integer TORCH  = CameraMetadata.FLASH_MODE_TORCH;
 
                 value = OFF;
                 valueString = "OFF (PREFERRED)";
@@ -104,7 +102,7 @@ abstract class step06_Flash_ extends step05_Edge_ {
                         return getValueString();
                     }
                 };
-                setting = new Parameter<>(name, value, units, formatter);
+                setting = new Parameter<>(name, value, null, formatter);
 
                 builder.set(rKey, setting.getValue());
             }

@@ -45,9 +45,9 @@ abstract class step11_Reprocess_ extends step10_Noise_ {
     // makeDefault..................................................................................
     /**
      * TODO: description, comments and logging
-     * @param builder
-     * @param characteristicsMap
-     * @param captureRequestMap
+     * @param builder bla
+     * @param characteristicsMap bla
+     * @param captureRequestMap bla
      */
     @SuppressWarnings("unchecked")
     @Override
@@ -75,8 +75,8 @@ abstract class step11_Reprocess_ extends step10_Noise_ {
                 return;
             }
 
-            rKey  = CaptureRequest.REPROCESS_EFFECTIVE_EXPOSURE_FACTOR;/////////////////////////////
-            name  = rKey.getName();
+            rKey = CaptureRequest.REPROCESS_EFFECTIVE_EXPOSURE_FACTOR;//////////////////////////////
+            name = rKey.getName();
 
             if (supportedKeys.contains(rKey)) {
 

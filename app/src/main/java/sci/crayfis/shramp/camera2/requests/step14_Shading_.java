@@ -43,9 +43,9 @@ abstract class step14_Shading_ extends step13_Sensor_ {
     // makeDefault..................................................................................
     /**
      * TODO: description, comments and logging
-     * @param builder
-     * @param characteristicsMap
-     * @param captureRequestMap
+     * @param builder bla
+     * @param characteristicsMap bla
+     * @param captureRequestMap bla
      */
     @SuppressWarnings("unchecked")
     @Override
@@ -68,17 +68,15 @@ abstract class step14_Shading_ extends step13_Sensor_ {
             String  name;
             Integer value;
             String  valueString;
-            String  units;
 
-            rKey  = CaptureRequest.SHADING_MODE;/////////////////////////////////////////////////////
-            name  = rKey.getName();
-            units = null;
+            rKey = CaptureRequest.SHADING_MODE;/////////////////////////////////////////////////////
+            name = rKey.getName();
 
             if (supportedKeys.contains(rKey)) {
 
                 Integer OFF          = CameraMetadata.SHADING_MODE_OFF;
-                Integer FAST         = CameraMetadata.SHADING_MODE_FAST;
-                Integer HIGH_QUALITY = CameraMetadata.SHADING_MODE_HIGH_QUALITY;
+                //Integer FAST         = CameraMetadata.SHADING_MODE_FAST;
+                //Integer HIGH_QUALITY = CameraMetadata.SHADING_MODE_HIGH_QUALITY;
 
                 value = OFF;
                 valueString = "OFF (PREFERRED)";
@@ -90,7 +88,7 @@ abstract class step14_Shading_ extends step13_Sensor_ {
                         return getValueString();
                     }
                 };
-                setting = new Parameter<>(name, value, units, formatter);
+                setting = new Parameter<>(name, value, null, formatter);
 
                 builder.set(rKey, setting.getValue());
             }

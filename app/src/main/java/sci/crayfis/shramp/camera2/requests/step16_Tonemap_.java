@@ -45,9 +45,9 @@ abstract class step16_Tonemap_ extends step15_Statistics_ {
     // makeDefault..................................................................................
     /**
      * TODO: description, comments and logging
-     * @param builder
-     * @param characteristicsMap
-     * @param captureRequestMap
+     * @param builder bla
+     * @param characteristicsMap bla
+     * @param captureRequestMap bla
      */
     @SuppressWarnings("unchecked")
     @Override
@@ -100,11 +100,9 @@ abstract class step16_Tonemap_ extends step15_Statistics_ {
             String  name;
             TonemapCurve value;
             String  valueString;
-            String  units;
 
-            rKey  = CaptureRequest.TONEMAP_CURVE;///////////////////////////////////////////////////
-            name  = rKey.getName();
-            units = null;
+            rKey = CaptureRequest.TONEMAP_CURVE;////////////////////////////////////////////////////
+            name = rKey.getName();
 
             if (supportedKeys.contains(rKey)) {
 
@@ -123,7 +121,7 @@ abstract class step16_Tonemap_ extends step15_Statistics_ {
                             return getValueString();
                         }
                     };
-                    setting = new Parameter<>(name, value, units, formatter);
+                    setting = new Parameter<>(name, value, null, formatter);
 
                     builder.set(rKey, setting.getValue());
                 }
@@ -147,12 +145,10 @@ abstract class step16_Tonemap_ extends step15_Statistics_ {
             String name;
             Float  value;
             String valueString;
-            String units;
 
             if (Build.VERSION.SDK_INT >= 23) {
-                rKey  = CaptureRequest.TONEMAP_GAMMA;///////////////////////////////////////////////
-                name  = rKey.getName();
-                units = null;
+                rKey = CaptureRequest.TONEMAP_GAMMA;////////////////////////////////////////////////
+                name = rKey.getName();
 
                 if (supportedKeys.contains(rKey)) {
 
@@ -170,7 +166,7 @@ abstract class step16_Tonemap_ extends step15_Statistics_ {
                                 return getValueString();
                             }
                         };
-                        setting = new Parameter<>(name, value, units, formatter);
+                        setting = new Parameter<>(name, value, null, formatter);
 
                         builder.set(rKey, setting.getValue());
                     }
@@ -195,12 +191,10 @@ abstract class step16_Tonemap_ extends step15_Statistics_ {
             String  name;
             Integer value;
             String  valueString;
-            String  units;
 
             if (Build.VERSION.SDK_INT >= 23) {
-                rKey  = CaptureRequest.TONEMAP_PRESET_CURVE;////////////////////////////////////////
-                name  = rKey.getName();
-                units = null;
+                rKey = CaptureRequest.TONEMAP_PRESET_CURVE;/////////////////////////////////////////
+                name = rKey.getName();
 
                 if (supportedKeys.contains(rKey)) {
 
@@ -209,7 +203,7 @@ abstract class step16_Tonemap_ extends step15_Statistics_ {
 
                     if (mode.toString().contains("FAST") || mode.toString().contains("HIGH_QUALITY")) {
 
-                        Integer SRGB   = CameraMetadata.TONEMAP_PRESET_CURVE_SRGB;
+                        //Integer SRGB   = CameraMetadata.TONEMAP_PRESET_CURVE_SRGB;
                         Integer REC709 = CameraMetadata.TONEMAP_PRESET_CURVE_REC709;
 
                         value = REC709;
@@ -222,7 +216,7 @@ abstract class step16_Tonemap_ extends step15_Statistics_ {
                                 return getValueString();
                             }
                         };
-                        setting = new Parameter<>(name, value, units, formatter);
+                        setting = new Parameter<>(name, value, null, formatter);
 
                         builder.set(rKey, setting.getValue());
                     }

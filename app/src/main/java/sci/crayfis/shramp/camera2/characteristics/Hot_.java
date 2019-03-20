@@ -42,8 +42,8 @@ abstract class Hot_ extends Flash_ {
     // read.........................................................................................
     /**
      * TODO: description, comments and logging
-     * @param cameraCharacteristics
-     * @param characteristicsMap
+     * @param cameraCharacteristics bla
+     * @param characteristicsMap bla
      */
     @Override
     protected void read(@NonNull CameraCharacteristics cameraCharacteristics,
@@ -62,11 +62,9 @@ abstract class Hot_ extends Flash_ {
             String  name;
             Integer value;
             String  valueString;
-            String  units;
 
-            key   = CameraCharacteristics.HOT_PIXEL_AVAILABLE_HOT_PIXEL_MODES;//////////////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.HOT_PIXEL_AVAILABLE_HOT_PIXEL_MODES;///////////////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 int[]  modes  = cameraCharacteristics.get(key);
@@ -75,7 +73,7 @@ abstract class Hot_ extends Flash_ {
 
                 Integer OFF              = CameraMetadata.HOT_PIXEL_MODE_OFF;
                 Integer FAST             = CameraMetadata.HOT_PIXEL_MODE_FAST;
-                Integer HIGH_QUALITY     = CameraMetadata.HOT_PIXEL_MODE_HIGH_QUALITY;
+                //Integer HIGH_QUALITY     = CameraMetadata.HOT_PIXEL_MODE_HIGH_QUALITY;
 
                 if (options.contains(OFF)) {
                     value       =  OFF;
@@ -93,7 +91,7 @@ abstract class Hot_ extends Flash_ {
                         return getValueString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);

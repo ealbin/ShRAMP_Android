@@ -43,8 +43,8 @@ abstract class Noise_ extends Logical_ {
     // read.........................................................................................
     /**
      * TODO: description, comments and logging
-     * @param cameraCharacteristics
-     * @param characteristicsMap
+     * @param cameraCharacteristics bla
+     * @param characteristicsMap bla
      */
     @Override
     protected void read(@NonNull CameraCharacteristics cameraCharacteristics,
@@ -63,11 +63,9 @@ abstract class Noise_ extends Logical_ {
             String  name;
             Integer value;
             String  valueString;
-            String  units;
 
-            key   = CameraCharacteristics.NOISE_REDUCTION_AVAILABLE_NOISE_REDUCTION_MODES;//////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.NOISE_REDUCTION_AVAILABLE_NOISE_REDUCTION_MODES;///////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 int[]  modes  = cameraCharacteristics.get(key);
@@ -76,12 +74,12 @@ abstract class Noise_ extends Logical_ {
 
                 Integer OFF              = CameraMetadata.NOISE_REDUCTION_MODE_OFF;
                 Integer FAST             = CameraMetadata.NOISE_REDUCTION_MODE_FAST;
-                Integer HIGH_QUALITY     = CameraMetadata.NOISE_REDUCTION_MODE_HIGH_QUALITY;
+                //Integer HIGH_QUALITY     = CameraMetadata.NOISE_REDUCTION_MODE_HIGH_QUALITY;
                 Integer MINIMAL          = null;
-                Integer ZERO_SHUTTER_LAG = null;
+                //Integer ZERO_SHUTTER_LAG = null;
                 if (Build.VERSION.SDK_INT >= 23) {
                     MINIMAL          = CameraMetadata.NOISE_REDUCTION_MODE_MINIMAL;
-                    ZERO_SHUTTER_LAG = CameraMetadata.NOISE_REDUCTION_MODE_ZERO_SHUTTER_LAG;
+                //    ZERO_SHUTTER_LAG = CameraMetadata.NOISE_REDUCTION_MODE_ZERO_SHUTTER_LAG;
                 }
 
                 if (options.contains(OFF)) {
@@ -104,7 +102,7 @@ abstract class Noise_ extends Logical_ {
                         return getValueString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);

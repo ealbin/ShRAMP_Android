@@ -42,8 +42,8 @@ abstract class Color_ {
     // read.........................................................................................
     /**
      * TODO: description, comments and logging
-     * @param cameraCharacteristics
-     * @param characteristicsMap
+     * @param cameraCharacteristics bla
+     * @param characteristicsMap bla
      */
     protected void read(@NonNull CameraCharacteristics cameraCharacteristics,
                         @NonNull LinkedHashMap<CameraCharacteristics.Key, Parameter> characteristicsMap) {
@@ -60,11 +60,9 @@ abstract class Color_ {
             String  name;
             Integer value;
             String  valueString;
-            String  units;
 
-            key   = CameraCharacteristics.COLOR_CORRECTION_AVAILABLE_ABERRATION_MODES;//////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.COLOR_CORRECTION_AVAILABLE_ABERRATION_MODES;///////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 int[]  modes  = cameraCharacteristics.get(key);
@@ -73,7 +71,7 @@ abstract class Color_ {
 
                 Integer OFF          = CameraMetadata.COLOR_CORRECTION_ABERRATION_MODE_OFF;
                 Integer FAST         = CameraMetadata.COLOR_CORRECTION_ABERRATION_MODE_FAST;
-                Integer HIGH_QUALITY = CameraMetadata.COLOR_CORRECTION_ABERRATION_MODE_HIGH_QUALITY;
+                //Integer HIGH_QUALITY = CameraMetadata.COLOR_CORRECTION_ABERRATION_MODE_HIGH_QUALITY;
 
                 if (options.contains(OFF)) {
                     value       =  OFF;
@@ -91,7 +89,7 @@ abstract class Color_ {
                         return getValueString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);

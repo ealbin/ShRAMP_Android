@@ -4,6 +4,7 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.graphics.SurfaceTexture;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
 
@@ -51,7 +52,10 @@ final class TextureViewListener implements TextureView.SurfaceTextureListener {
     /**
      * TODO: description, comments and logging
      */
-    TextureViewListener() { super(); }
+    TextureViewListener() {
+        super();
+        Log.e(Thread.currentThread().getName(), "TextureViewListener TextureViewListener");
+    }
 
     //**********************************************************************************************
     // Class Methods
@@ -63,9 +67,10 @@ final class TextureViewListener implements TextureView.SurfaceTextureListener {
     // openSurface..................................................................................
     /**
      * Create surface
-     * @param activity
+     * @param activity bla
      */
     void openSurface(@NonNull Activity activity) {
+        Log.e(Thread.currentThread().getName(), "TextureViewListener openSurface");
         mTextureView = new TextureView(activity);
         mTextureView.setSurfaceTextureListener(this);
 
@@ -83,12 +88,13 @@ final class TextureViewListener implements TextureView.SurfaceTextureListener {
     // onSurfaceTextureAvailable....................................................................
     /**
      * TODO: description, comments and logging
-     * @param texture
-     * @param width
-     * @param height
+     * @param texture bla
+     * @param width bla
+     * @param height bla
      */
     @Override
     public void onSurfaceTextureAvailable(@NonNull SurfaceTexture texture, int width, int height) {
+        Log.e(Thread.currentThread().getName(), "TextureViewListener onSurfaceTextureAvailable");
         mSurfaceWidth  = width;
         mSurfaceHeight = height;
         mSurface = new Surface(texture);
@@ -98,20 +104,21 @@ final class TextureViewListener implements TextureView.SurfaceTextureListener {
     // onSurfaceTextureDestroyed....................................................................
     /**
      * TODO: description, comments and logging
-     * @param texture
-     * @return
+     * @param texture bla
+     * @return bla
      */
     @Override
     public boolean onSurfaceTextureDestroyed(@NonNull SurfaceTexture texture) {
+        Log.e(Thread.currentThread().getName(), "TextureViewListener onSurfaceTextureDestroyed");
         return false;
     }
 
     // onSurfaceTextureSizeChanged..................................................................
     /**
      * TODO: description, comments and logging
-     * @param texture
-     * @param width
-     * @param height
+     * @param texture bla
+     * @param width bla
+     * @param height bla
      */
     @Override
     public void onSurfaceTextureSizeChanged(@NonNull SurfaceTexture texture, int width, int height) {
@@ -122,10 +129,11 @@ final class TextureViewListener implements TextureView.SurfaceTextureListener {
     // onSurfaceTextureUpdated......................................................................
     /**
      * TODO: description, comments and logging
-     * @param texture
+     * @param texture bla
      */
     @Override
     public void onSurfaceTextureUpdated(@NonNull SurfaceTexture texture) {
+        //Log.e(Thread.currentThread().getName(), "TextureViewListener onSurfaceTextureUpdated");
     }
 
 }

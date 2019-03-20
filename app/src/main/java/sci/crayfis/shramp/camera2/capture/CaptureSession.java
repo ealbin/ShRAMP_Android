@@ -8,13 +8,17 @@ import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
 import android.os.SystemClock;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.Surface;
 
 import java.text.DecimalFormat;
 
+import sci.crayfis.shramp.GlobalSettings;
 import sci.crayfis.shramp.analysis.ImageProcessor;
+import sci.crayfis.shramp.camera2.util.TimeCode;
 import sci.crayfis.shramp.logging.ShrampLogger;
+import sci.crayfis.shramp.util.HeapMemory;
 
 /**
  * TODO: description, comments and logging
@@ -29,6 +33,7 @@ class CaptureSession extends CameraCaptureSession.CaptureCallback {
     // Private
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+
     private int mFrameLimit;
     private int mFrameCount;
 
@@ -38,6 +43,26 @@ class CaptureSession extends CameraCaptureSession.CaptureCallback {
 
     private long mFirstTimestamp;
     private long mLastTimestamp;
+
+    private static CaptureSession mInstance;
+
+    /**
+     * TODO: description, comments and logging
+     */
+    class QueueCaptureResult implements Runnable {
+        private TotalCaptureResult nResult;
+
+        private QueueCaptureResult() { assert false; }
+
+        QueueCaptureResult(TotalCaptureResult result) {
+            nResult = result;
+        }
+
+        @Override
+        public void run() {
+            ImageProcessor.processImage(nResult);
+        }
+    }
 
     //==============================================================================================
     // Logging
@@ -60,7 +85,10 @@ class CaptureSession extends CameraCaptureSession.CaptureCallback {
     /**
      * TODO: description, comments and logging
      */
-    private CaptureSession() { super(); }
+    private CaptureSession() {
+        super();
+        //Log.e(Thread.currentThread().getName(), "CaptureSession CaptureSession");
+    }
 
     // Package-private
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -68,7 +96,7 @@ class CaptureSession extends CameraCaptureSession.CaptureCallback {
     // CaptureSession...............................................................................
     /**
      * TODO: description, comments and logging
-     * @param frameLimit
+     * @param frameLimit bla
      */
     CaptureSession(int frameLimit) {
         this();
@@ -77,7 +105,8 @@ class CaptureSession extends CameraCaptureSession.CaptureCallback {
         mLastCompleted  = 0;
         mElapsedTime    = 0;
         mTotalExposure  = 0;
-        mLogger.log("Calibration run frame limit: " + Integer.toString(frameLimit));
+        mInstance = this;
+        Log.e(Thread.currentThread().getName(), "CaptureSession CaptureSession frameLimit: " + Integer.toString(frameLimit));
     }
 
     //**********************************************************************************************
@@ -90,11 +119,14 @@ class CaptureSession extends CameraCaptureSession.CaptureCallback {
     // checkIfDone..................................................................................
     /**
      * TODO: description, comments and logging
-     * @param session
+     * @param session bla
      */
-    private void checkIfDone(CameraCaptureSession session) {
+    private synchronized void checkIfDone(CameraCaptureSession session) {
+        //Log.e(Thread.currentThread().getName(), "CaptureSession checkIfDone");
         mFrameCount += 1;
+
         if (mFrameCount >= mFrameLimit) {
+
             try {
                 session.stopRepeating();
             }
@@ -102,6 +134,17 @@ class CaptureSession extends CameraCaptureSession.CaptureCallback {
                 // TODO:  error
             }
         }
+
+    }
+
+    private static boolean mPauseCapture = false;
+    static synchronized boolean pauseRepeatingRequest() {
+        mPauseCapture = true;
+        return true;
+    }
+
+    static void resumeRepeatingRequest() {
+        mPauseCapture = false;
     }
 
 
@@ -116,16 +159,18 @@ class CaptureSession extends CameraCaptureSession.CaptureCallback {
     /**
      * This method is called if a single buffer for a capture could not be sent to its
      * destination surfaces.
-     *
-     * @param session
-     * @param request
-     * @param target
-     * @param frameNumber
+     * TODO: documentation, comments and logging
+     * @param session bla
+     * @param request bla
+     * @param target bla
+     * @param frameNumber bla
      */
     @Override
-    public void onCaptureBufferLost(CameraCaptureSession session, CaptureRequest request,
-                                    Surface target, long frameNumber) {
+    public void onCaptureBufferLost(@NonNull CameraCaptureSession session,
+                                    @NonNull CaptureRequest request,
+                                    @NonNull Surface target, long frameNumber) {
         super.onCaptureBufferLost(session, request, target, frameNumber);
+        Log.e(Thread.currentThread().getName(), "CaptureSession onCaptureBufferLost");
         checkIfDone(session);
     }
 
@@ -133,21 +178,24 @@ class CaptureSession extends CameraCaptureSession.CaptureCallback {
     /**
      * This method is called when an image capture has fully completed and all the result
      * metadata is available.
-     *
-     * @param session
-     * @param request
-     * @param result
+     * TODO: documentation, comments and logging
+     * @param session bla
+     * @param request bla
+     * @param result bla
      */
     @Override
-    public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request,
-                                   TotalCaptureResult result) {
+    public void onCaptureCompleted(@NonNull CameraCaptureSession session,
+                                   @NonNull CaptureRequest request,
+                                   @NonNull TotalCaptureResult result) {
         super.onCaptureCompleted(session, request, result);
+        //Log.e(Thread.currentThread().getName(), "CaptureSession onCaptureCompleted");
         long now = SystemClock.elapsedRealtimeNanos();
-        ImageProcessor.processImage(result);
-
+        if (!GlobalSettings.DEBUG_NO_DATA_POSTING) {
+            ImageProcessor.post(new QueueCaptureResult(result));
+        }
         Long timestamp = result.get(CaptureResult.SENSOR_TIMESTAMP);
         assert timestamp != null;
-        mLastTimestamp = timestamp;
+        Log.e(Thread.currentThread().getName(), "CaptureSession just posted the completed capture of " + TimeCode.toString(timestamp));
 
         if (mLastCompleted == 0) {
             mLastCompleted = now;
@@ -161,16 +209,27 @@ class CaptureSession extends CameraCaptureSession.CaptureCallback {
             Long duration = result.get(CaptureResult.SENSOR_FRAME_DURATION);
             assert duration != null;
 
-            mElapsedTime   = now - mLastCompleted;
+            Log.e(Thread.currentThread().getName(), "Frame durration: " + Long.toString(duration)
+            + ",  Exposure: " + Long.toString(exposure));
+
             mLastCompleted = now;
 
+            mElapsedTime = timestamp - mLastTimestamp;
+
             double fps  = 1. / (mElapsedTime * 1e-9);
-            //double duty = 100. * exposure / (double) mElapsedTime;
-            double duty = 100. * duration / (double) mElapsedTime;
+            double frameDuty = 100. * exposure / (double) duration;
+            double lagDuty   = 100. * exposure / (double) mElapsedTime;
 
             Log.e(Thread.currentThread().getName(), "Capture FPS: " + mFormatter.format(fps)
-                    + ", Exposure duty: " + mFormatter.format(duty) + "%");
+                    + ", Exposure / Duration duty: " + mFormatter.format(frameDuty) + "%"
+                    + ", Exposure / Frame duty: "    + mFormatter.format(lagDuty)   + "%");
         }
+        mLastTimestamp = timestamp;
+
+        Log.e(Thread.currentThread().getName(), "CaptureSession completed " + Integer.toString(mFrameCount)
+                + " of " + Integer.toString(mFrameLimit) + " frames");
+        Log.e("Frame Break", ".......................................................................");
+
         checkIfDone(session);
     }
 
@@ -178,15 +237,17 @@ class CaptureSession extends CameraCaptureSession.CaptureCallback {
     /**
      * This method is called instead of onCaptureCompleted(CameraCaptureSession, CaptureRequest,
      * TotalCaptureResult) when the camera device failed to produce a CaptureResult for the request.
-     *
-     * @param session
-     * @param request
-     * @param failure
+     * TODO: documentation, comments and logging
+     * @param session bla
+     * @param request bla
+     * @param failure bla
      */
     @Override
-    public void onCaptureFailed(CameraCaptureSession session, CaptureRequest request,
-                                CaptureFailure failure) {
+    public void onCaptureFailed(@NonNull CameraCaptureSession session,
+                                @NonNull CaptureRequest request,
+                                @NonNull CaptureFailure failure) {
         super.onCaptureFailed(session, request, failure);
+        Log.e(Thread.currentThread().getName(), "CaptureSession onCaptureFailed");
         checkIfDone(session);
 
         /*
@@ -218,15 +279,46 @@ class CaptureSession extends CameraCaptureSession.CaptureCallback {
     /**
      * This method is called when an image capture makes partial forward progress;
      * some (but not all) results from an image capture are available.
-     *
-     * @param session
-     * @param request
-     * @param partialResult
+     * TODO: documentation, comments and logging
+     * @param session bla
+     * @param request bla
+     * @param partialResult bla
      */
     @Override
-    public void onCaptureProgressed(CameraCaptureSession session, CaptureRequest request,
-                                    CaptureResult partialResult) {
+    public void onCaptureProgressed(@NonNull CameraCaptureSession session,
+                                    @NonNull CaptureRequest request,
+                                    @NonNull CaptureResult partialResult) {
         super.onCaptureProgressed(session, request, partialResult);
+
+        Long timestamp = partialResult.get(CaptureResult.SENSOR_TIMESTAMP);
+        if (timestamp != null) {
+            Log.e(Thread.currentThread().getName(), "CaptureSession onCaptureProgressed, working on " + TimeCode.toString(timestamp));
+        }
+        else {
+            Log.e(Thread.currentThread().getName(), "CaptureSession onCaptureProgressed");
+        }
+        long freeMiB = HeapMemory.getAvailableMiB();
+
+        Log.e(Thread.currentThread().getName(), "CaptureSession Free Heap Memory: " + Long.toString(freeMiB) + " [MiB]");
+
+        // override
+        if (freeMiB < ImageProcessor.LOW_MEMORY) {
+            mPauseCapture = CaptureManager.pauseRepeatingRequest();
+            Log.e("DANGER LOW MEMORY", "DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER");
+        }
+
+        if (GlobalSettings.DEBUG_START_STOP_CAPTURE && mFrameCount < mFrameLimit) {
+            mPauseCapture = CaptureManager.pauseRepeatingRequest();
+        }
+
+        if (mPauseCapture) {
+            try {
+                session.stopRepeating();
+            }
+            catch (CameraAccessException e) {
+                // TODO:  error
+            }
+        }
     }
 
     // onCaptureSequenceAborted.....................................................................
@@ -234,13 +326,14 @@ class CaptureSession extends CameraCaptureSession.CaptureCallback {
      * This method is called independently of the others in CaptureCallback, when a capture
      * sequence aborts before any CaptureResult or CaptureFailure for it have been returned
      * via this listener.
-     *
-     * @param session
-     * @param sequenceId
+     * TODO: documentation, comments and logging
+     * @param session bla
+     * @param sequenceId bla
      */
     @Override
-    public void onCaptureSequenceAborted(CameraCaptureSession session, int sequenceId) {
+    public void onCaptureSequenceAborted(@NonNull CameraCaptureSession session, int sequenceId) {
         super.onCaptureSequenceAborted(session, sequenceId);
+        Log.e(Thread.currentThread().getName(), "CaptureSession onCaptureSequenceAborted");
     }
 
     // onCaptureSequenceCompleted...................................................................
@@ -248,24 +341,36 @@ class CaptureSession extends CameraCaptureSession.CaptureCallback {
      * This method is called independently of the others in CaptureCallback, when a capture
      * sequence finishes and all CaptureResult or CaptureFailure for it have been
      * returned via this listener.
-     *
-     * @param session
-     * @param sequenceId
-     * @param frameNumber
+     * TODO: documentation, comments and logging
+     * @param session bla
+     * @param sequenceId bla
+     * @param frameNumber bla
      */
     @Override
-    public void onCaptureSequenceCompleted(CameraCaptureSession session, int sequenceId,
+    public void onCaptureSequenceCompleted(@NonNull CameraCaptureSession session,
+                                           int sequenceId,
                                            long frameNumber) {
         super.onCaptureSequenceCompleted(session, sequenceId, frameNumber);
-        mLogger.log("Capture session completed");
 
-        long   totalElapsed = mLastTimestamp - mFirstTimestamp;
-        double averageFps   = mFrameCount / ( totalElapsed * 1e-9 );
-        double averageDuty  = mTotalExposure / (double) totalElapsed;
+        if (mPauseCapture) {
+            Log.e(Thread.currentThread().getName(), "CaptureSession *** pause *** pause *** pause *** pause *** pause *** pause *** pause *** pause *** pause *** pause *** pause *** pause");
+            CaptureManager.pauseRepeatingRequest(session, this);
 
-        CaptureManager.sessionFinished(session, this, averageFps, averageDuty);
+            if (GlobalSettings.DEBUG_START_STOP_CAPTURE) {
+                CaptureManager.restartRepeatingRequest();
+            }
+        }
+        else {
+            Log.e(Thread.currentThread().getName(), "CaptureSession onCaptureSequenceCompleted, N Frames = " + Integer.toString(mFrameCount));
 
-        // TODO: dump mTotalCaptureResult info
+            long totalElapsed = mLastTimestamp - mFirstTimestamp;
+            double averageFps = mFrameCount / (totalElapsed * 1e-9);
+            double averageDuty = mTotalExposure / (double) totalElapsed;
+
+            CaptureManager.sessionFinished(session, averageFps, averageDuty);
+
+            // TODO: dump mTotalCaptureResult info
+        }
     }
 
     // onCaptureStarted.............................................................................
@@ -273,16 +378,19 @@ class CaptureSession extends CameraCaptureSession.CaptureCallback {
      * This method is called when the camera device has started capturing the output image
      * for the request, at the beginning of image exposure, or when the camera device has
      * started processing an input image for a reprocess request.
-     *
-     * @param session
-     * @param request
-     * @param timestamp
-     * @param frameNumber
+     * TODO: documentation, comments and logging
+     * @param session bla
+     * @param request bla
+     * @param timestamp bla
+     * @param frameNumber bla
      */
     @Override
-    public void onCaptureStarted(CameraCaptureSession session, CaptureRequest request,
+    public void onCaptureStarted(@NonNull CameraCaptureSession session,
+                                 @NonNull CaptureRequest request,
                                  long timestamp, long frameNumber) {
         super.onCaptureStarted(session, request, timestamp, frameNumber);
+        Log.e(Thread.currentThread().getName(), "CaptureSession onCaptureStarted for: "
+                + TimeCode.toString(timestamp) + ", frame number: " + Long.toString(frameNumber));
     }
 
 }

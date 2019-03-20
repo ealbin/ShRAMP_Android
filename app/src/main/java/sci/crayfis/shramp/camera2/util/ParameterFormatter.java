@@ -53,7 +53,7 @@ public abstract class ParameterFormatter<T> {
 
     /**
      * TODO: description, comments and logging
-     * @param valueString
+     * @param valueString bla
      */
     public ParameterFormatter(@NonNull String valueString) {
         mValueString = valueString;
@@ -69,10 +69,10 @@ public abstract class ParameterFormatter<T> {
     // toString.....................................................................................
     /**
      * TODO: description, comments and logging
-     * @param description
-     * @param value
-     * @param units
-     * @return
+     * @param description bla
+     * @param value bla
+     * @param units bla
+     * @return bla
      */
     public String toString(@NonNull String description, @Nullable T value,
                                @Nullable String units) {
@@ -101,7 +101,7 @@ public abstract class ParameterFormatter<T> {
     // getValueString...............................................................................
     /**
      * TODO: description, comments and logging
-     * @return
+     * @return bla
      */
     @NonNull
     protected String getValueString() {
@@ -111,9 +111,8 @@ public abstract class ParameterFormatter<T> {
     // setValueString...............................................................................
     /**
      * TODO: description, comments and logging
-     * @return
+     * @param  valueString bla
      */
-    @NonNull
     protected void setValueString(@NonNull String valueString) {
         mValueString = valueString;
     }
@@ -128,8 +127,8 @@ public abstract class ParameterFormatter<T> {
     // formatValue..................................................................................
     /**
      * TODO: description, comments and logging
-     * @param value
-     * @return
+     * @param value bla
+     * @return bla
      */
     @NonNull
     public abstract String formatValue(@NonNull T value);

@@ -6,6 +6,7 @@ import android.os.HandlerThread;
 import android.os.Process;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -83,15 +84,15 @@ public class HandlerManager {
         // HandlerHelper............................................................................
         /**
          * TODO: description, comments and logging
-         * @param name
-         * @param priority
+         * @param name bla
+         * @param priority bla
          */
         private HandlerHelper(@Nullable String name,@Nullable Integer priority) {
             if (name == null) {
                 name = "Untitled thread: " + Integer.toString(mUntitledThreadsCount);
                 mUntitledThreadsCount += 1;
             }
-
+            Log.e(Thread.currentThread().getName(), "HandlerHelper HandlerHelper: " + name);
             if (priority == null) {
                 priority = Process.THREAD_PRIORITY_DEFAULT;
             }
@@ -113,6 +114,7 @@ public class HandlerManager {
          * TODO: description, comments and logging
          */
         private void finish() {
+            Log.e(Thread.currentThread().getName(), "HandlerHelper quit safely: " + nHandlerThread.getName());
             nHandlerThread.quitSafely();
         }
 
@@ -145,12 +147,13 @@ public class HandlerManager {
     // newHandler...................................................................................
     /**
      * TODO: description, comments and logging
-     * @param name
-     * @param priority
-     * @return
+     * @param name bla
+     * @param priority bla
+     * @return bla
      */
     @NonNull
     public static Handler newHandler(@Nullable String name, @Nullable Integer priority) {
+        Log.e(Thread.currentThread().getName(), "Handler newHandler: " + name);
         HandlerHelper helper = mInstance.new HandlerHelper(name, priority);
         mHandlerHelpers.add(helper);
         return helper.nHandler;
@@ -161,6 +164,7 @@ public class HandlerManager {
      * TODO: description, comments and logging
      */
     public static void finish() {
+        Log.e(Thread.currentThread().getName(), "Handler finish");
         for (HandlerHelper helper : mHandlerHelpers) {
             helper.finish();
         }

@@ -43,8 +43,8 @@ abstract class Shading_ extends Sensor_ {
     // read.........................................................................................
     /**
      * TODO: description, comments and logging
-     * @param cameraCharacteristics
-     * @param characteristicsMap
+     * @param cameraCharacteristics bla
+     * @param characteristicsMap bla
      */
     @Override
     protected void read(@NonNull CameraCharacteristics cameraCharacteristics,
@@ -63,12 +63,10 @@ abstract class Shading_ extends Sensor_ {
             String  name;
             Integer value;
             String  valueString;
-            String  units;
 
             if (Build.VERSION.SDK_INT >= 23) {
-                key   = CameraCharacteristics.SHADING_AVAILABLE_MODES;//////////////////////////////
-                name  = key.getName();
-                units = null;
+                key  = CameraCharacteristics.SHADING_AVAILABLE_MODES;///////////////////////////////
+                name = key.getName();
 
                 if (keychain.contains(key)) {
                     int[]  modes  = cameraCharacteristics.get(key);
@@ -77,7 +75,7 @@ abstract class Shading_ extends Sensor_ {
 
                     Integer OFF          = CameraMetadata.SHADING_MODE_OFF;
                     Integer FAST         = CameraMetadata.SHADING_MODE_FAST;
-                    Integer HIGH_QUALITY = CameraMetadata.SHADING_MODE_HIGH_QUALITY;
+                    //Integer HIGH_QUALITY = CameraMetadata.SHADING_MODE_HIGH_QUALITY;
 
                     if (options.contains(OFF)) {
                         value       =  OFF;
@@ -95,7 +93,7 @@ abstract class Shading_ extends Sensor_ {
                             return getValueString();
                         }
                     };
-                    property = new Parameter<>(name, value, units, formatter);
+                    property = new Parameter<>(name, value, null, formatter);
                 }
                 else {
                     property = new Parameter<>(name);

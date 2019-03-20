@@ -42,8 +42,8 @@ abstract class Info_ extends Hot_ {
     // read.........................................................................................
     /**
      * TODO: description, comments and logging
-     * @param cameraCharacteristics
-     * @param characteristicsMap
+     * @param cameraCharacteristics bla
+     * @param characteristicsMap bla
      */
     @Override
     protected void read(@NonNull CameraCharacteristics cameraCharacteristics,
@@ -62,11 +62,9 @@ abstract class Info_ extends Hot_ {
             String  name;
             Integer value;
             String  valueString;
-            String  units;
 
-            key   = CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL;////////////////////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL;/////////////////////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 Integer level  = cameraCharacteristics.get(key);
@@ -116,7 +114,7 @@ abstract class Info_ extends Hot_ {
                         return getValueString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);
@@ -132,11 +130,9 @@ abstract class Info_ extends Hot_ {
 
             String name;
             String value;
-            String units;
 
-            key   = CameraCharacteristics.INFO_VERSION;/////////////////////////////////////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.INFO_VERSION;//////////////////////////////////////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
@@ -149,7 +145,7 @@ abstract class Info_ extends Hot_ {
                         return value;
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);

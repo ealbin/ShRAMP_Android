@@ -129,9 +129,9 @@ abstract class ImageProcessor {
         mExposure2ValueAlloc = Allocation.createTyped(mRS, mSumType, Allocation.USAGE_SCRIPT);
         mExposureValue2Alloc = Allocation.createTyped(mRS, mSumType, Allocation.USAGE_SCRIPT);
 
-        mSumsScript.set_gExposureValue(mExposureValueAlloc);
-        mSumsScript.set_gExposure2Value(mExposure2ValueAlloc);
-        mSumsScript.set_gExposureValue2(mExposureValue2Alloc);
+        //mSumsScript.set_gExposureValue(mExposureValueAlloc);
+        //mSumsScript.set_gExposure2Value(mExposure2ValueAlloc);
+        //mSumsScript.set_gExposureValue2(mExposureValue2Alloc);
 
         // Statistics Allocations
         //..........................................................................................
@@ -146,9 +146,9 @@ abstract class ImageProcessor {
 
     protected void doStatistics() {
 
-        mSumsScript.set_gNframes((double) mNframes);
-        mSumsScript.set_gExposureSum(mExposureSum);
-        mSumsScript.set_gExposureSum3(mExposure3Sum);
+        //mSumsScript.set_gNframes((double) mNframes);
+        //mSumsScript.set_gExposureSum(mExposureSum);
+        //mSumsScript.set_gExposureSum3(mExposure3Sum);
 
         mSumsScript.forEach_getMean(mMeanAlloc);
         double[] meanArray = new double[mWidth * mHeight];
@@ -226,8 +226,8 @@ abstract class ImageProcessor {
         mNframes      += 1;
         mExposureSum  += mExposureTime;
         mExposure3Sum += mExposureTime * mExposureTime * mExposureTime;
-        mSumsScript.set_gExposureTime(mExposureTime);
-        mSumsScript.forEach_update(mImageAlloc);
+        //mSumsScript.set_gExposureTime(mExposureTime);
+        //mSumsScript.forEach_update(mImageAlloc);
     }
 }
 

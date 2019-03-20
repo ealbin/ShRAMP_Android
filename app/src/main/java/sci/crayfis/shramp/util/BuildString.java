@@ -2,6 +2,7 @@ package sci.crayfis.shramp.util;
 
 import android.annotation.TargetApi;
 import android.os.Build;
+import android.util.Log;
 
 /**
  * TODO: description, comments and logging
@@ -22,7 +23,7 @@ abstract public class BuildString {
      * @return string
      */
     public static String get() {
-
+        Log.e(Thread.currentThread().getName(), "BuildString get");
         int buildCode = Build.VERSION.SDK_INT;
         String api = Integer.toString(buildCode);
         String buildString;

@@ -43,8 +43,8 @@ abstract class Tonemap_ extends Sync_ {
     // read.........................................................................................
     /**
      * TODO: description, comments and logging
-     * @param cameraCharacteristics
-     * @param characteristicsMap
+     * @param cameraCharacteristics bla
+     * @param characteristicsMap bla
      */
     @Override
     protected void read(@NonNull CameraCharacteristics cameraCharacteristics,
@@ -63,11 +63,9 @@ abstract class Tonemap_ extends Sync_ {
             String  name;
             Integer value;
             String  valueString;
-            String  units;
 
-            key   = CameraCharacteristics.TONEMAP_AVAILABLE_TONE_MAP_MODES;/////////////////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.TONEMAP_AVAILABLE_TONE_MAP_MODES;//////////////////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 int[]  modes  = cameraCharacteristics.get(key);
@@ -76,14 +74,13 @@ abstract class Tonemap_ extends Sync_ {
 
                 Integer CONTRAST_CURVE = CameraMetadata.TONEMAP_MODE_CONTRAST_CURVE;
                 Integer FAST           = CameraMetadata.TONEMAP_MODE_FAST;
-                Integer HIGH_QUALITY   = CameraMetadata.TONEMAP_MODE_HIGH_QUALITY;
-                Integer GAMMA_VALUE    = null;
-                Integer PRESET_CURVE   = null;
-
-                if (Build.VERSION.SDK_INT >= 23) {
-                    GAMMA_VALUE  = CameraMetadata.TONEMAP_MODE_GAMMA_VALUE;
-                    PRESET_CURVE = CameraMetadata.TONEMAP_MODE_PRESET_CURVE;
-                }
+                //Integer HIGH_QUALITY   = CameraMetadata.TONEMAP_MODE_HIGH_QUALITY;
+                //Integer GAMMA_VALUE    = null;
+                //Integer PRESET_CURVE   = null;
+                //if (Build.VERSION.SDK_INT >= 23) {
+                //    GAMMA_VALUE  = CameraMetadata.TONEMAP_MODE_GAMMA_VALUE;
+                //    PRESET_CURVE = CameraMetadata.TONEMAP_MODE_PRESET_CURVE;
+                //}
 
                 if (options.contains(CONTRAST_CURVE)) {
                     value = CONTRAST_CURVE;
@@ -101,7 +98,7 @@ abstract class Tonemap_ extends Sync_ {
                         return getValueString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);

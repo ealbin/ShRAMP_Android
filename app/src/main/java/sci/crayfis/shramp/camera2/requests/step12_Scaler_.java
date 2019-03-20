@@ -43,9 +43,9 @@ abstract class step12_Scaler_ extends step11_Reprocess_ {
     // makeDefault..................................................................................
     /**
      * TODO: description, comments and logging
-     * @param builder
-     * @param characteristicsMap
-     * @param captureRequestMap
+     * @param builder bla
+     * @param characteristicsMap bla
+     * @param captureRequestMap bla
      */
     @SuppressWarnings("unchecked")
     @Override
@@ -66,7 +66,6 @@ abstract class step12_Scaler_ extends step11_Reprocess_ {
             Parameter<Rect> setting;
 
             String name;
-            Rect   value;
             String valueString;
             String units;
 
@@ -76,7 +75,6 @@ abstract class step12_Scaler_ extends step11_Reprocess_ {
 
             if (supportedKeys.contains(rKey)) {
 
-                value = null;
                 valueString = "NOT APPLICABLE";
 
                 formatter = new ParameterFormatter<Rect>(valueString) {
@@ -86,7 +84,7 @@ abstract class step12_Scaler_ extends step11_Reprocess_ {
                         return getValueString();
                     }
                 };
-                setting = new Parameter<>(name, value, units, formatter);
+                setting = new Parameter<>(name, null, units, formatter);
             }
             else {
                 setting = new Parameter<>(name);

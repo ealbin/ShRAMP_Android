@@ -41,8 +41,8 @@ abstract class Depth_ extends Control_ {
     // read.........................................................................................
     /**
      * TODO: description, comments and logging
-     * @param cameraCharacteristics
-     * @param characteristicsMap
+     * @param cameraCharacteristics bla
+     * @param characteristicsMap bla
      */
     @Override
     protected void read(@NonNull CameraCharacteristics cameraCharacteristics,
@@ -60,12 +60,10 @@ abstract class Depth_ extends Control_ {
 
             String  name;
             Boolean value;
-            String  units;
 
             if (Build.VERSION.SDK_INT >= 23) {
-                key   = CameraCharacteristics.DEPTH_DEPTH_IS_EXCLUSIVE;/////////////////////////////
-                name  = key.getName();
-                units = null;
+                key  = CameraCharacteristics.DEPTH_DEPTH_IS_EXCLUSIVE;//////////////////////////////
+                name = key.getName();
 
                 if (keychain.contains(key)) {
                     value = cameraCharacteristics.get(key);
@@ -81,7 +79,7 @@ abstract class Depth_ extends Control_ {
                             return "NO";
                         }
                     };
-                    property = new Parameter<>(name, value, units, formatter);
+                    property = new Parameter<>(name, value, null, formatter);
                 }
                 else {
                     property = new Parameter<>(name);

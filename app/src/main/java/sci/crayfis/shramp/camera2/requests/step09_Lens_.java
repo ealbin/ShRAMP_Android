@@ -42,9 +42,9 @@ abstract class step09_Lens_ extends step08_Jpeg_ {
     // makeDefault..................................................................................
     /**
      * TODO: description, comments and logging
-     * @param builder
-     * @param characteristicsMap
-     * @param captureRequestMap
+     * @param builder bla
+     * @param characteristicsMap bla
+     * @param captureRequestMap bla
      */
     @SuppressWarnings("unchecked")
     @Override
@@ -200,7 +200,7 @@ abstract class step09_Lens_ extends step08_Jpeg_ {
 
             String name;
 
-            rKey = CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE;/////////////////////////////////
+            rKey = CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE;//////////////////////////////////
             name = rKey.getName();
 
             if (supportedKeys.contains(rKey)) {

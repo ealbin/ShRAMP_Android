@@ -11,6 +11,7 @@ import android.support.annotation.NonNull;
 import android.os.Bundle;
 import android.system.Os;
 import android.system.StructUtsname;
+import android.util.Log;
 import android.widget.TextView;
 
 import java.io.File;
@@ -34,7 +35,6 @@ import sci.crayfis.shramp.error.FailManager;
  */
 @TargetApi(21)
 public final class MaineShRAMP extends Activity implements AsyncResponse {
-
 
     //**********************************************************************************************
     // Class Variables
@@ -65,15 +65,20 @@ public final class MaineShRAMP extends Activity implements AsyncResponse {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        //Log.e(Thread.currentThread().getName(), "MaineShRAMP onCreate");
+
        mNextActivity = new Intent(this, CaptureOverseer.class);
        mFailActivity = new Intent(this, FailManager.class);
 
-        MaineShRAMP.mLogger.log("Welcome to the Shower Reconstruction Application for Mobile Phones");
-        MaineShRAMP.mLogger.log("or \"ShRAMP\" for short");
+       mNextActivity.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+       mFailActivity.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+        //MaineShRAMP.mLogger.log("Welcome to the Shower Reconstruction Application for Mobile Phones");
+        //MaineShRAMP.mLogger.log("or \"ShRAMP\" for short");
 
         // Get build info
-        String buildString = BuildString.get();
-        MaineShRAMP.mLogger.log(buildString);
+        //String buildString = BuildString.get();
+        //MaineShRAMP.mLogger.log(buildString);
 
         StructUtsname uname = Os.uname();
         String unameString = " \n"
@@ -82,7 +87,7 @@ public final class MaineShRAMP extends Activity implements AsyncResponse {
                 + "Release:   " + uname.release  + "\n"
                 + "Sysname:   " + uname.sysname  + "\n"
                 + "Version:   " + uname.version  + "\n";
-        MaineShRAMP.mLogger.log(unameString);
+        //MaineShRAMP.mLogger.log(unameString);
 
         String buildDetails = " \n"
                 + "Underlying board:        " + Build.BOARD               + "\n"
@@ -101,29 +106,38 @@ public final class MaineShRAMP extends Activity implements AsyncResponse {
                 + "Build time:              " + Long.toString(Build.TIME) + "\n"
                 + "Build type:              " + Build.TYPE                + "\n"
                 + "User:                    " + Build.USER                + "\n";
-        MaineShRAMP.mLogger.log(buildDetails);
+        //MaineShRAMP.mLogger.log(buildDetails);
 
 
         // if API 22 or below, user would have granted permissions on start
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             MaineShRAMP.mLogger.log("API 22 or below, permissions granted on start");
             MaineShRAMP.mLogger.log("Starting CaptureOverseer");
+            //Log.e(Thread.currentThread().getName(), "MaineShRAMP -> NextActivity");
+            //Log.e(Thread.currentThread().getName(), ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
             super.startActivity(this.mNextActivity);
+            //finish();
         }
         else {
             // if API > 22
             if (permissionsGranted()) {
-                MaineShRAMP.mLogger.log("API 23 or above, and permissions have previously been granted");
-                MaineShRAMP.mLogger.log("Starting CaptureOverseer");
+                //MaineShRAMP.mLogger.log("API 23 or above, and permissions have previously been granted");
+                //MaineShRAMP.mLogger.log("Starting CaptureOverseer");
+                //Log.e(Thread.currentThread().getName(), "MaineShRAMP -> NextActivity");
+                //Log.e(Thread.currentThread().getName(), ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
                 super.startActivity(this.mNextActivity);
+                //finish();
             }
             else {
-                MaineShRAMP.mLogger.log("API 23 or above, but permissions not granted, asking permissions");
+                //MaineShRAMP.mLogger.log("API 23 or above, but permissions not granted, asking permissions");
                 // response to request is handled in onRequestPermissionsResult()
                 super.requestPermissions(PERMISSIONS, PERMISSION_CODE);
             }
         }
-        MaineShRAMP.mLogger.log("return;");
+    }
+
+    public void finish() {
+        //Log.e(Thread.currentThread().getName(), "MaineShRAMP finish");
     }
 
     //----------------------------------------------------------------------------------------------
@@ -140,22 +154,22 @@ public final class MaineShRAMP extends Activity implements AsyncResponse {
             int permission_value = checkSelfPermission(permission);
 
             if (permission_value == PackageManager.PERMISSION_DENIED) {
-                MaineShRAMP.mLogger.log(permission + ": " + "DENIED");
+                //MaineShRAMP.mLogger.log(permission + ": " + "DENIED");
                 allGranted = false;
             }
             else {
-                MaineShRAMP.mLogger.log(permission + ": " + "GRANTED");
+                //MaineShRAMP.mLogger.log(permission + ": " + "GRANTED");
             }
         }
 
         if (allGranted) {
-            MaineShRAMP.mLogger.log("All permissions granted");
+            //MaineShRAMP.mLogger.log("All permissions granted");
         }
         else {
-            MaineShRAMP.mLogger.log("Some or all permissions denied");
+            //MaineShRAMP.mLogger.log("Some or all permissions denied");
         }
 
-        MaineShRAMP.mLogger.log("permissionsGranted? return: " + Boolean.toString(allGranted));
+        //MaineShRAMP.mLogger.log("permissionsGranted? return: " + Boolean.toString(allGranted));
         return allGranted;
     }
 
@@ -173,16 +187,22 @@ public final class MaineShRAMP extends Activity implements AsyncResponse {
                                            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (this.permissionsGranted()) {
-            MaineShRAMP.mLogger.log("Permissions asked and granted");
-            MaineShRAMP.mLogger.log("Starting CaptureOverseer");
+            //MaineShRAMP.mLogger.log("Permissions asked and granted");
+            //MaineShRAMP.mLogger.log("Starting CaptureOverseer");
+            //Log.e(Thread.currentThread().getName(), "MaineShRAMP -> NextActivity");
+            //Log.e(Thread.currentThread().getName(), ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
             super.startActivity(mNextActivity);
+            //finish();
         }
         else {
-            MaineShRAMP.mLogger.log("Permissions were not granted");
-            MaineShRAMP.mLogger.log("Starting FailManager");
+            //MaineShRAMP.mLogger.log("Permissions were not granted");
+            //MaineShRAMP.mLogger.log("Starting FailManager");
+            //Log.e(Thread.currentThread().getName(), "MaineShRAMP -> FailActivity");
+            //Log.e(Thread.currentThread().getName(), ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
             super.startActivity(mFailActivity);
+            //finish();
         }
-        MaineShRAMP.mLogger.log("return;");
+        //MaineShRAMP.mLogger.log("return;");
     }
 
 

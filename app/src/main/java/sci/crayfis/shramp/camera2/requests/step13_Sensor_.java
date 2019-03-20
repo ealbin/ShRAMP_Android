@@ -48,9 +48,9 @@ abstract class step13_Sensor_ extends step12_Scaler_ {
     // makeDefault..................................................................................
     /**
      * TODO: description, comments and logging
-     * @param builder
-     * @param characteristicsMap
-     * @param captureRequestMap
+     * @param builder bla
+     * @param characteristicsMap bla
+     * @param captureRequestMap bla
      */
     @SuppressWarnings("unchecked")
     @Override
@@ -74,8 +74,8 @@ abstract class step13_Sensor_ extends step12_Scaler_ {
             Long   value;
             String units;
 
-            rKey = CaptureRequest.SENSOR_FRAME_DURATION;////////////////////////////////////////////
-            name = rKey.getName();
+            rKey  = CaptureRequest.SENSOR_FRAME_DURATION;///////////////////////////////////////////
+            name  = rKey.getName();
             units = "nanoseconds";
 
             if (supportedKeys.contains(rKey)) {

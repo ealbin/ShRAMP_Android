@@ -43,8 +43,8 @@ abstract class Request_ extends Reprocess_ {
     // read.........................................................................................
     /**
      * TODO: description, comments and logging
-     * @param cameraCharacteristics
-     * @param characteristicsMap
+     * @param cameraCharacteristics bla
+     * @param characteristicsMap bla
      */
     @Override
     protected void read(@NonNull CameraCharacteristics cameraCharacteristics,
@@ -63,11 +63,9 @@ abstract class Request_ extends Reprocess_ {
             String    name;
             Integer[] value;
             String    valueString;
-            String    units;
 
-            key   = CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES;///////////////////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES;////////////////////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 int[]  capabilities  = cameraCharacteristics.get(key);
@@ -142,7 +140,7 @@ abstract class Request_ extends Reprocess_ {
                 }
                 valueString += ")";
 
-                value = (Integer[]) available.toArray(new Integer[0]);
+                value = available.toArray(new Integer[0]);
                 assert value != null;
 
                 formatter = new ParameterFormatter<Integer[]>(valueString) {
@@ -152,7 +150,7 @@ abstract class Request_ extends Reprocess_ {
                         return getValueString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);
@@ -168,12 +166,10 @@ abstract class Request_ extends Reprocess_ {
 
             String  name;
             Integer value;
-            String  units;
 
             if (Build.VERSION.SDK_INT >= 23) {
-                key   = CameraCharacteristics.REQUEST_MAX_NUM_INPUT_STREAMS;////////////////////////
-                name  = key.getName();
-                units = null;
+                key  = CameraCharacteristics.REQUEST_MAX_NUM_INPUT_STREAMS;/////////////////////////
+                name = key.getName();
 
                 if (keychain.contains(key)) {
                     value = cameraCharacteristics.get(key);
@@ -186,7 +182,7 @@ abstract class Request_ extends Reprocess_ {
                             return value.toString();
                         }
                     };
-                    property = new Parameter<>(name, value, units, formatter);
+                    property = new Parameter<>(name, value, null, formatter);
                 }
                 else {
                     property = new Parameter<>(name);
@@ -203,11 +199,9 @@ abstract class Request_ extends Reprocess_ {
 
             String  name;
             Integer value;
-            String  units;
 
-            key   = CameraCharacteristics.REQUEST_MAX_NUM_OUTPUT_PROC;//////////////////////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.REQUEST_MAX_NUM_OUTPUT_PROC;///////////////////////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
@@ -220,7 +214,7 @@ abstract class Request_ extends Reprocess_ {
                         return value.toString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);
@@ -236,11 +230,9 @@ abstract class Request_ extends Reprocess_ {
 
             String  name;
             Integer value;
-            String  units;
 
-            key   = CameraCharacteristics.REQUEST_MAX_NUM_OUTPUT_PROC_STALLING;/////////////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.REQUEST_MAX_NUM_OUTPUT_PROC_STALLING;//////////////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
@@ -253,7 +245,7 @@ abstract class Request_ extends Reprocess_ {
                         return value.toString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);
@@ -269,11 +261,9 @@ abstract class Request_ extends Reprocess_ {
 
             String  name;
             Integer value;
-            String  units;
 
-            key   = CameraCharacteristics.REQUEST_MAX_NUM_OUTPUT_RAW;///////////////////////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.REQUEST_MAX_NUM_OUTPUT_RAW;////////////////////////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
@@ -286,7 +276,7 @@ abstract class Request_ extends Reprocess_ {
                         return value.toString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);
@@ -302,11 +292,9 @@ abstract class Request_ extends Reprocess_ {
 
             String  name;
             Integer value;
-            String  units;
 
-            key   = CameraCharacteristics.REQUEST_PARTIAL_RESULT_COUNT;/////////////////////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.REQUEST_PARTIAL_RESULT_COUNT;//////////////////////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
@@ -319,7 +307,7 @@ abstract class Request_ extends Reprocess_ {
                         return value.toString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);
@@ -335,11 +323,9 @@ abstract class Request_ extends Reprocess_ {
 
             String name;
             Byte   value;
-            String units;
 
-            key   = CameraCharacteristics.REQUEST_PIPELINE_MAX_DEPTH;///////////////////////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.REQUEST_PIPELINE_MAX_DEPTH;////////////////////////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
@@ -352,7 +338,7 @@ abstract class Request_ extends Reprocess_ {
                         return value.toString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);

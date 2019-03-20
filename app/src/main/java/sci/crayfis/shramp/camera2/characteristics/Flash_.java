@@ -40,8 +40,8 @@ abstract class Flash_ extends Edge_ {
     // read.........................................................................................
     /**
      * TODO: description, comments and logging
-     * @param cameraCharacteristics
-     * @param characteristicsMap
+     * @param cameraCharacteristics bla
+     * @param characteristicsMap bla
      */
     @Override
     protected void read(@NonNull CameraCharacteristics cameraCharacteristics,
@@ -59,11 +59,8 @@ abstract class Flash_ extends Edge_ {
 
             String  name;
             Boolean value;
-            String  units;
-
-            key   = CameraCharacteristics.FLASH_INFO_AVAILABLE;/////////////////////////////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.FLASH_INFO_AVAILABLE;//////////////////////////////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
@@ -79,7 +76,7 @@ abstract class Flash_ extends Edge_ {
                         return "NO";
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);

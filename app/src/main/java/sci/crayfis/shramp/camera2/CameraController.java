@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import sci.crayfis.shramp.GlobalSettings;
 import sci.crayfis.shramp.camera2.requests.RequestMaker;
 import sci.crayfis.shramp.camera2.util.Parameter;
 import sci.crayfis.shramp.util.HandlerManager;
@@ -45,7 +46,7 @@ final public class CameraController {
 
     // PRIORITY.....................................................................................
     // TODO: description
-    private static final Integer PRIORITY = Process.THREAD_PRIORITY_DEFAULT;
+    private static final Integer PRIORITY = GlobalSettings.CAMERA_CONTROLLER_THREAD_PRIORITY;
 
     // THREAD_NAME..................................................................................
     // TODO: description
@@ -102,9 +103,10 @@ final public class CameraController {
 
     // CameraController.............................................................................
     private CameraController() {
+        //Log.e(Thread.currentThread().getName(), "CameraController CameraController");
         mOpenCamera = null;
-        Log.e("CameraControllerClass", ".");
-        Log.e("CameraControllerClass", "CameraController()");
+        //Log.e("CameraControllerClass", ".");
+        //Log.e("CameraControllerClass", "CameraController()");
     }
 
     //**********************************************************************************************
@@ -119,7 +121,7 @@ final public class CameraController {
      * TODO: description, comments and logging
      */
     public static void closeCamera() {
-        Log.e("CameraControllerClass", "closeCamera()");
+        Log.e(Thread.currentThread().getName(), "CameraController closeCamera");
 
         if (mInstance.mOpenCamera == null) {
             return;
@@ -130,13 +132,14 @@ final public class CameraController {
     // createCaptureSession.........................................................................
     /**
      * TODO: description, comments and logging
-     * @param surfaceList
-     * @param stateCallback
-     * @param handler
+     * @param surfaceList bla
+     * @param stateCallback bla
+     * @param handler bla
      */
     public static void createCaptureSession(@NonNull List<Surface> surfaceList,
                                             @NonNull CameraCaptureSession.StateCallback stateCallback,
                                             @NonNull Handler handler) {
+        Log.e(Thread.currentThread().getName(), "CameraController createCaptureSession");
         if (mInstance.mOpenCamera != null) {
             CameraDevice cameraDevice = mInstance.mOpenCamera.getCameraDevice();
             assert cameraDevice != null;
@@ -152,14 +155,14 @@ final public class CameraController {
     // discoverCameras..............................................................................
     /**
      * TODO: description, comments and logging
-     * @param cameraManager
+     * @param cameraManager bla
      */
     public static void discoverCameras(@NonNull CameraManager cameraManager) {
-        Log.e("CameraControllerClass", "discoverCameras()");
 
+        //Log.e(Thread.currentThread().getName(), "CameraController discoverCameras");
         mInstance.mCameraManager = cameraManager;
 
-        String[] cameraIds = null;
+        String[] cameraIds;
         try {
             cameraIds = mInstance.mCameraManager.getCameraIdList();
             for (String id : cameraIds) {
@@ -196,16 +199,16 @@ final public class CameraController {
         }
         catch (CameraAccessException e) {
             // TODO: error
-            Log.e("CameraControllerClass", "start() error: CameraAccessException");
         }
     }
 
     // getAvailableCaptureRequestKeys...............................................................
     /**
      * TODO: description, comments and logging
-     * @return
+     * @return bla
      */
     public static List<CaptureRequest.Key<?>> getAvailableCaptureRequestKeys() {
+        //Log.e(Thread.currentThread().getName(), "CameraController getAvailableCaptureRequestKeys");
         if (mInstance.mOpenCamera == null) {
             return null;
         }
@@ -215,10 +218,11 @@ final public class CameraController {
     // getBitsPerPixel..............................................................................
     /**
      * TODO: description, comments and logging
-     * @return
+     * @return bla
      */
     @Nullable
     public static Integer getBitsPerPixel() {
+        //Log.e(Thread.currentThread().getName(), "CameraController getBitsPerPixel");
         if (mInstance.mOpenCamera == null) {
             return null;
         }
@@ -228,9 +232,10 @@ final public class CameraController {
     // getCaptureRequestBuilder.....................................................................
     /**
      * TODO: description, comments and logging
-     * @return
+     * @return bla
      */
     public static CaptureRequest.Builder getCaptureRequestBuilder() {
+        //Log.e(Thread.currentThread().getName(), "CameraController getCaptureRequestBuilder");
         if (mInstance.mOpenCamera == null) {
             return null;
         }
@@ -240,10 +245,11 @@ final public class CameraController {
     // getOpenedCharacteristicsMap..................................................................
     /**
      * TODO: description, comments and logging
-     * @return
+     * @return bla
      */
-    @NonNull
+    @Nullable
     public static LinkedHashMap<CameraCharacteristics.Key, Parameter> getOpenedCharacteristicsMap() {
+        //Log.e(Thread.currentThread().getName(), "CameraController getOpenedCharacteristicsMap");
         if (mInstance.mOpenCamera == null) {
             return null;
         }
@@ -253,10 +259,11 @@ final public class CameraController {
     // getOpenedCamera..............................................................................
     /**
      * TODO: description, comments and logging
-     * @return
+     * @return bla
      */
     @Nullable
     public static CameraDevice getOpenedCameraDevice() {
+        //Log.e(Thread.currentThread().getName(), "CameraController getOpenedCameraDevice");
         if (mInstance.mOpenCamera == null) {
             return null;
         }
@@ -266,9 +273,11 @@ final public class CameraController {
     // getOutputFormat..............................................................................
     /**
      * TODO: description, comments and logging
-     * @return
+     * @return bla
      */
+    @Nullable
     public static Integer getOutputFormat() {
+        //Log.e(Thread.currentThread().getName(), "CameraController getOutputFormat");
         if (mInstance.mOpenCamera == null) {
             return null;
         }
@@ -278,9 +287,11 @@ final public class CameraController {
     // getOutputSize................................................................................
     /**
      * TODO: description, comments and logging
-     * @return
+     * @return bla
      */
+    @Nullable
     public static Size getOutputSize() {
+        //Log.e(Thread.currentThread().getName(), "CameraController getOutputSize");
         if (mInstance.mOpenCamera == null) {
             return null;
         }
@@ -290,14 +301,14 @@ final public class CameraController {
     // openCamera...................................................................................
     /**
      * TODO: description, comments and logging
-     * @param select
-     * @param runnable
-     * @param handler
-     * @return
+     * @param select bla
+     * @param runnable bla
+     * @param handler bla
+     * @return bla
      */
     public static boolean openCamera(@NonNull Select select,
                                      @Nullable Runnable runnable, @Nullable Handler handler) {
-        Log.e("CameraController", "openCamera()");
+        //Log.e(Thread.currentThread().getName(), "CameraController openCamera");
 
         Camera camera = mCameras.get(select);
         if (camera == null) {
@@ -325,19 +336,20 @@ final public class CameraController {
     // post.........................................................................................
     /**
      * TODO: description, comments and logging
-     * @param runnable
+     * @param runnable bla
      */
-    public static void post(Runnable runnable) {
-        Log.e("CameraControllerClass", "post()");
+    public synchronized static void post(Runnable runnable) {
+        Log.e(Thread.currentThread().getName(), "CameraController post");
         mHandler.post(runnable);
     }
 
     // setCaptureRequestBuilder.....................................................................
     /**
      * TODO: description, comments and logging
-     * @param builder
+     * @param builder bla
      */
     public static void setCaptureRequestBuilder(@NonNull CaptureRequest.Builder builder) {
+        //Log.e(Thread.currentThread().getName(), "CameraController setCaptureRequestBuilder");
         if (mInstance.mOpenCamera == null) {
             return;
         }
@@ -347,9 +359,10 @@ final public class CameraController {
     // setCaptureRequestMap.........................................................................
     /**
      * TODO: description, comments and logging
-     * @param map
+     * @param map bla
      */
     public static void setCaptureRequestMap(@NonNull LinkedHashMap<CaptureRequest.Key, Parameter>  map) {
+        //Log.e(Thread.currentThread().getName(), "CameraController setCaptureRequestMap");
         if (mInstance.mOpenCamera == null) {
             return;
         }
@@ -359,13 +372,26 @@ final public class CameraController {
     // setCaptureRequestTemplate....................................................................
     /**
      * TODO: description, comments and logging
-     * @param template
+     * @param template bla
      */
     public static void setCaptureRequestTemplate(@NonNull Integer template) {
+        //Log.e(Thread.currentThread().getName(), "CameraController setCaptureRequestTemplate");
         if (mInstance.mOpenCamera == null) {
             return;
         }
         mInstance.mOpenCamera.setCaptureRequestTemplate(template);
+    }
+
+    // writeBuilder.................................................................................
+
+    /**
+     * TODO: description, comments and logging
+     */
+    public static void writeFPS() {
+        //Log.e(Thread.currentThread().getName(), "CameraController writeBuilder");
+        if (mInstance.mOpenCamera != null) {
+            mInstance.mOpenCamera.writeFPS();
+        }
     }
 
     // writeCaptureRequest..........................................................................
@@ -373,10 +399,11 @@ final public class CameraController {
      * TODO: description, comments and logging
      */
     public static void writeCaptureRequest() {
+        //Log.e(Thread.currentThread().getName(), "CameraController writeCaptureRequest");
         if (mInstance.mOpenCamera != null) {
-            Log.e("CameraController", ".");
-            mInstance.mOpenCamera.writeRequest();
-            Log.e("CameraController", ".");
+            //Log.e("CameraController", ".");
+            //mInstance.mOpenCamera.writeRequest();
+            //Log.e("CameraController", ".");
         }
     }
 
@@ -385,12 +412,13 @@ final public class CameraController {
      * TODO: description, comments and logging
      */
     public static void writeCameraCharacteristics() {
-        Log.e("CameraController", ".");
+        //Log.e(Thread.currentThread().getName(), "CameraController writeCameraCharacteristics");
+        //Log.e("CameraController", ".");
         for (Camera camera : mCameras.values()) {
-            camera.writeCharacteristics();
-            Log.e("CameraController", ".");
+            //camera.writeCharacteristics();
+            //Log.e("CameraController", ".");
         }
-        Log.e("CameraController", ".");
+        //Log.e("CameraController", ".");
     }
 
     // Package-private
@@ -399,14 +427,15 @@ final public class CameraController {
     // cameraHasOpened..............................................................................
     /**
      * TODO: description, comments and logging
-     * @param camera
+     * @param camera bla
      */
     static void cameraHasOpened(@NonNull Camera camera) {
+        Log.e(Thread.currentThread().getName(), "CameraController cameraHasOpened");
         mInstance.mOpenCamera = camera;
         RequestMaker.makeDefault();
-        Log.e("CameraController", ".");
-        camera.writeRequest();
-        Log.e("CameraController", ".");
+        //Log.e("CameraController", ".");
+        //camera.writeRequest();
+        //Log.e("CameraController", ".");
         if (mInstance.mNextRunnable != null) {
             if (mInstance.mNextHandler != null) {
                 mInstance.mNextHandler.post(mInstance.mNextRunnable);
@@ -424,6 +453,7 @@ final public class CameraController {
      * TODO: description, comments and logging
      */
     static void cameraHasClosed() {
+        Log.e(Thread.currentThread().getName(), "CameraController cameraHasClosed");
         mInstance.mOpenCamera = null;
     }
 

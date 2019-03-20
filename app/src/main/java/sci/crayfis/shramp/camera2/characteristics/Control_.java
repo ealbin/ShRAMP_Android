@@ -9,6 +9,9 @@ import android.util.Log;
 import android.util.Range;
 import android.util.Rational;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -21,6 +24,25 @@ import sci.crayfis.shramp.util.ArrayToList;
  */
 @TargetApi(21)
 abstract class Control_ extends Color_ {
+
+    //**********************************************************************************************
+    // Static Class Fields
+    //--------------------
+
+    // Private Constants
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+    // MAX_FPS......................................................................................
+    // TODO: description
+    private static final int MAX_FPS = 30;
+
+    //M MAX_FPS_DIFF................................................................................
+    // TODO: description
+    private static final int MAX_FPS_DIFF = 2;
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     //**********************************************************************************************
     // Constructors
@@ -45,8 +67,8 @@ abstract class Control_ extends Color_ {
     // read.........................................................................................
     /**
      * TODO: description, comments and logging
-     * @param cameraCharacteristics
-     * @param characteristicsMap
+     * @param cameraCharacteristics bla
+     * @param characteristicsMap bla
      */
     @Override
     protected void read(@NonNull CameraCharacteristics cameraCharacteristics,
@@ -65,11 +87,9 @@ abstract class Control_ extends Color_ {
             String  name;
             Integer value;
             String  valueString;
-            String  units;
 
-            key   = CameraCharacteristics.CONTROL_AE_AVAILABLE_ANTIBANDING_MODES;///////////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.CONTROL_AE_AVAILABLE_ANTIBANDING_MODES;////////////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 int[]  modes  = cameraCharacteristics.get(key);
@@ -77,59 +97,7 @@ abstract class Control_ extends Color_ {
                 List<Integer> options = ArrayToList.convert(modes);
 
                 Integer OFF   = CameraMetadata.CONTROL_AE_ANTIBANDING_MODE_OFF;
-                Integer _50HZ = CameraMetadata.CONTROL_AE_ANTIBANDING_MODE_50HZ;
-                Integer _60HZ = CameraMetadata.CONTROL_AE_ANTIBANDING_MODE_60HZ;
-                Integer AUTO  = CameraMetadata.CONTROL_AE_ANTIBANDING_MODE_AUTO;
-
-                if (options.contains(OFF)) {
-                    value = OFF;
-                    valueString = "OFF (PREFERRED)";
-                } else if (options.contains(AUTO)) {
-                    value = AUTO;
-                    valueString = "AUTO (FALLBACK)";
-                } else {
-                    value = _60HZ;
-                    valueString = "60HZ (LAST CHOICE)";
-                }
-
-                formatter = new ParameterFormatter<Integer>(valueString) {
-                    @NonNull
-                    @Override
-                    public String formatValue(@NonNull Integer value) {
-                        return getValueString();
-                    }
-                };
-                property = new Parameter<>(name, value, units, formatter);
-
-            }
-            else {
-                property = new Parameter<>(name);
-                property.setValueString("NOT SUPPORTED");
-            }
-            characteristicsMap.put(key, property);
-        }
-        //==========================================================================================
-        {
-            CameraCharacteristics.Key<int[]> key;
-            ParameterFormatter<Integer> formatter;
-            Parameter<Integer> property;
-
-            String  name;
-            Integer value;
-            String  valueString;
-            String  units;
-
-            key   = CameraCharacteristics.CONTROL_AE_AVAILABLE_ANTIBANDING_MODES;///////////////////
-            name  = key.getName();
-            units = null;
-
-            if (keychain.contains(key)) {
-                int[]  modes  = cameraCharacteristics.get(key);
-                assert modes != null;
-                List<Integer> options = ArrayToList.convert(modes);
-
-                Integer OFF   = CameraMetadata.CONTROL_AE_ANTIBANDING_MODE_OFF;
-                Integer _50HZ = CameraMetadata.CONTROL_AE_ANTIBANDING_MODE_50HZ;
+                //Integer _50HZ = CameraMetadata.CONTROL_AE_ANTIBANDING_MODE_50HZ;
                 Integer _60HZ = CameraMetadata.CONTROL_AE_ANTIBANDING_MODE_60HZ;
                 Integer AUTO  = CameraMetadata.CONTROL_AE_ANTIBANDING_MODE_AUTO;
 
@@ -153,7 +121,7 @@ abstract class Control_ extends Color_ {
                         return getValueString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);
@@ -170,11 +138,9 @@ abstract class Control_ extends Color_ {
             String  name;
             Integer value;
             String  valueString;
-            String  units;
 
-            key   = CameraCharacteristics.CONTROL_AE_AVAILABLE_MODES;///////////////////////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.CONTROL_AE_AVAILABLE_MODES;////////////////////////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 int[]  modes  = cameraCharacteristics.get(key);
@@ -183,10 +149,10 @@ abstract class Control_ extends Color_ {
 
                 Integer OFF                  = CameraMetadata.CONTROL_AE_MODE_OFF;
                 Integer ON                   = CameraMetadata.CONTROL_AE_MODE_ON;
-                Integer ON_AUTO_FLASH        = CameraMetadata.CONTROL_AE_MODE_ON_AUTO_FLASH;
-                Integer ON_ALWAYS_FLASH      = CameraMetadata.CONTROL_AE_MODE_ON_ALWAYS_FLASH;
-                Integer ON_AUTO_FLASH_REDEYE = CameraMetadata.CONTROL_AE_MODE_ON_AUTO_FLASH_REDEYE;
-                Integer ON_EXTERNAL_FLASH    = CameraMetadata.CONTROL_AE_MODE_ON_EXTERNAL_FLASH;
+                //Integer ON_AUTO_FLASH        = CameraMetadata.CONTROL_AE_MODE_ON_AUTO_FLASH;
+                //Integer ON_ALWAYS_FLASH      = CameraMetadata.CONTROL_AE_MODE_ON_ALWAYS_FLASH;
+                //Integer ON_AUTO_FLASH_REDEYE = CameraMetadata.CONTROL_AE_MODE_ON_AUTO_FLASH_REDEYE;
+                //Integer ON_EXTERNAL_FLASH    = CameraMetadata.CONTROL_AE_MODE_ON_EXTERNAL_FLASH;
 
                 if (options.contains(OFF)) {
                     value       =  OFF;
@@ -204,7 +170,7 @@ abstract class Control_ extends Color_ {
                         return getValueString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);
@@ -215,11 +181,11 @@ abstract class Control_ extends Color_ {
         //==========================================================================================
         {
             CameraCharacteristics.Key<Range<Integer>[]> key;
-            ParameterFormatter<Range<Integer>> formatter;
-            Parameter<Range<Integer>> property;
+            ParameterFormatter<Range<Integer>[]> formatter;
+            Parameter<Range<Integer>[]> property;
 
             String name;
-            Range<Integer> value;
+            Range<Integer>[] value;
             String units;
 
             key   = CameraCharacteristics.CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES;///////////////////
@@ -227,42 +193,41 @@ abstract class Control_ extends Color_ {
             units = "frames per second";
 
             if (keychain.contains(key)) {
+
+                // Sort by upper FPS limit
+                class SortByUpper implements Comparator<Range<Integer>> {
+                    public int compare( Range<Integer> a, Range<Integer> b) {
+                        return a.getUpper() - b.getUpper();
+                    }
+                }
+
                 Range<Integer>[] options = cameraCharacteristics.get(key);
                 assert options != null;
 
-                Range<Integer> tightAndFast = null;
-                for (Range<Integer> val : options) {
+                List<Range<Integer>> fpsRanges = ArrayToList.convert(options);
+                Collections.sort(fpsRanges, new SortByUpper());
 
-                    if (tightAndFast == null) {
-                        tightAndFast = val;
-                        continue;
-                    }
-
-                    if (val.getLower() > 30) {
-                        continue;
-                    }
-
-                    int thisDiff     =          val.getUpper() -          val.getLower();
-                    int tightestDiff = tightAndFast.getUpper() - tightAndFast.getLower();
-
-                    if (thisDiff == tightestDiff) {
-                        if (val.getUpper() > tightAndFast.getUpper()) {
-                            tightAndFast = val;
-                            continue;
-                        }
-                    }
-                    if (thisDiff < tightestDiff) {
-                        tightAndFast = val;
+                List<Range<Integer>> keep = new ArrayList<>();
+                for (Range<Integer> range : fpsRanges) {
+                    if (range.getUpper() - range.getLower() <= MAX_FPS_DIFF
+                        && range.getUpper() <= MAX_FPS) {
+                        keep.add(range);
                     }
                 }
-                value = tightAndFast;
+
+                // TODO: figure out how to do toArray(new Range<Integer>[])
+                value = (Range<Integer>[]) keep.toArray(new Range[0]);
                 assert value != null;
 
-                formatter = new ParameterFormatter<Range<Integer>>("tight and fast: ") {
+                formatter = new ParameterFormatter<Range<Integer>[]>() {
                     @NonNull
                     @Override
-                    public String formatValue(@NonNull Range<Integer> value) {
-                        return getValueString() + value.toString();
+                    public String formatValue(@NonNull Range<Integer>[] value) {
+                        String out = "{ ";
+                        for (Range<Integer> val : value) {
+                            out += val.toString() + " ";
+                        }
+                        return out + "}";
                     }
                 };
                 property = new Parameter<>(name, value, units, formatter);
@@ -348,12 +313,10 @@ abstract class Control_ extends Color_ {
 
             String  name;
             Boolean value;
-            String  units;
 
             if (Build.VERSION.SDK_INT >= 23) {
-                key   = CameraCharacteristics.CONTROL_AE_LOCK_AVAILABLE;////////////////////////////
-                name  = key.getName();
-                units = null;
+                key  = CameraCharacteristics.CONTROL_AE_LOCK_AVAILABLE;/////////////////////////////
+                name = key.getName();
 
                 if (keychain.contains(key)) {
                     value = cameraCharacteristics.get(key);
@@ -369,7 +332,7 @@ abstract class Control_ extends Color_ {
                             return "NO (FALLBACK)";
                         }
                     };
-                    property = new Parameter<>(name, value, units, formatter);
+                    property = new Parameter<>(name, value, null, formatter);
                 }
                 else {
                     property = new Parameter<>(name);
@@ -387,11 +350,9 @@ abstract class Control_ extends Color_ {
             String  name;
             Integer value;
             String  valueString;
-            String  units;
 
-            key   = CameraCharacteristics.CONTROL_AF_AVAILABLE_MODES;///////////////////////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.CONTROL_AF_AVAILABLE_MODES;////////////////////////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 int[]  modes  = cameraCharacteristics.get(key);
@@ -400,10 +361,10 @@ abstract class Control_ extends Color_ {
 
                 Integer OFF                = CameraMetadata.CONTROL_AF_MODE_OFF;
                 Integer AUTO               = CameraMetadata.CONTROL_AF_MODE_AUTO;
-                Integer MACRO              = CameraMetadata.CONTROL_AF_MODE_MACRO;
-                Integer CONTINUOUS_VIDEO   = CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_VIDEO;
-                Integer CONTINUOUS_PICTURE = CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_PICTURE;
-                Integer EDOF               = CameraMetadata.CONTROL_AF_MODE_EDOF;
+                //Integer MACRO              = CameraMetadata.CONTROL_AF_MODE_MACRO;
+                //Integer CONTINUOUS_VIDEO   = CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_VIDEO;
+                //Integer CONTINUOUS_PICTURE = CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_PICTURE;
+                //Integer EDOF               = CameraMetadata.CONTROL_AF_MODE_EDOF;
 
                 if (options.contains(OFF)) {
                     value       =  OFF;
@@ -421,7 +382,7 @@ abstract class Control_ extends Color_ {
                         return getValueString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);
@@ -438,11 +399,9 @@ abstract class Control_ extends Color_ {
             String  name;
             Integer value;
             String  valueString;
-            String  units;
 
-            key   = CameraCharacteristics.CONTROL_AVAILABLE_EFFECTS;////////////////////////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.CONTROL_AVAILABLE_EFFECTS;/////////////////////////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 int[]  modes  = cameraCharacteristics.get(key);
@@ -450,14 +409,14 @@ abstract class Control_ extends Color_ {
                 List<Integer> options = ArrayToList.convert(modes);
 
                 Integer OFF        = CameraMetadata.CONTROL_EFFECT_MODE_OFF;
-                Integer MONO       = CameraMetadata.CONTROL_EFFECT_MODE_MONO;
-                Integer NEGATIVE   = CameraMetadata.CONTROL_EFFECT_MODE_NEGATIVE;
-                Integer SOLARIZE   = CameraMetadata.CONTROL_EFFECT_MODE_SOLARIZE;
-                Integer SEPIA      = CameraMetadata.CONTROL_EFFECT_MODE_SEPIA;
-                Integer POSTERIZE  = CameraMetadata.CONTROL_EFFECT_MODE_POSTERIZE;
-                Integer WHITEBOARD = CameraMetadata.CONTROL_EFFECT_MODE_WHITEBOARD;
-                Integer BLACKBOARD = CameraMetadata.CONTROL_EFFECT_MODE_BLACKBOARD;
-                Integer AQUA       = CameraMetadata.CONTROL_EFFECT_MODE_AQUA;
+                //Integer MONO       = CameraMetadata.CONTROL_EFFECT_MODE_MONO;
+                //Integer NEGATIVE   = CameraMetadata.CONTROL_EFFECT_MODE_NEGATIVE;
+                //Integer SOLARIZE   = CameraMetadata.CONTROL_EFFECT_MODE_SOLARIZE;
+                //Integer SEPIA      = CameraMetadata.CONTROL_EFFECT_MODE_SEPIA;
+                //Integer POSTERIZE  = CameraMetadata.CONTROL_EFFECT_MODE_POSTERIZE;
+                //Integer WHITEBOARD = CameraMetadata.CONTROL_EFFECT_MODE_WHITEBOARD;
+                //Integer BLACKBOARD = CameraMetadata.CONTROL_EFFECT_MODE_BLACKBOARD;
+                //Integer AQUA       = CameraMetadata.CONTROL_EFFECT_MODE_AQUA;
 
                 value       =  OFF;
                 valueString = "OFF (PREFERRED)";
@@ -469,7 +428,7 @@ abstract class Control_ extends Color_ {
                         return getValueString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);
@@ -486,12 +445,10 @@ abstract class Control_ extends Color_ {
             String  name;
             Integer value;
             String  valueString;
-            String  units;
 
             if (Build.VERSION.SDK_INT >= 23) {
-                key   = CameraCharacteristics.CONTROL_AVAILABLE_MODES;//////////////////////////////
-                name  = key.getName();
-                units = null;
+                key  = CameraCharacteristics.CONTROL_AVAILABLE_MODES;///////////////////////////////
+                name = key.getName();
 
                 if (keychain.contains(key)) {
                     int[] modes = cameraCharacteristics.get(key);
@@ -500,8 +457,8 @@ abstract class Control_ extends Color_ {
 
                     Integer OFF            = CameraMetadata.CONTROL_MODE_OFF;
                     Integer AUTO           = CameraMetadata.CONTROL_MODE_AUTO;
-                    Integer USE_SCENE_MODE = CameraMetadata.CONTROL_MODE_USE_SCENE_MODE;
-                    Integer OFF_KEEP_STATE = CameraMetadata.CONTROL_MODE_OFF_KEEP_STATE;
+                    //Integer USE_SCENE_MODE = CameraMetadata.CONTROL_MODE_USE_SCENE_MODE;
+                    //Integer OFF_KEEP_STATE = CameraMetadata.CONTROL_MODE_OFF_KEEP_STATE;
 
                     if (options.contains(OFF)) {
                         value = OFF;
@@ -519,7 +476,7 @@ abstract class Control_ extends Color_ {
                             return getValueString();
                         }
                     };
-                    property = new Parameter<>(name, value, units, formatter);
+                    property = new Parameter<>(name, value, null, formatter);
                 }
                 else {
                     property = new Parameter<>(name);
@@ -537,11 +494,9 @@ abstract class Control_ extends Color_ {
             String  name;
             Integer value;
             String  valueString;
-            String  units;
 
-            key   = CameraCharacteristics.CONTROL_AVAILABLE_SCENE_MODES;////////////////////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.CONTROL_AVAILABLE_SCENE_MODES;/////////////////////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 int[]  modes  = cameraCharacteristics.get(key);
@@ -549,27 +504,27 @@ abstract class Control_ extends Color_ {
                 List<Integer> options = ArrayToList.convert(modes);
 
                 Integer DISABLED         = CameraMetadata.CONTROL_SCENE_MODE_DISABLED;
-                Integer FACE_PRIORITY    = CameraMetadata.CONTROL_SCENE_MODE_FACE_PRIORITY;
-                Integer ACTION           = CameraMetadata.CONTROL_SCENE_MODE_ACTION;
-                Integer PORTRAIT         = CameraMetadata.CONTROL_SCENE_MODE_PORTRAIT;
-                Integer LANDSCAPE        = CameraMetadata.CONTROL_SCENE_MODE_LANDSCAPE;
-                Integer NIGHT            = CameraMetadata.CONTROL_SCENE_MODE_NIGHT;
-                Integer NIGHT_PORTRAIT   = CameraMetadata.CONTROL_SCENE_MODE_NIGHT_PORTRAIT;
-                Integer THEATRE          = CameraMetadata.CONTROL_SCENE_MODE_THEATRE;
-                Integer BEACH            = CameraMetadata.CONTROL_SCENE_MODE_BEACH;
-                Integer SNOW             = CameraMetadata.CONTROL_SCENE_MODE_SNOW;
-                Integer SUNSET           = CameraMetadata.CONTROL_SCENE_MODE_SUNSET;
-                Integer STEADYPHOTO      = CameraMetadata.CONTROL_SCENE_MODE_STEADYPHOTO;
-                Integer FIREWORKS        = CameraMetadata.CONTROL_SCENE_MODE_FIREWORKS;
-                Integer SPORTS           = CameraMetadata.CONTROL_SCENE_MODE_SPORTS;
-                Integer PARTY            = CameraMetadata.CONTROL_SCENE_MODE_PARTY;
-                Integer CANDLELIGHT      = CameraMetadata.CONTROL_SCENE_MODE_CANDLELIGHT;
-                Integer BARCODE          = CameraMetadata.CONTROL_SCENE_MODE_BARCODE;
-                Integer HIGH_SPEED_VIDEO = CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_VIDEO;
-                Integer HDR              = null;
-                if (Build.VERSION.SDK_INT >= 22) {
-                    HDR = CameraMetadata.CONTROL_SCENE_MODE_HDR;
-                }
+                //Integer FACE_PRIORITY    = CameraMetadata.CONTROL_SCENE_MODE_FACE_PRIORITY;
+                //Integer ACTION           = CameraMetadata.CONTROL_SCENE_MODE_ACTION;
+                //Integer PORTRAIT         = CameraMetadata.CONTROL_SCENE_MODE_PORTRAIT;
+                //Integer LANDSCAPE        = CameraMetadata.CONTROL_SCENE_MODE_LANDSCAPE;
+                //Integer NIGHT            = CameraMetadata.CONTROL_SCENE_MODE_NIGHT;
+                //Integer NIGHT_PORTRAIT   = CameraMetadata.CONTROL_SCENE_MODE_NIGHT_PORTRAIT;
+                //Integer THEATRE          = CameraMetadata.CONTROL_SCENE_MODE_THEATRE;
+                //Integer BEACH            = CameraMetadata.CONTROL_SCENE_MODE_BEACH;
+                //Integer SNOW             = CameraMetadata.CONTROL_SCENE_MODE_SNOW;
+                //Integer SUNSET           = CameraMetadata.CONTROL_SCENE_MODE_SUNSET;
+                //Integer STEADYPHOTO      = CameraMetadata.CONTROL_SCENE_MODE_STEADYPHOTO;
+                //Integer FIREWORKS        = CameraMetadata.CONTROL_SCENE_MODE_FIREWORKS;
+                //Integer SPORTS           = CameraMetadata.CONTROL_SCENE_MODE_SPORTS;
+                //Integer PARTY            = CameraMetadata.CONTROL_SCENE_MODE_PARTY;
+                //Integer CANDLELIGHT      = CameraMetadata.CONTROL_SCENE_MODE_CANDLELIGHT;
+                //Integer BARCODE          = CameraMetadata.CONTROL_SCENE_MODE_BARCODE;
+                //Integer HIGH_SPEED_VIDEO = CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_VIDEO;
+                //Integer HDR              = null;
+                //if (Build.VERSION.SDK_INT >= 22) {
+                //    HDR = CameraMetadata.CONTROL_SCENE_MODE_HDR;
+                //}
 
                 value       =  DISABLED;
                 valueString = "DISABLED (PREFERRED)";
@@ -581,7 +536,7 @@ abstract class Control_ extends Color_ {
                         return getValueString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);
@@ -598,19 +553,17 @@ abstract class Control_ extends Color_ {
             String  name;
             Integer value;
             String  valueString;
-            String  units;
 
-            key   = CameraCharacteristics.CONTROL_AVAILABLE_VIDEO_STABILIZATION_MODES;//////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.CONTROL_AVAILABLE_VIDEO_STABILIZATION_MODES;///////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
-                int[]  modes  = cameraCharacteristics.get(key);
-                assert modes != null;
-                List<Integer> options = ArrayToList.convert(modes);
+                //int[]  modes  = cameraCharacteristics.get(key);
+                //assert modes != null;
+                //List<Integer> options = ArrayToList.convert(modes);
 
                 Integer OFF = CameraMetadata.CONTROL_VIDEO_STABILIZATION_MODE_OFF;
-                Integer ON  = CameraMetadata.CONTROL_VIDEO_STABILIZATION_MODE_ON;
+                //Integer ON  = CameraMetadata.CONTROL_VIDEO_STABILIZATION_MODE_ON;
 
                 value       =  OFF;
                 valueString = "OFF (PREFERRED)";
@@ -622,7 +575,7 @@ abstract class Control_ extends Color_ {
                         return getValueString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);
@@ -639,11 +592,9 @@ abstract class Control_ extends Color_ {
             String  name;
             Integer value;
             String  valueString;
-            String  units;
 
-            key   = CameraCharacteristics.CONTROL_AWB_AVAILABLE_MODES;//////////////////////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.CONTROL_AWB_AVAILABLE_MODES;///////////////////////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 int[]  modes  = cameraCharacteristics.get(key);
@@ -652,13 +603,13 @@ abstract class Control_ extends Color_ {
 
                 Integer OFF              = CameraMetadata.CONTROL_AWB_MODE_OFF;
                 Integer AUTO             = CameraMetadata.CONTROL_AWB_MODE_AUTO;
-                Integer INCANDESCENT     = CameraMetadata.CONTROL_AWB_MODE_INCANDESCENT;
-                Integer FLUORESCENT      = CameraMetadata.CONTROL_AWB_MODE_FLUORESCENT;
-                Integer WARM_FLUORESCENT = CameraMetadata.CONTROL_AWB_MODE_WARM_FLUORESCENT;
-                Integer DAYLIGHT         = CameraMetadata.CONTROL_AWB_MODE_DAYLIGHT;
-                Integer CLOUDY_DAYLIGHT  = CameraMetadata.CONTROL_AWB_MODE_CLOUDY_DAYLIGHT;
-                Integer TWILIGHT         = CameraMetadata.CONTROL_AWB_MODE_TWILIGHT;
-                Integer SHADE            = CameraMetadata.CONTROL_AWB_MODE_SHADE;
+                //Integer INCANDESCENT     = CameraMetadata.CONTROL_AWB_MODE_INCANDESCENT;
+                //Integer FLUORESCENT      = CameraMetadata.CONTROL_AWB_MODE_FLUORESCENT;
+                //Integer WARM_FLUORESCENT = CameraMetadata.CONTROL_AWB_MODE_WARM_FLUORESCENT;
+                //Integer DAYLIGHT         = CameraMetadata.CONTROL_AWB_MODE_DAYLIGHT;
+                //Integer CLOUDY_DAYLIGHT  = CameraMetadata.CONTROL_AWB_MODE_CLOUDY_DAYLIGHT;
+                //Integer TWILIGHT         = CameraMetadata.CONTROL_AWB_MODE_TWILIGHT;
+                //Integer SHADE            = CameraMetadata.CONTROL_AWB_MODE_SHADE;
 
                 if (options.contains(OFF)) {
                     value       =  OFF;
@@ -676,7 +627,7 @@ abstract class Control_ extends Color_ {
                         return getValueString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);
@@ -692,12 +643,10 @@ abstract class Control_ extends Color_ {
 
             String  name;
             Boolean value;
-            String  units;
 
             if (Build.VERSION.SDK_INT >= 23) {
-                key   = CameraCharacteristics.CONTROL_AWB_LOCK_AVAILABLE;///////////////////////////
-                name  = key.getName();
-                units = null;
+                key  = CameraCharacteristics.CONTROL_AWB_LOCK_AVAILABLE;////////////////////////////
+                name = key.getName();
 
                 if (keychain.contains(key)) {
                     value = cameraCharacteristics.get(key);
@@ -713,7 +662,7 @@ abstract class Control_ extends Color_ {
                             return "NO (FALLBACK)";
                         }
                     };
-                    property = new Parameter<>(name, value, units, formatter);
+                    property = new Parameter<>(name, value, null, formatter);
                 }
                 else {
                     property = new Parameter<>(name);
@@ -730,11 +679,9 @@ abstract class Control_ extends Color_ {
 
             String  name;
             Integer value;
-            String  units;
 
-            key   = CameraCharacteristics.CONTROL_MAX_REGIONS_AE;///////////////////////////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.CONTROL_MAX_REGIONS_AE;////////////////////////////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
@@ -747,7 +694,7 @@ abstract class Control_ extends Color_ {
                         return value.toString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);
@@ -763,11 +710,9 @@ abstract class Control_ extends Color_ {
 
             String  name;
             Integer value;
-            String  units;
 
-            key   = CameraCharacteristics.CONTROL_MAX_REGIONS_AF;///////////////////////////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.CONTROL_MAX_REGIONS_AF;////////////////////////////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
@@ -780,7 +725,7 @@ abstract class Control_ extends Color_ {
                         return value.toString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);
@@ -796,11 +741,9 @@ abstract class Control_ extends Color_ {
 
             String  name;
             Integer value;
-            String  units;
 
-            key   = CameraCharacteristics.CONTROL_MAX_REGIONS_AWB;//////////////////////////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.CONTROL_MAX_REGIONS_AWB;///////////////////////////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
@@ -813,7 +756,7 @@ abstract class Control_ extends Color_ {
                         return value.toString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);

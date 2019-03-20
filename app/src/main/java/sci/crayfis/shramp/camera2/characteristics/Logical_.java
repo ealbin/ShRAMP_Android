@@ -42,8 +42,8 @@ abstract class Logical_ extends Lens_ {
     // read.........................................................................................
     /**
      * TODO: description, comments and logging
-     * @param cameraCharacteristics
-     * @param characteristicsMap
+     * @param cameraCharacteristics bla
+     * @param characteristicsMap bla
      */
     @Override
     protected void read(@NonNull CameraCharacteristics cameraCharacteristics,
@@ -62,12 +62,10 @@ abstract class Logical_ extends Lens_ {
             String  name;
             Integer value;
             String  valueString;
-            String  units;
 
             if (Build.VERSION.SDK_INT >= 28) {
-                key   = CameraCharacteristics.LOGICAL_MULTI_CAMERA_SENSOR_SYNC_TYPE;////////////////
-                name  = key.getName();
-                units = null;
+                key  = CameraCharacteristics.LOGICAL_MULTI_CAMERA_SENSOR_SYNC_TYPE;/////////////////
+                name = key.getName();
 
                 if (keychain.contains(key)) {
                     value = cameraCharacteristics.get(key);
@@ -90,7 +88,7 @@ abstract class Logical_ extends Lens_ {
                             return getValueString();
                         }
                     };
-                    property = new Parameter<>(name, value, units, formatter);
+                    property = new Parameter<>(name, value, null, formatter);
                 }
                 else {
                     property = new Parameter<>(name);

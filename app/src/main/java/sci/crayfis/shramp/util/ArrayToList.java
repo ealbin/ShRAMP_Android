@@ -21,8 +21,8 @@ abstract public class ArrayToList {
     // convert......................................................................................
     /**
      * TODO: description, comments and logging
-     * @param array
-     * @return
+     * @param array bla
+     * @return bla
      */
     public static List<Boolean> convert(boolean[] array) {
         List<Boolean> list = new ArrayList<>();
@@ -35,8 +35,8 @@ abstract public class ArrayToList {
     // convert......................................................................................
     /**
      * TODO: description, comments and logging
-     * @param array
-     * @return
+     * @param array bla
+     * @return bla
      */
     public static List<Byte> convert(byte[] array) {
         List<Byte> list = new ArrayList<>();
@@ -49,8 +49,8 @@ abstract public class ArrayToList {
     // convert......................................................................................
     /**
      * TODO: description, comments and logging
-     * @param array
-     * @return
+     * @param array bla
+     * @return bla
      */
     public static List<Character> convert(char[] array) {
         List<Character> list = new ArrayList<>();
@@ -63,8 +63,8 @@ abstract public class ArrayToList {
     // convert......................................................................................
     /**
      * TODO: description, comments and logging
-     * @param array
-     * @return
+     * @param array bla
+     * @return bla
      */
     public static List<Short> convert(short[] array) {
         List<Short> list = new ArrayList<>();
@@ -77,8 +77,8 @@ abstract public class ArrayToList {
     // convert......................................................................................
     /**
      * TODO: description, comments and logging
-     * @param array
-     * @return
+     * @param array bla
+     * @return bla
      */
     public static List<Integer> convert(int[] array) {
         List<Integer> list = new ArrayList<>();
@@ -91,8 +91,8 @@ abstract public class ArrayToList {
     // convert......................................................................................
     /**
      * TODO: description, comments and logging
-     * @param array
-     * @return
+     * @param array bla
+     * @return bla
      */
     public static List<Long> convert(long[] array) {
         List<Long> list = new ArrayList<>();
@@ -105,8 +105,8 @@ abstract public class ArrayToList {
     // convert......................................................................................
     /**
      * TODO: description, comments and logging
-     * @param array
-     * @return
+     * @param array bla
+     * @return bla
      */
     public static List<Float> convert(float[] array) {
         List<Float> list = new ArrayList<>();
@@ -119,8 +119,8 @@ abstract public class ArrayToList {
     // convert......................................................................................
     /**
      * TODO: description, comments and logging
-     * @param array
-     * @return
+     * @param array bla
+     * @return bla
      */
     public static List<Double> convert(double[] array) {
         List<Double> list = new ArrayList<>();
@@ -133,8 +133,8 @@ abstract public class ArrayToList {
     // convert......................................................................................
     /**
      * TODO: description, comments and logging
-     * @param array
-     * @return
+     * @param array bla
+     * @return bla
      */
     public static <T> List<T> convert(T[] array) {
         List<T> list = new ArrayList<>();

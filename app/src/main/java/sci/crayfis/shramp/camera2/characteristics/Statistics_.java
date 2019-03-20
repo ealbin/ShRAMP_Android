@@ -43,8 +43,8 @@ abstract class Statistics_ extends Shading_ {
     // read.........................................................................................
     /**
      * TODO: description, comments and logging
-     * @param cameraCharacteristics
-     * @param characteristicsMap
+     * @param cameraCharacteristics bla
+     * @param characteristicsMap bla
      */
     @Override
     protected void read(@NonNull CameraCharacteristics cameraCharacteristics,
@@ -63,11 +63,9 @@ abstract class Statistics_ extends Shading_ {
             String  name;
             Integer value;
             String  valueString;
-            String  units;
 
-            key   = CameraCharacteristics.STATISTICS_INFO_AVAILABLE_FACE_DETECT_MODES;//////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.STATISTICS_INFO_AVAILABLE_FACE_DETECT_MODES;///////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 int[]  modes  = cameraCharacteristics.get(key);
@@ -75,8 +73,8 @@ abstract class Statistics_ extends Shading_ {
                 List<Integer> options = ArrayToList.convert(modes);
 
                 Integer OFF    = CameraMetadata.STATISTICS_FACE_DETECT_MODE_OFF;
-                Integer SIMPLE = CameraMetadata.STATISTICS_FACE_DETECT_MODE_SIMPLE;
-                Integer FULL   = CameraMetadata.STATISTICS_FACE_DETECT_MODE_FULL;
+                //Integer SIMPLE = CameraMetadata.STATISTICS_FACE_DETECT_MODE_SIMPLE;
+                //Integer FULL   = CameraMetadata.STATISTICS_FACE_DETECT_MODE_FULL;
 
                 value       =  OFF;
                 valueString = "OFF (PREFERRED)";
@@ -88,7 +86,7 @@ abstract class Statistics_ extends Shading_ {
                         return getValueString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);
@@ -104,11 +102,9 @@ abstract class Statistics_ extends Shading_ {
 
             String    name;
             Boolean[] value;
-            String    units;
 
-            key   = CameraCharacteristics.STATISTICS_INFO_AVAILABLE_HOT_PIXEL_MAP_MODES;////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.STATISTICS_INFO_AVAILABLE_HOT_PIXEL_MAP_MODES;/////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 boolean[] modes  = cameraCharacteristics.get(key);
@@ -137,7 +133,7 @@ abstract class Statistics_ extends Shading_ {
                         return out + " )";
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);
@@ -154,12 +150,10 @@ abstract class Statistics_ extends Shading_ {
             String name;
             Integer value;
             String valueString;
-            String units;
 
             if (Build.VERSION.SDK_INT >= 23) {
-                key = CameraCharacteristics.STATISTICS_INFO_AVAILABLE_LENS_SHADING_MAP_MODES;///////
+                key  = CameraCharacteristics.STATISTICS_INFO_AVAILABLE_LENS_SHADING_MAP_MODES;//////
                 name = key.getName();
-                units = null;
 
                 if (keychain.contains(key)) {
                     int[] modes = cameraCharacteristics.get(key);
@@ -167,7 +161,7 @@ abstract class Statistics_ extends Shading_ {
                     List<Integer> options = ArrayToList.convert(modes);
 
                     Integer OFF = CameraMetadata.STATISTICS_LENS_SHADING_MAP_MODE_OFF;
-                    Integer ON  = CameraMetadata.STATISTICS_LENS_SHADING_MAP_MODE_ON;
+                    //Integer ON  = CameraMetadata.STATISTICS_LENS_SHADING_MAP_MODE_ON;
 
                     value = OFF;
                     valueString = "OFF (PREFERRED)";
@@ -179,7 +173,7 @@ abstract class Statistics_ extends Shading_ {
                             return getValueString();
                         }
                     };
-                    property = new Parameter<>(name, value, units, formatter);
+                    property = new Parameter<>(name, value, null, formatter);
                 }
                 else {
                     property = new Parameter<>(name);
@@ -194,15 +188,13 @@ abstract class Statistics_ extends Shading_ {
             ParameterFormatter<Integer> formatter;
             Parameter<Integer> property;
 
-            String name;
+            String  name;
             Integer value;
-            String valueString;
-            String units;
+            String  valueString;
 
             if (Build.VERSION.SDK_INT >= 28) {
-                key = CameraCharacteristics.STATISTICS_INFO_AVAILABLE_OIS_DATA_MODES;///////////////
+                key  = CameraCharacteristics.STATISTICS_INFO_AVAILABLE_OIS_DATA_MODES;//////////////
                 name = key.getName();
-                units = null;
 
                 if (keychain.contains(key)) {
                     int[] modes = cameraCharacteristics.get(key);
@@ -210,7 +202,7 @@ abstract class Statistics_ extends Shading_ {
                     List<Integer> options = ArrayToList.convert(modes);
 
                     Integer OFF = CameraMetadata.STATISTICS_OIS_DATA_MODE_OFF;
-                    Integer ON  = CameraMetadata.STATISTICS_OIS_DATA_MODE_ON;
+                    //Integer ON  = CameraMetadata.STATISTICS_OIS_DATA_MODE_ON;
 
                     value = OFF;
                     valueString = "OFF (PREFERRED)";
@@ -222,7 +214,7 @@ abstract class Statistics_ extends Shading_ {
                             return getValueString();
                         }
                     };
-                    property = new Parameter<>(name, value, units, formatter);
+                    property = new Parameter<>(name, value, null, formatter);
                 }
                 else {
                     property = new Parameter<>(name);
@@ -239,11 +231,9 @@ abstract class Statistics_ extends Shading_ {
 
             String  name;
             Integer value;
-            String  units;
 
-            key   = CameraCharacteristics.STATISTICS_INFO_MAX_FACE_COUNT;///////////////////////////
-            name  = key.getName();
-            units = null;
+            key  = CameraCharacteristics.STATISTICS_INFO_MAX_FACE_COUNT;////////////////////////////
+            name = key.getName();
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
@@ -256,7 +246,7 @@ abstract class Statistics_ extends Shading_ {
                         return value.toString();
                     }
                 };
-                property = new Parameter<>(name, value, units, formatter);
+                property = new Parameter<>(name, value, null, formatter);
             }
             else {
                 property = new Parameter<>(name);
