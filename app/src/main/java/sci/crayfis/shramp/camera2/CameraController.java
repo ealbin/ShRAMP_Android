@@ -308,7 +308,7 @@ final public class CameraController {
      */
     public static boolean openCamera(@NonNull Select select,
                                      @Nullable Runnable runnable, @Nullable Handler handler) {
-        //Log.e(Thread.currentThread().getName(), "CameraController openCamera");
+        Log.e(Thread.currentThread().getName(), "CameraController openCamera");
 
         Camera camera = mCameras.get(select);
         if (camera == null) {
@@ -402,7 +402,7 @@ final public class CameraController {
         //Log.e(Thread.currentThread().getName(), "CameraController writeCaptureRequest");
         if (mInstance.mOpenCamera != null) {
             //Log.e("CameraController", ".");
-            //mInstance.mOpenCamera.writeRequest();
+            mInstance.mOpenCamera.writeRequest();
             //Log.e("CameraController", ".");
         }
     }
@@ -415,8 +415,8 @@ final public class CameraController {
         //Log.e(Thread.currentThread().getName(), "CameraController writeCameraCharacteristics");
         //Log.e("CameraController", ".");
         for (Camera camera : mCameras.values()) {
-            //camera.writeCharacteristics();
-            //Log.e("CameraController", ".");
+            camera.writeCharacteristics();
+            Log.e("CameraController", ".");
         }
         //Log.e("CameraController", ".");
     }
@@ -434,7 +434,7 @@ final public class CameraController {
         mInstance.mOpenCamera = camera;
         RequestMaker.makeDefault();
         //Log.e("CameraController", ".");
-        //camera.writeRequest();
+        camera.writeRequest();
         //Log.e("CameraController", ".");
         if (mInstance.mNextRunnable != null) {
             if (mInstance.mNextHandler != null) {

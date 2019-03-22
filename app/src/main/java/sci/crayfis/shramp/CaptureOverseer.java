@@ -89,7 +89,7 @@ public final class CaptureOverseer extends Activity {
 
         mHandler = new Handler(getMainLooper());
 
-        //mLogger.divider(DividerStyle.Strong);
+        mLogger.divider(DividerStyle.Strong);
         //mLogger.log("Capture Overseer has begun");
         //long startTime = SystemClock.elapsedRealtimeNanos();
 
@@ -98,7 +98,7 @@ public final class CaptureOverseer extends Activity {
 
         // TODO: REMOVE IN THE FUTURE
         // start fresh
-        //mLogger.log("Clearing ShRAMP data directory, starting from scratch");
+        mLogger.log("Clearing ShRAMP data directory, starting from scratch");
         DataManager.clean();
 
         //==========================================================================================
@@ -108,7 +108,7 @@ public final class CaptureOverseer extends Activity {
         assert cameraManager != null;
 
         CameraController.discoverCameras(cameraManager);
-        //CameraController.writeCameraCharacteristics();
+        CameraController.writeCameraCharacteristics();
 
         Runnable next = new Runnable() {
             @Override
@@ -146,7 +146,7 @@ public final class CaptureOverseer extends Activity {
      * TODO: description, comments and logging
      */
     public static void prepareImageProcessing() {
-        //Log.e(Thread.currentThread().getName(), "CaptureOverseer prepareImageProcessing");
+        Log.e(Thread.currentThread().getName(), "CaptureOverseer prepareImageProcessing");
         ImageProcessor.init(mInstance);
         startCaptureSession();
     }
@@ -156,7 +156,7 @@ public final class CaptureOverseer extends Activity {
      * TODO: description, comments and logging
      */
     public static void prepareSurfaces() {
-        //Log.e(Thread.currentThread().getName(), "CaptureOverseer prepareSurfaces");
+        Log.e(Thread.currentThread().getName(), "CaptureOverseer prepareSurfaces");
         Runnable next = new Runnable() {
             @Override
             public void run() {

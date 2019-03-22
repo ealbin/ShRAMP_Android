@@ -170,7 +170,7 @@ final public class SurfaceManager {
     public static void openSurfaces(@NonNull Activity activity,
                                     @Nullable Runnable runnable, @Nullable Handler handler) {
 
-        //Log.e(Thread.currentThread().getName(), "SurfaceManager openSurfaces");
+        Log.e(Thread.currentThread().getName(), "SurfaceManager openSurfaces");
 
         mInstance.mOutputFormat = CameraController.getOutputFormat();
         mInstance.mOutputSize   = CameraController.getOutputSize();
@@ -210,7 +210,7 @@ final public class SurfaceManager {
      * @param surface bla
      */
     static void surfaceHasOpened(@NonNull Surface surface, @NonNull Class klass) {
-        //Log.e(Thread.currentThread().getName(), "SurfaceManager surfaceHasOpened");
+        Log.e(Thread.currentThread().getName(), "SurfaceManager surfaceHasOpened: " + klass.getSimpleName());
         mSurfaces.add(surface);
 
         if (klass == TextureViewListener.class) {
@@ -232,7 +232,7 @@ final public class SurfaceManager {
      * TODO: description, comments and logging
      */
     private static void surfaceReady() {
-        //Log.e(Thread.currentThread().getName(), "SurfaceManager SurfaceReady");
+        Log.e(Thread.currentThread().getName(), "SurfaceManager SurfaceReady");
         boolean allReady = true;
         if (TEXTURE_VIEW_SURFACE_ENABLED) {
             allReady = allReady && mInstance.mTextureViewIsReady;

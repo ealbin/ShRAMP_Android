@@ -24,7 +24,7 @@ public abstract class GlobalSettings {
     public static final Long    DEFAULT_FRAME_EXPOSURE_NANOS = 50000000L; // 20 fps
     public static final Integer DEFAULT_N_FRAMES             = 100;
     public static final Double  DUTY_THRESHOLD               = 0.97;
-    public static final Integer FPS_ATTEMPT_LIMIT            = 3;
+    public static final Integer FPS_ATTEMPT_LIMIT            = 2;
 
     public static final Integer RENDER_SCRIPT_FLAGS   = RenderScript.CREATE_FLAG_NONE;
     public static final Integer MAX_IMAGES            = 1;
