@@ -1,19 +1,20 @@
 package sci.crayfis.shramp.surfaces;
 
 import android.app.Activity;
-import android.media.Image;
 import android.media.ImageReader;
+import android.os.Build;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
 
-import java.nio.ByteBuffer;
-
 import sci.crayfis.shramp.GlobalSettings;
+import sci.crayfis.shramp.analysis.DataQueue;
+import Trash.ImageProcessorOld;
 import sci.crayfis.shramp.analysis.ImageProcessor;
-import sci.crayfis.shramp.camera2.util.TimeCode;
+import sci.crayfis.shramp.analysis.ImageWrapper;
+import sci.crayfis.shramp.camera2.capture.CaptureManager;
 import sci.crayfis.shramp.util.HandlerManager;
 import sci.crayfis.shramp.util.HeapMemory;
 
@@ -91,7 +92,7 @@ final class ImageReaderListener implements ImageReader.OnImageAvailableListener 
 
         @Override
         public void run() {
-            ImageProcessor.processImage(nData, nTimestamp);
+            ImageProcessorOld.processImage(nData, nTimestamp);
         }
     }
 
@@ -150,7 +151,7 @@ final class ImageReaderListener implements ImageReader.OnImageAvailableListener 
     // Public
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    Object lock = new Object();
+    private final static Object lock = new Object();
 
     // onImageAvailable.............................................................................
     /**
@@ -161,38 +162,30 @@ final class ImageReaderListener implements ImageReader.OnImageAvailableListener 
     public void onImageAvailable(@NonNull ImageReader reader) {
 
         synchronized (lock) {
-            while (HeapMemory.getAvailableMiB() < ImageProcessor.LOW_MEMORY) {
+
+            // TODO: better wait solution
+            while (HeapMemory.isMemoryLow()) {
                 Log.e("LOW MEMORY", "ImageReaderListener is waiting for memory to clear.........");
+                HeapMemory.logAvailableMiB();
                 try {
-                    lock.wait(10);
+                    lock.wait(2 * CaptureManager.getTargetFrameNanos() / 1000 / 1000);
                 } catch (InterruptedException e) {
                 }
                 System.gc();
+                if (Build.VERSION.SDK_INT > 27) {
+                    reader.discardFreeBuffers();
+                }
+
+                if (!ImageProcessor.isBusy()) {
+                    break;
+                }
             }
 
-
-            //Log.e(Thread.currentThread().getName(), "ImageReaderListener onImageAvailable");
-            Image image = null;
             try {
-                image = reader.acquireNextImage();
-
-                long timestamp = image.getTimestamp();
-                Log.e(Thread.currentThread().getName(), "ImageReaderListener has recieved " + TimeCode.toString(timestamp));
-
-                // RAW_SENSOR has 1 plane, YUV has 3 but the luminosity (Y) is plane 1
-                ByteBuffer imageBytes = image.getPlanes()[0].getBuffer();
-                byte[] data = new byte[imageBytes.capacity()];
-                imageBytes.get(data);
-                image.close();
-
-                if (!GlobalSettings.DEBUG_NO_DATA_POSTING) {
-                    ImageProcessor.post(new QueueData(data, timestamp));
-                }
-            } catch (IllegalStateException e) {
+                DataQueue.add(new ImageWrapper(reader));
+            }
+            catch (IllegalStateException e) {
                 // TODO: error
-                if (image != null) {
-                    image.close();
-                }
             }
         }
     }

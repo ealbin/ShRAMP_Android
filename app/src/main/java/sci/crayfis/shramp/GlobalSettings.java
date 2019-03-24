@@ -11,18 +11,26 @@ public abstract class GlobalSettings {
     public static final Integer CAMERA_CONTROLLER_THREAD_PRIORITY = Process.THREAD_PRIORITY_FOREGROUND;
     public static final Integer IMAGE_READER_THREAD_PRIORITY      = Process.THREAD_PRIORITY_FOREGROUND;
     public static final Integer IMAGE_PROCESSOR_THREAD_PRIORITY   = Process.THREAD_PRIORITY_FOREGROUND;
+    public static final Integer DATA_QUEUE_THREAD_PRIORITY        = Process.THREAD_PRIORITY_FOREGROUND;
+    public static final Integer STREAM_PROCESSOR_THREAD_PRIORITY  = Process.THREAD_PRIORITY_FOREGROUND;
+
+    public static final RenderScript.Priority RENDER_SCRIPT_PRIORITY = RenderScript.Priority.NORMAL;
 
     public static final CameraController.Select PREFERRED_CAMERA = CameraController.Select.BACK;
     public static final CameraController.Select SECONDARY_CAMERA = CameraController.Select.FRONT;
 
-    public static final Boolean TEXTURE_VIEW_SURFACE_ENABLED = true;
+    public static final Boolean TEXTURE_VIEW_SURFACE_ENABLED = false;
     public static final Boolean IMAGE_READER_SURFACE_ENABLED = true;
 
     public static final Boolean DISABLE_RAW_OUTPUT      = false;
     public static final Boolean FORCE_CONTROL_MODE_AUTO = false;
 
-    public static final Long    DEFAULT_FRAME_EXPOSURE_NANOS = 50000000L; // 20 fps
-    public static final Integer DEFAULT_N_FRAMES             = 100;
+    private static final Long FPS_30 =  33333333L;
+    private static final Long FPS_20 =  50000000L;
+    private static final Long FPS_10 = 100000000L;
+
+    public static final Long    DEFAULT_FRAME_EXPOSURE_NANOS = FPS_10;
+    public static final Integer DEFAULT_N_FRAMES             = 1000;
     public static final Double  DUTY_THRESHOLD               = 0.97;
     public static final Integer FPS_ATTEMPT_LIMIT            = 2;
 
@@ -35,14 +43,7 @@ public abstract class GlobalSettings {
 
 
     // Debugging
-    public static final Boolean DEBUG_DISABLE_CAPTURE          = false;
-    public static final Boolean DEBUG_STOP_CAPTURE_IMMEDIATELY = false;
-    public static final Boolean DEBUG_NO_DATA_POSTING          = false;
-    public static final Boolean DEBUG_START_STOP_CAPTURE       = false;
-    public static final Boolean DEBUG_DISABLE_PROCESSING       = false;
-    public static final Boolean DEBUG_RENDERSCRIPT_UPDATE      = false;
-    public static final Boolean DEBUG_DISABLE_STATISTICS       = false;
-    public static final Boolean DEBUG_STATISTICS_CHECK         = false;
-
+    public static final Boolean DEBUG_DISABLE_QUEUE      = false;
+    public static final Boolean DEBUG_DISABLE_PROCESSING = false;
 
 }

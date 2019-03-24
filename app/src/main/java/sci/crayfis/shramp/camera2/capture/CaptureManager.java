@@ -12,22 +12,21 @@ import android.util.Log;
 import android.util.Range;
 import android.view.Surface;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 
 import sci.crayfis.shramp.CaptureOverseer;
 import sci.crayfis.shramp.GlobalSettings;
+import sci.crayfis.shramp.analysis.DataQueue;
 import sci.crayfis.shramp.analysis.ImageProcessor;
 import sci.crayfis.shramp.camera2.CameraController;
 import sci.crayfis.shramp.camera2.requests.RequestMaker;
 import sci.crayfis.shramp.camera2.util.Parameter;
-import sci.crayfis.shramp.logging.ShrampLogger;
 import sci.crayfis.shramp.surfaces.SurfaceManager;
 import sci.crayfis.shramp.util.HandlerManager;
 import sci.crayfis.shramp.util.HeapMemory;
+import sci.crayfis.shramp.util.NumToString;
+import sci.crayfis.shramp.util.StopWatch;
 
 /**
  * TODO: description, comments and logging
@@ -42,26 +41,6 @@ public class CaptureManager extends CameraCaptureSession.StateCallback {
     // Private Constants
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    // DEFAULT_FRAME_EXPOSURE_NANOS.................................................................
-    // TODO: description
-    private static final Long DEFAULT_FRAME_EXPOSURE_NANOS = GlobalSettings.DEFAULT_FRAME_EXPOSURE_NANOS;
-
-    // DEFAULT_N_FRAMES.............................................................................
-    // TODO: description
-    private static final Integer DEFAULT_N_FRAMES = GlobalSettings.DEFAULT_N_FRAMES;
-
-    // DUTY_THRESHOLD...............................................................................
-    // TODO: description
-    private static final Double DUTY_THRESHOLD = GlobalSettings.DUTY_THRESHOLD;
-
-    // FPS_ATTEMPT_LIMIT............................................................................
-    // TODO: description
-    private static final Integer FPS_ATTEMPT_LIMIT = GlobalSettings.FPS_ATTEMPT_LIMIT;
-
-    // PRIORITY.....................................................................................
-    // TODO: description
-    private static final Integer PRIORITY = GlobalSettings.CAPTURE_MANAGER_THREAD_PRIORITY;
-
     // THREAD_NAME..................................................................................
     // TODO: description
     private static final String THREAD_NAME = "CaptureManagerThread";
@@ -71,7 +50,7 @@ public class CaptureManager extends CameraCaptureSession.StateCallback {
 
     // mHandler.....................................................................................
     // TODO: description
-    private static final Handler mHandler = HandlerManager.newHandler(THREAD_NAME, PRIORITY);
+    private static final Handler mHandler = HandlerManager.newHandler(THREAD_NAME, GlobalSettings.CAPTURE_MANAGER_THREAD_PRIORITY);
 
     // mInstance....................................................................................
     // TODO: description
@@ -80,39 +59,106 @@ public class CaptureManager extends CameraCaptureSession.StateCallback {
     // Private
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    // mFpsAttempts.................................................................................
-    // TODO: description
-    private static Integer mFpsAttempts;
+    private static int mFpsLockAttempts;
 
-    // mFrameExposureNanos..........................................................................
-    // TODO: description
-    private static Long mFrameExposureNanos;
+    abstract private static class mTarget {
+        static long FrameExposureNanos;
+        static int  TotalFrames;
 
-    // mNframes.....................................................................................
-    // TODO: description
-    private static Integer mNframes;
+        static void reset() {
+            FrameExposureNanos = GlobalSettings.DEFAULT_FRAME_EXPOSURE_NANOS;
+            TotalFrames        = GlobalSettings.DEFAULT_N_FRAMES;
+        }
+    }
 
-    // mSurfaceList.................................................................................
-    // TODO: description
-    private static List<Surface> mSurfaceList;
+    abstract private static class mCurrentSession {
+        enum State {RUNNING, PAUSED, OPEN, CLOSED};
 
+        static CameraCaptureSession captureSession;
+        static CaptureRequest       captureRequest;
+        static CaptureStream        captureStream;
+        static List<Surface>        surfaceList;
+        static State                state;
 
-    //==============================================================================================
-    // Logging
-    private static final ShrampLogger mLogger = new ShrampLogger(ShrampLogger.DEFAULT_STREAM);
-    private static final DecimalFormat mNanosFormatter = (DecimalFormat) NumberFormat.getInstance(Locale.US);
-    private static final DecimalFormat mFormatter = new DecimalFormat("##.#");
-    //==============================================================================================
+        static void newSession(CameraCaptureSession session) {
+            captureSession = session;
+            captureRequest = buildCaptureRequest();
+            captureStream  = new CaptureStream(mTarget.TotalFrames);
+            state          = State.OPEN;
+        }
+
+        static void refreshSurfaces() {
+            surfaceList = SurfaceManager.getOpenSurfaces();
+        }
+
+        static void reset() {
+            if (captureSession != null) {
+                captureSession.close();
+            }
+            captureSession = null;
+            captureRequest = null;
+            captureStream  = null;
+            surfaceList    = null;
+            refreshSurfaces();
+
+            state = State.CLOSED;
+        }
+
+        static boolean pause() {
+            if (state == State.RUNNING) {
+                try {
+                    captureSession.stopRepeating();
+                    state = State.PAUSED;
+                    return true;
+                } catch (CameraAccessException e) {
+                    // TODO:  error
+                    return false;
+                }
+            }
+
+            if (state == State.OPEN || state == State.CLOSED) {
+                return false;
+            }
+
+            return (state == State.PAUSED);
+        }
+
+        static boolean restart() {
+
+            if (state == State.PAUSED || state == State.OPEN) {
+                HeapMemory.logAvailableMiB();
+                if (!HeapMemory.isMemoryGood()) {
+                    DataQueue.purge();
+                    System.gc();
+                    if (!DataQueue.isEmpty() || ImageProcessor.isBusy()) {
+                        return false;
+                    }
+                    Log.e(Thread.currentThread().getName(), "Forcing Restart");
+                }
+
+                try {
+                    captureSession.setRepeatingRequest(captureRequest, captureStream, mHandler);
+                    state = State.RUNNING;
+                    return true;
+                } catch (CameraAccessException e) {
+                    // TODO: error
+                    return false;
+                }
+            }
+
+            if (state == State.RUNNING) {
+                return true;
+            }
+
+            return !(state == State.CLOSED);
+        }
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    //**********************************************************************************************
-    // Constructors
-    //-------------
-
-    // Private
+    // Private Constructor
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // CaptureManager...............................................................................
@@ -121,15 +167,10 @@ public class CaptureManager extends CameraCaptureSession.StateCallback {
      */
     private CaptureManager() {
         super();
-        //Log.e(Thread.currentThread().getName(), "CaptureManager CaptureManager");
-        clear();
+        reset();
     }
 
-    //**********************************************************************************************
-    // Static Class Methods
-    //---------------------
-
-    // Public
+    // Public Static Class Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // startCaptureSession..........................................................................
@@ -138,89 +179,126 @@ public class CaptureManager extends CameraCaptureSession.StateCallback {
      */
     public static void startCaptureSession() {
         Log.e(Thread.currentThread().getName(), "CaptureManager startCaptureSession");
-        refreshSurfaces();
-        CameraController.createCaptureSession(mSurfaceList, mInstance, mHandler);
+        mCurrentSession.reset();
+        // execution continues in onConfigured
+        CameraController.createCaptureSession(mCurrentSession.surfaceList, mInstance, mHandler);
     }
 
-    // Package-private
+    public static void pauseCaptureSession() {
+        mCurrentSession.pause();
+    }
+
+    // restartCaptureSession........................................................................
+    /**
+     * TODO: description, comments and logging
+     */
+    public static void restartCaptureSession() {
+        synchronized (mInstance) {
+            while (!mCurrentSession.restart()) {
+                try {
+                    mInstance.wait(2 * mTarget.FrameExposureNanos / 1000 / 1000);
+                }
+                catch (InterruptedException e) {
+                    // TODO: error
+                }
+            }
+        }
+        Log.e(Thread.currentThread().getName(), "<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>");
+        Log.e(Thread.currentThread().getName(), "STARTING CAPTURE - STARTING CAPTURE - STARTING CAPTURE - STARTING CAPTURE - STARTING CAPTURE - STARTING CAPTURE");
+    }
+
+    public static long getTargetFrameNanos() {
+        return mTarget.FrameExposureNanos;
+    }
+
+    // Package-private Static Class Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
 
     // sessionFinished..............................................................................
     /**
      * TODO: description, comments and logging
-     * @param session bla
      * @param averageFps bla
      * @param averageDuty bla
      */
-    static void sessionFinished(@NonNull CameraCaptureSession session,
-                                double averageFps, double averageDuty) {
+    static void sessionFinished(double averageFps, double averageDuty) {
         Log.e(Thread.currentThread().getName(), "CaptureManager sessionFinished");
-        mCurrentCaptureRequest = null;
+
+        // TODO: data queue purge
+        DataQueue.purge();
+        synchronized (mInstance) {
+            try {
+                mInstance.wait(1000);
+            } catch (InterruptedException e) {
+
+            }
+        }
         String string = " \n";
         string += "Session performance: \n";
-        string += "\t Average FPS:  " + mFormatter.format(averageFps) + " [frames / sec] \n";
-        string += "\t Average Duty: " + mFormatter.format(averageDuty * 100.) + " % \n";
-        mLogger.log(string);
+        string += "\t Average FPS:  " + NumToString.decimal(averageFps) + " [frames / sec] \n";
+        string += "\t Average Duty: " + NumToString.decimal(averageDuty * 100.) + " % \n";
+        Log.e(Thread.currentThread().getName(), string);
 
-        if (GlobalSettings.DEBUG_NO_DATA_POSTING) {
-            CaptureOverseer.quitSafely();
-            return;
-        }
+        if (averageDuty < GlobalSettings.DUTY_THRESHOLD && mFpsLockAttempts < GlobalSettings.FPS_ATTEMPT_LIMIT) {
+            mFpsLockAttempts += 1;
+            mTarget.FrameExposureNanos = (long) ( Math.floor(1e9 / averageFps) );
 
-        // If observed exposure duty is less than DUTY_THRESHOLD, try again with fps at the average
-        mFpsAttempts += 1;
-        if (averageDuty < DUTY_THRESHOLD && mFpsAttempts < FPS_ATTEMPT_LIMIT) {
-            mFrameExposureNanos = (long) (Math.floor(1e9 / averageFps) );
-
-            mLogger.log("Start next session with frame rate target: "
-                    + mFormatter.format(1. / ( mFrameExposureNanos * 1e-9) )
+            Log.e(Thread.currentThread().getName(), "Start next session with frame rate target: "
+                    + NumToString.decimal(1. / ( mTarget.FrameExposureNanos * 1e-9) )
                     + " [frames / sec]");
 
-            Runnable startAgain = new Runnable() {
+            // TODO: do this:
+            //mCurrentSession.newSession(mCurrentSession.captureSession);
+            //restartCaptureSession();
+
+            //Runnable startAgain = new Runnable() {
+            //    @Override
+            //    public void run() {
+            //        startCaptureSession();
+            //    }
+            //};
+            //Log.e(Thread.currentThread().getName(), "CaptureManager Posting startAgain");
+            //CaptureOverseer.setNextAction(startAgain);
+
+            //return;
+        }
+        CaptureOverseer.quitSafely();
+
+        /*
+        if (true) { // TODO: if take another run
+            Runnable doStatistics;
+            doStatistics = new Runnable() {
                 @Override
                 public void run() {
+                    //00000000000000000000000000000000000000000000000000000000000000000000000000
+                    //ImageProcessorOld.processStatistics();
                     startCaptureSession();
                 }
             };
-            Log.e(Thread.currentThread().getName(), "CaptureManager Posting startAgain");
-            CaptureOverseer.setNextAction(startAgain);
-        }
-        else {
-            // ready for data
-
-
-            mInstance.quit = true;
-            Runnable doStatistics;
-            if (!mInstance.quit) {
-                doStatistics = new Runnable() {
-                    @Override
-                    public void run() {
-                        ImageProcessor.processStatistics();
-                        startCaptureSession();
-                    }
-                };
-                Log.e(Thread.currentThread().getName(), "CaptureManager Posting statistics then startAgain");
-            }
-            else {
-                session.close();
-
-                doStatistics = new Runnable() {
-                    @Override
-                    public void run() {
-                        ImageProcessor.processStatistics();
-                        CaptureOverseer.quitSafely();
-                    }
-                };
-                Log.e(Thread.currentThread().getName(), "CaptureManager Posting statistics and quit");
-            }
+            Log.e(Thread.currentThread().getName(), "CaptureManager Posting statistics then startAgain");
             CaptureOverseer.setNextAction(doStatistics);
-
+            return;
         }
+
+        if (true) { // TODO: if quitting time
+            mCurrentSession.reset();
+            Runnable doStatistics;
+            doStatistics = new Runnable() {
+                @Override
+                public void run() {
+                    //00000000000000000000000000000000000000000000000000000000000000000000000000
+                    //ImageProcessorOld.processStatistics();
+                    CaptureOverseer.quitSafely();
+                }
+            };
+            Log.e(Thread.currentThread().getName(), "CaptureManager Posting statistics and quit");
+            CaptureOverseer.setNextAction(doStatistics);
+            return;
+        }
+        */
     }
 
-    boolean quit = false;
-
-    // Private
+    // Private Static Class Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // buildCaptureRequest..........................................................................
@@ -230,11 +308,13 @@ public class CaptureManager extends CameraCaptureSession.StateCallback {
      */
     private static CaptureRequest buildCaptureRequest() {
         Log.e(Thread.currentThread().getName(), "CaptureManager buildCaptureRequest");
+        StopWatch stopWatch = new StopWatch();
+
         RequestMaker.makeDefault();
         CaptureRequest.Builder builder = CameraController.getCaptureRequestBuilder();
         assert builder != null;
 
-        for (Surface surface : mSurfaceList) {
+        for (Surface surface : mCurrentSession.surfaceList) {
             builder.addTarget(surface);
         }
 
@@ -242,166 +322,90 @@ public class CaptureManager extends CameraCaptureSession.StateCallback {
         assert mode != null;
 
         if (mode == CameraMetadata.CONTROL_AE_MODE_ON) {
-
-            // Set FPS range closest to target FPS
-            LinkedHashMap<CameraCharacteristics.Key, Parameter> characteristicsMap;
-            characteristicsMap = CameraController.getOpenedCharacteristicsMap();
-            assert characteristicsMap != null;
-
-            CameraCharacteristics.Key<Range<Integer>[]> cKey;
-            Parameter<Range<Integer>[]> property;
-
-            cKey = CameraCharacteristics.CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES;
-            property = characteristicsMap.get(cKey);
-            assert property != null;
-
-            Range<Integer>[] ranges = property.getValue();
-            assert ranges != null;
-
-            int target = (int) Math.round(1e9 / mFrameExposureNanos);
-            Range<Integer> closest = null;
-            for (Range<Integer> range : ranges) {
-                if (closest == null) {
-                    closest = range;
-                    continue;
-                }
-
-                int diff = Math.min(Math.abs(range.getUpper() - target),
-                                    Math.abs(range.getLower() - target));
-
-                int closestDiff = Math.min(Math.abs(closest.getUpper() - target),
-                                           Math.abs(closest.getLower() - target));
-
-                if (diff < closestDiff) {
-                    closest = range;
-                }
-            }
-            assert closest != null;
-
-            builder.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, closest);
+            builder.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, getAeTargetFpsRange());
         }
         else {
-            builder.set(CaptureRequest.SENSOR_FRAME_DURATION, mFrameExposureNanos);
-            builder.set(CaptureRequest.SENSOR_EXPOSURE_TIME,  mFrameExposureNanos);
+            builder.set(CaptureRequest.SENSOR_FRAME_DURATION, mTarget.FrameExposureNanos);
+            builder.set(CaptureRequest.SENSOR_EXPOSURE_TIME,  mTarget.FrameExposureNanos);
         }
         CameraController.setCaptureRequestBuilder(builder);
         CameraController.writeFPS();
-        return builder.build();
+
+        CaptureRequest request = builder.build();
+        Log.e(Thread.currentThread().getName(), "<buildCaptureRequest()> time: " + NumToString.number(stopWatch.stop()) + " [ns]");
+        return request;
     }
 
-    // clear........................................................................................
+    // getAeTargetFpsRange..........................................................................
+    @SuppressWarnings("unchecked")
+    private static Range<Integer> getAeTargetFpsRange() {
+        StopWatch stopWatch = new StopWatch();
+        // Set FPS range closest to target FPS
+        LinkedHashMap<CameraCharacteristics.Key, Parameter> characteristicsMap;
+        characteristicsMap = CameraController.getOpenedCharacteristicsMap();
+        assert characteristicsMap != null;
+
+        CameraCharacteristics.Key<Range<Integer>[]> cKey;
+        Parameter<Range<Integer>[]> property;
+
+        cKey = CameraCharacteristics.CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES;
+        property = characteristicsMap.get(cKey);
+        assert property != null;
+
+        Range<Integer>[] ranges = property.getValue();
+        assert ranges != null;
+
+        int target = (int) Math.round(1e9 / mTarget.FrameExposureNanos);
+        Range<Integer> closest = null;
+        for (Range<Integer> range : ranges) {
+            if (closest == null) {
+                closest = range;
+                continue;
+            }
+
+            int diff = Math.min(Math.abs(range.getUpper() - target),
+                                Math.abs(range.getLower() - target));
+
+            int closestDiff = Math.min(Math.abs(closest.getUpper() - target),
+                                       Math.abs(closest.getLower() - target));
+
+            if (diff < closestDiff) {
+                closest = range;
+            }
+        }
+        assert closest != null;
+        Log.e(Thread.currentThread().getName(), "<getAeTargetFpsRange()> time: " + NumToString.number(stopWatch.stop()) + " [ns");
+        return closest;
+    }
+
+    // reset........................................................................................
     /**
      * TODO: description, comments and logging
      */
-    private static void clear() {
-        Log.e(Thread.currentThread().getName(), "CaptureManager clear");
-        mFpsAttempts = 0;
-        mNframes = DEFAULT_N_FRAMES;
-        mFrameExposureNanos = DEFAULT_FRAME_EXPOSURE_NANOS;
-        mSurfaceList = null;
-        mCurrentCaptureRequest = null;
+    private static void reset() {
+        Log.e(Thread.currentThread().getName(), "CaptureManager reset");
+        mFpsLockAttempts = 0;
+        mTarget.reset();
+        mCurrentSession.reset();
     }
 
-    // refreshSurfaces..............................................................................
-    /**
-     * TODO: description, comments and logging
-     */
-    private static void refreshSurfaces() {
-        Log.e(Thread.currentThread().getName(), "CaptureManager refreshSurfaces");
-        mSurfaceList = SurfaceManager.getOpenSurfaces();
-    }
-
-    // startRepeatingRequest........................................................................
-    /**
-     * TODO: description, comments and logging
-     * @param session bla
-     * @param callback bla
-     */
-    private void startRepeatingRequest(CameraCaptureSession session,
-                                       CameraCaptureSession.CaptureCallback callback) {
-
-        Log.e(Thread.currentThread().getName(), "<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>");
-        Log.e(Thread.currentThread().getName(), "CaptureManager startRepeatingRequest");
-        ImageProcessor.reset();
-        mCurrentCaptureRequest = buildCaptureRequest();
-
-        try {
-            // Execution continues in CaptureCallback.onCaptureStarted()
-            session.setRepeatingRequest(mCurrentCaptureRequest, callback, mHandler);
-        }
-        catch (CameraAccessException e) {
-            // TODO: "ERROR: Camera Access Exception"
-        }
-    }
-
-    private static CaptureRequest mCurrentCaptureRequest;
-    private static CameraCaptureSession mCurrentSession;
-    private static CaptureSession mCurrentCaptureSession;
-
-    public static boolean pauseRepeatingRequest() {
-        return CaptureSession.pauseRepeatingRequest();
-    }
-
-    static void pauseRepeatingRequest(CameraCaptureSession session,
-                                 CaptureSession captureSession) {
-
-        mCurrentSession = session;
-        mCurrentCaptureSession = captureSession;
-    }
-
-    public static boolean requestIsPaused() {
-        return (mCurrentSession != null && mCurrentCaptureSession != null);
-    }
-
-    public static void restartRepeatingRequest() {
-        if (mCurrentCaptureRequest == null || mCurrentCaptureSession == null
-        || HeapMemory.getAvailableMiB() < GlobalSettings.LOW_MEMORY_MiB) {
-            return;
-        }
-        Log.e(Thread.currentThread().getName(), "CaptureManager *** restart *** restart *** restart *** restart *** restart *** restart *** restart *** restart *** restart");
-
-        try {
-            // Execution continues in CaptureCallback.onCaptureStarted()
-            CaptureSession.resumeRepeatingRequest();
-            mCurrentSession.setRepeatingRequest(mCurrentCaptureRequest, mCurrentCaptureSession, mHandler);
-            mCurrentSession = null;
-            mCurrentCaptureSession = null;
-        }
-        catch (CameraAccessException e) {
-            // TODO: "ERROR: Camera Access Exception"
-        }
-    }
-
-    //**********************************************************************************************
-    // Overriding Methods
-    //-------------------
-
-    // Public
+    // Public Overriding Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    // onActive.....................................................................................
+    // onConfigured.................................................................................
     /**
-     * This method is called when the session starts actively processing capture requests.
+     * This method is called when the camera device has finished configuring itself,
+     * and the session can start processing capture requests.
+     * (Required)
      *  TODO: documentation, comments and logging
      * @param session bla
      */
     @Override
-    public void onActive(@NonNull CameraCaptureSession session) {
-        super.onActive(session);
-        Log.e(Thread.currentThread().getName(), "CaptureManager onActive");
-    }
-
-    // onCaptureQueueEmpty..........................................................................
-    /**
-     * This method is called when camera device's input capture queue becomes empty,
-     * and is ready to accept the next request.
-     *  TODO: documentation, comments and logging
-     * @param session bla
-     */
-    @Override
-    public void onCaptureQueueEmpty(@NonNull CameraCaptureSession session) {
-        super.onCaptureQueueEmpty(session);
-        Log.e(Thread.currentThread().getName(), "CaptureManager onCaptureQueueEmpty");
+    public void onConfigured(@NonNull CameraCaptureSession session) {
+        //super.onConfigured(session); is abstract
+        Log.e(Thread.currentThread().getName(), "CaptureManager onConfigured");
+        mCurrentSession.newSession(session);
+        restartCaptureSession();
     }
 
     // onClosed.....................................................................................
@@ -416,43 +420,11 @@ public class CaptureManager extends CameraCaptureSession.StateCallback {
         Log.e(Thread.currentThread().getName(), "CaptureManager onClosed");
     }
 
-    // onConfigured.................................................................................
-    /**
-     * This method is called when the camera device has finished configuring itself,
-     * and the session can start processing capture requests.
-     * (Required)
-     *  TODO: documentation, comments and logging
-     * @param session bla
-     */
-    @Override
-    public void onConfigured(@NonNull CameraCaptureSession session) {
-        //super.onConfigured(session); is abstract
-        Log.e(Thread.currentThread().getName(), "CaptureManager onConfigured");
 
 
-        if (GlobalSettings.DEBUG_DISABLE_CAPTURE) {
-            session.close();
-            CaptureOverseer.quitSafely();
-            return;
-        }
-
-        CaptureSession captureSession = new CaptureSession(mNframes);
-        startRepeatingRequest(session, captureSession);
-
-    }
-
-    // onConfiguredFailed...........................................................................
-    /**
-     * This method is called if the session cannot be configured as requested.
-     * (Required)
-     *  TODO: documentation, comments and logging
-     * @param session bla
-     */
-    @Override
-    public void onConfigureFailed(@NonNull CameraCaptureSession session) {
-        //super.onConfigureFailed(session); is abstract
-        Log.e(Thread.currentThread().getName(), "CaptureManager onConfigureFailed");
-    }
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // TODO: IGNORE ////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     // onReady......................................................................................
     /**
@@ -463,15 +435,32 @@ public class CaptureManager extends CameraCaptureSession.StateCallback {
     @Override
     public void onReady(@NonNull CameraCaptureSession session) {
         super.onReady(session);
-        Log.e(Thread.currentThread().getName(), "CaptureManager onReady");
-        if (GlobalSettings.DEBUG_STOP_CAPTURE_IMMEDIATELY) {
-            try {
-                session.abortCaptures();
-            }
-            catch (CameraAccessException e) {
-            }
-            CaptureOverseer.quitSafely();
-        }
+        //Log.e(Thread.currentThread().getName(), "CaptureManager onReady");
+    }
+
+    // onActive.....................................................................................
+    /**
+     * This method is called when the session starts actively processing capture requests.
+     *  TODO: documentation, comments and logging
+     * @param session bla
+     */
+    @Override
+    public void onActive(@NonNull CameraCaptureSession session) {
+        super.onActive(session);
+        //Log.e(Thread.currentThread().getName(), "CaptureManager onActive");
+    }
+
+    // onCaptureQueueEmpty..........................................................................
+    /**
+     * This method is called when camera device's input capture queue becomes empty,
+     * and is ready to accept the next request.
+     *  TODO: documentation, comments and logging
+     * @param session bla
+     */
+    @Override
+    public void onCaptureQueueEmpty(@NonNull CameraCaptureSession session) {
+        super.onCaptureQueueEmpty(session);
+        //Log.e(Thread.currentThread().getName(), "CaptureManager onCaptureQueueEmpty");
     }
 
     // onSurfacePrepared............................................................................
@@ -484,7 +473,24 @@ public class CaptureManager extends CameraCaptureSession.StateCallback {
     @Override
     public void onSurfacePrepared(@NonNull CameraCaptureSession session, @NonNull Surface surface) {
         super.onSurfacePrepared(session, surface);
-        Log.e(Thread.currentThread().getName(), "CaptureManager onSurfacePrepared: " + surface.toString());
+        //Log.e(Thread.currentThread().getName(), "CaptureManager onSurfacePrepared: " + surface.toString());
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // TODO: SHUTDOWN //////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // onConfiguredFailed...........................................................................
+    /**
+     * This method is called if the session cannot be configured as requested.
+     * (Required)
+     *  TODO: documentation, comments and logging
+     * @param session bla
+     */
+    @Override
+    public void onConfigureFailed(@NonNull CameraCaptureSession session) {
+        //super.onConfigureFailed(session); is abstract
+        Log.e(Thread.currentThread().getName(), "CaptureManager onConfigureFailed");
+        // TODO: SHUTDOWN
     }
 
 }

@@ -1,4 +1,4 @@
-package sci.crayfis.shramp.camera2.capture;
+package Trash;
 
 import android.annotation.TargetApi;
 import android.hardware.camera2.CameraAccessException;
@@ -15,7 +15,7 @@ import android.view.Surface;
 import java.text.DecimalFormat;
 
 import sci.crayfis.shramp.GlobalSettings;
-import sci.crayfis.shramp.analysis.ImageProcessor;
+import sci.crayfis.shramp.analysis.DataQueue;
 import sci.crayfis.shramp.camera2.util.TimeCode;
 import sci.crayfis.shramp.logging.ShrampLogger;
 import sci.crayfis.shramp.util.HeapMemory;
@@ -24,7 +24,7 @@ import sci.crayfis.shramp.util.HeapMemory;
  * TODO: description, comments and logging
  */
 @TargetApi(21)
-class CaptureSession extends CameraCaptureSession.CaptureCallback {
+class CaptureSessionOld extends CameraCaptureSession.CaptureCallback {
 
     //**********************************************************************************************
     // Class Fields
@@ -44,7 +44,7 @@ class CaptureSession extends CameraCaptureSession.CaptureCallback {
     private long mFirstTimestamp;
     private long mLastTimestamp;
 
-    private static CaptureSession mInstance;
+    private static CaptureSessionOld mInstance;
 
     /**
      * TODO: description, comments and logging
@@ -60,7 +60,7 @@ class CaptureSession extends CameraCaptureSession.CaptureCallback {
 
         @Override
         public void run() {
-            ImageProcessor.processImage(nResult);
+            ImageProcessorOld.processImage(nResult);
         }
     }
 
@@ -81,24 +81,24 @@ class CaptureSession extends CameraCaptureSession.CaptureCallback {
     // Private
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    // CaptureSession...............................................................................
+    // CaptureSessionOld...............................................................................
     /**
      * TODO: description, comments and logging
      */
-    private CaptureSession() {
+    private CaptureSessionOld() {
         super();
-        //Log.e(Thread.currentThread().getName(), "CaptureSession CaptureSession");
+        //Log.e(Thread.currentThread().getName(), "CaptureSessionOld CaptureSessionOld");
     }
 
     // Package-private
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    // CaptureSession...............................................................................
+    // CaptureSessionOld...............................................................................
     /**
      * TODO: description, comments and logging
      * @param frameLimit bla
      */
-    CaptureSession(int frameLimit) {
+    CaptureSessionOld(int frameLimit) {
         this();
         mFrameLimit     = frameLimit;
         mFrameCount     = 0;
@@ -106,7 +106,7 @@ class CaptureSession extends CameraCaptureSession.CaptureCallback {
         mElapsedTime    = 0;
         mTotalExposure  = 0;
         mInstance = this;
-        Log.e(Thread.currentThread().getName(), "CaptureSession CaptureSession frameLimit: " + Integer.toString(frameLimit));
+        Log.e(Thread.currentThread().getName(), "CaptureSessionOld CaptureSessionOld frameLimit: " + Integer.toString(frameLimit));
     }
 
     //**********************************************************************************************
@@ -122,7 +122,7 @@ class CaptureSession extends CameraCaptureSession.CaptureCallback {
      * @param session bla
      */
     private synchronized void checkIfDone(CameraCaptureSession session) {
-        //Log.e(Thread.currentThread().getName(), "CaptureSession checkIfDone");
+        //Log.e(Thread.currentThread().getName(), "CaptureSessionOld checkIfDone");
         mFrameCount += 1;
 
         if (mFrameCount >= mFrameLimit) {
@@ -170,7 +170,7 @@ class CaptureSession extends CameraCaptureSession.CaptureCallback {
                                     @NonNull CaptureRequest request,
                                     @NonNull Surface target, long frameNumber) {
         super.onCaptureBufferLost(session, request, target, frameNumber);
-        Log.e(Thread.currentThread().getName(), "CaptureSession onCaptureBufferLost");
+        Log.e(Thread.currentThread().getName(), "CaptureSessionOld onCaptureBufferLost");
         checkIfDone(session);
     }
 
@@ -188,14 +188,15 @@ class CaptureSession extends CameraCaptureSession.CaptureCallback {
                                    @NonNull CaptureRequest request,
                                    @NonNull TotalCaptureResult result) {
         super.onCaptureCompleted(session, request, result);
-        //Log.e(Thread.currentThread().getName(), "CaptureSession onCaptureCompleted");
+        //Log.e(Thread.currentThread().getName(), "CaptureSessionOld onCaptureCompleted");
         long now = SystemClock.elapsedRealtimeNanos();
-        if (!GlobalSettings.DEBUG_NO_DATA_POSTING) {
-            ImageProcessor.post(new QueueCaptureResult(result));
-        }
+        //if (!GlobalSettings.DEBUG_NO_DATA_POSTING) {
+            //ImageProcessorOld.post(new QueueCaptureResult(result));
+            DataQueue.add(result);
+        //}
         Long timestamp = result.get(CaptureResult.SENSOR_TIMESTAMP);
         assert timestamp != null;
-        Log.e(Thread.currentThread().getName(), "CaptureSession just posted the completed capture of " + TimeCode.toString(timestamp));
+        Log.e(Thread.currentThread().getName(), "CaptureSessionOld just posted the completed capture of " + TimeCode.toString(timestamp));
 
         if (mLastCompleted == 0) {
             mLastCompleted = now;
@@ -226,7 +227,7 @@ class CaptureSession extends CameraCaptureSession.CaptureCallback {
         }
         mLastTimestamp = timestamp;
 
-        Log.e(Thread.currentThread().getName(), "CaptureSession completed " + Integer.toString(mFrameCount)
+        Log.e(Thread.currentThread().getName(), "CaptureSessionOld completed " + Integer.toString(mFrameCount)
                 + " of " + Integer.toString(mFrameLimit) + " frames");
         Log.e("Frame Break", ".......................................................................");
 
@@ -235,7 +236,7 @@ class CaptureSession extends CameraCaptureSession.CaptureCallback {
 
     // onCaptureFailed..............................................................................
     /**
-     * This method is called instead of onCaptureCompleted(CameraCaptureSession, CaptureRequest,
+     * This method is called instead of onCaptureCompleted(CameraCaptureSession, captureRequest,
      * TotalCaptureResult) when the camera device failed to produce a CaptureResult for the request.
      * TODO: documentation, comments and logging
      * @param session bla
@@ -247,7 +248,7 @@ class CaptureSession extends CameraCaptureSession.CaptureCallback {
                                 @NonNull CaptureRequest request,
                                 @NonNull CaptureFailure failure) {
         super.onCaptureFailed(session, request, failure);
-        Log.e(Thread.currentThread().getName(), "CaptureSession onCaptureFailed");
+        Log.e(Thread.currentThread().getName(), "CaptureSessionOld onCaptureFailed");
         checkIfDone(session);
 
         /*
@@ -292,24 +293,24 @@ class CaptureSession extends CameraCaptureSession.CaptureCallback {
 
         Long timestamp = partialResult.get(CaptureResult.SENSOR_TIMESTAMP);
         if (timestamp != null) {
-            Log.e(Thread.currentThread().getName(), "CaptureSession onCaptureProgressed, working on " + TimeCode.toString(timestamp));
+            Log.e(Thread.currentThread().getName(), "CaptureSessionOld onCaptureProgressed, working on " + TimeCode.toString(timestamp));
         }
         else {
-            Log.e(Thread.currentThread().getName(), "CaptureSession onCaptureProgressed");
+            Log.e(Thread.currentThread().getName(), "CaptureSessionOld onCaptureProgressed");
         }
         long freeMiB = HeapMemory.getAvailableMiB();
 
-        Log.e(Thread.currentThread().getName(), "CaptureSession Free Heap Memory: " + Long.toString(freeMiB) + " [MiB]");
+        Log.e(Thread.currentThread().getName(), "CaptureSessionOld Free Heap Memory: " + Long.toString(freeMiB) + " [MiB]");
 
         // override
-        if (freeMiB < ImageProcessor.LOW_MEMORY) {
-            mPauseCapture = CaptureManager.pauseRepeatingRequest();
+        if (freeMiB < ImageProcessorOld.LOW_MEMORY) {
+            //mPauseCapture = CaptureManager.pauseRepeatingRequest();
             Log.e("DANGER LOW MEMORY", "DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER");
         }
 
-        if (GlobalSettings.DEBUG_START_STOP_CAPTURE && mFrameCount < mFrameLimit) {
-            mPauseCapture = CaptureManager.pauseRepeatingRequest();
-        }
+        //if (GlobalSettings.DEBUG_START_STOP_CAPTURE && mFrameCount < mFrameLimit) {
+            //mPauseCapture = CaptureManager.pauseRepeatingRequest();
+        //}
 
         if (mPauseCapture) {
             try {
@@ -333,7 +334,7 @@ class CaptureSession extends CameraCaptureSession.CaptureCallback {
     @Override
     public void onCaptureSequenceAborted(@NonNull CameraCaptureSession session, int sequenceId) {
         super.onCaptureSequenceAborted(session, sequenceId);
-        Log.e(Thread.currentThread().getName(), "CaptureSession onCaptureSequenceAborted");
+        Log.e(Thread.currentThread().getName(), "CaptureSessionOld onCaptureSequenceAborted");
     }
 
     // onCaptureSequenceCompleted...................................................................
@@ -353,21 +354,21 @@ class CaptureSession extends CameraCaptureSession.CaptureCallback {
         super.onCaptureSequenceCompleted(session, sequenceId, frameNumber);
 
         if (mPauseCapture) {
-            Log.e(Thread.currentThread().getName(), "CaptureSession *** pause *** pause *** pause *** pause *** pause *** pause *** pause *** pause *** pause *** pause *** pause *** pause");
-            CaptureManager.pauseRepeatingRequest(session, this);
+            Log.e(Thread.currentThread().getName(), "CaptureSessionOld *** pause *** pause *** pause *** pause *** pause *** pause *** pause *** pause *** pause *** pause *** pause *** pause");
+            //CaptureManager.pauseRepeatingRequest(session, this);
 
-            if (GlobalSettings.DEBUG_START_STOP_CAPTURE) {
-                CaptureManager.restartRepeatingRequest();
-            }
+            //if (GlobalSettings.DEBUG_START_STOP_CAPTURE) {
+                //CaptureManager.restartRepeatingRequest();
+            //}
         }
         else {
-            Log.e(Thread.currentThread().getName(), "CaptureSession onCaptureSequenceCompleted, N Frames = " + Integer.toString(mFrameCount));
+            Log.e(Thread.currentThread().getName(), "CaptureSessionOld onCaptureSequenceCompleted, N Frames = " + Integer.toString(mFrameCount));
 
             long totalElapsed = mLastTimestamp - mFirstTimestamp;
             double averageFps = mFrameCount / (totalElapsed * 1e-9);
             double averageDuty = mTotalExposure / (double) totalElapsed;
 
-            CaptureManager.sessionFinished(session, averageFps, averageDuty);
+            //CaptureManager.sessionFinished(session, averageFps, averageDuty);
 
             // TODO: dump mTotalCaptureResult info
         }
@@ -389,7 +390,7 @@ class CaptureSession extends CameraCaptureSession.CaptureCallback {
                                  @NonNull CaptureRequest request,
                                  long timestamp, long frameNumber) {
         super.onCaptureStarted(session, request, timestamp, frameNumber);
-        Log.e(Thread.currentThread().getName(), "CaptureSession onCaptureStarted for: "
+        Log.e(Thread.currentThread().getName(), "CaptureSessionOld onCaptureStarted for: "
                 + TimeCode.toString(timestamp) + ", frame number: " + Long.toString(frameNumber));
     }
 

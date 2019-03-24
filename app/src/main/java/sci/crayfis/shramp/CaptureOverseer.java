@@ -6,14 +6,13 @@ import android.content.Context;
 import android.hardware.camera2.CameraManager;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.SystemClock;
 import android.util.Log;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Locale;
 
-import sci.crayfis.shramp.analysis.ImageProcessor;
+import sci.crayfis.shramp.analysis.AnalysisManager;
 import sci.crayfis.shramp.camera2.CameraController;
 import sci.crayfis.shramp.camera2.capture.CaptureManager;
 import sci.crayfis.shramp.logging.DividerStyle;
@@ -147,7 +146,9 @@ public final class CaptureOverseer extends Activity {
      */
     public static void prepareImageProcessing() {
         Log.e(Thread.currentThread().getName(), "CaptureOverseer prepareImageProcessing");
-        ImageProcessor.init(mInstance);
+        //ImageProcessorOld.init(mInstance);
+        AnalysisManager.create(mInstance);
+
         startCaptureSession();
     }
 
@@ -192,6 +193,7 @@ public final class CaptureOverseer extends Activity {
 
         Log.e(Thread.currentThread().getName(), ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
         Log.e(Thread.currentThread().getName(), "CaptureOverseer startCaptureSession");
+        HeapMemory.logAvailableMiB();
         CaptureManager.startCaptureSession();
     }
 
