@@ -1,19 +1,57 @@
+//******************************************************************************
+//                                                                             *
+// @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones     *
+// @version: ShRAMP v0.0                                                       *
+//                                                                             *
+// @objective: To detect extensive air shower radiation using smartphones      *
+//             for the scientific study of ultra-high energy cosmic rays       *
+//                                                                             *
+// @institution: University of California, Irvine                              *
+// @department:  Physics and Astronomy                                         *
+//                                                                             *
+// @author: Eric Albin                                                         *
+// @email:  Eric.K.Albin@gmail.com                                             *
+//                                                                             *
+// @updated: 25 March 2019                                                     *
+//                                                                             *
+//******************************************************************************
+
 #pragma version(1)
 #pragma rs java_package_name(sci.crayfis.shramp)
 #pragma rs_fp_full
 //#pragma rs_fp_relaxed
 //#include "rs_debug.rsh"
 
+// Global Variables
+//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+// gEnableSignificance..............................................................................
+// TODO: description
 int gEnableSignificance;
 
+// gExposureTime....................................................................................
+// TODO: description
 long gExposureTime;
-rs_allocation gMeanRate;
-rs_allocation gStdDevRate;
 
+// Running Sums.....................................................................................
+// TODO: description
 rs_allocation gExposureValueSum;
 rs_allocation gExposureValue2Sum;
+
+// Statistics.......................................................................................
+// TODO: description
+rs_allocation gMeanRate;
+rs_allocation gStdDevRate;
 rs_allocation gSignificance;
 
+// RenderScript Kernels
+//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+// process8bitData..................................................................................
+// TODO: description, comments and logging
+// @param val bla
+// @param x bla
+// @param y bla
 void RS_KERNEL process8bitData(uchar val, uint32_t x, uint32_t y) {
     float old_exp_val_sum = rsGetElementAt_float(gExposureValueSum, x, y);
     float this_exp_val    = (float) gExposureTime * (float) val;
@@ -38,6 +76,11 @@ void RS_KERNEL process8bitData(uchar val, uint32_t x, uint32_t y) {
     }
 }
 
+// process16bitData.................................................................................
+// TODO: description, comments and logging
+// @param val bla
+// @param x bla
+// @param y bla
 void RS_KERNEL process16bitData(ushort val, uint32_t x, uint32_t y) {
     float old_exp_val_sum = rsGetElementAt_float(gExposureValueSum, x, y);
     float this_exp_val    = (float) gExposureTime * (float) val;
@@ -62,14 +105,29 @@ void RS_KERNEL process16bitData(ushort val, uint32_t x, uint32_t y) {
     }
 }
 
+// getExposureValueSum..............................................................................
+// TODO: description, comments and logging
+// @param x bla
+// @param y bla
+// @return bla
 float RS_KERNEL getExposureValueSum(uint32_t x, uint32_t y) {
     return rsGetElementAt_float(gExposureValueSum, x, y);
 }
 
+// getExposureValue2Sum.............................................................................
+// TODO: description, comments and logging
+// @param x bla
+// @param y bla
+// @return bla
 float RS_KERNEL getExposureValue2Sum(uint32_t x, uint32_t y) {
     return rsGetElementAt_float(gExposureValue2Sum, x, y);
 }
 
+// getSignificance..................................................................................
+// TODO: description, comments and logging
+// @param x bla
+// @param y bla
+// @return bla
 float RS_KERNEL getSignificance(uint32_t x, uint32_t y) {
     return rsGetElementAt_float(gSignificance, x, y);
 }
