@@ -49,7 +49,7 @@ public class DataManager {
     //--------------
 
     /**
-     * Check if ShRAMP data directory exists, if not create it
+     * Check if ShRAMP data directory exists, if not initialize it
      */
     public static void setUpShrampDirectory() {
         // TODO: for now uses onboard memory, consider using SD-card memory
@@ -60,7 +60,7 @@ public class DataManager {
             DataManager.mLogger.log("ERROR: Media unavailable");
         }
 
-        // Check if data directory already exists, create it if it doesn't
+        // Check if data directory already exists, initialize it if it doesn't
         File dataDirectory = new File(mDataPath);
         if (dataDirectory.exists()) {
             if (!dataDirectory.isDirectory()) {

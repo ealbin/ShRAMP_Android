@@ -10,9 +10,8 @@ import android.util.Size;
 import android.view.Surface;
 
 import sci.crayfis.shramp.GlobalSettings;
+import sci.crayfis.shramp.analysis.AnalysisManager;
 import sci.crayfis.shramp.analysis.DataQueue;
-import Trash.ImageProcessorOld;
-import sci.crayfis.shramp.analysis.ImageProcessor;
 import sci.crayfis.shramp.analysis.ImageWrapper;
 import sci.crayfis.shramp.camera2.capture.CaptureManager;
 import sci.crayfis.shramp.util.HandlerManager;
@@ -23,37 +22,23 @@ import sci.crayfis.shramp.util.HeapMemory;
  */
 final class ImageReaderListener implements ImageReader.OnImageAvailableListener {
 
-    //**********************************************************************************************
-    // Static Class Fields
-    //---------------------
-
     // Private Constants
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-    // MAX_IMAGES...................................................................................
-    // TODO: description
-    private static final Integer MAX_IMAGES = GlobalSettings.MAX_IMAGES;
-
-    // PRIORITY.....................................................................................
-    // TODO: description
-    private static final Integer PRIORITY = GlobalSettings.IMAGE_READER_THREAD_PRIORITY;
 
     // THREAD_NAME..................................................................................
     // TODO: description
     private static final String THREAD_NAME = "ImageReaderThread";
 
-    // Private object Constants
-    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
     // mHandler.....................................................................................
     // TODO: description
-    private static final Handler mHandler = HandlerManager.newHandler(THREAD_NAME, PRIORITY);
+    private static final Handler mHandler = HandlerManager.newHandler(THREAD_NAME,
+                                                       GlobalSettings.IMAGE_READER_THREAD_PRIORITY);
 
-    //**********************************************************************************************
-    // Class Fields
-    //-------------
+    // LOCK.........................................................................................
+    // TODO: description
+    private static final Object LOCK = new Object();
 
-    // Private
+    // Private Instance Fields
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // mImageFormat.................................................................................
@@ -64,47 +49,23 @@ final class ImageReaderListener implements ImageReader.OnImageAvailableListener 
     // TODO: description
     private Integer mImageHeight;
 
-    // mImageReader.................................................................................
-    // TODO: description
-    private ImageReader mImageReader;
-
     // mImageWidth.......................................................................................
     // TODO: description
     private Integer mImageWidth;
+
+    // mImageReader.................................................................................
+    // TODO: description
+    private ImageReader mImageReader;
 
     // mSurface.....................................................................................
     // TODO: description
     private Surface mSurface;
 
-    /**
-     * TODO: description, comments and logging
-     */
-    class QueueData implements Runnable {
-        private byte[] nData;
-        private long nTimestamp;
-
-        private QueueData() { assert false; }
-
-        QueueData(byte[] data, long timestamp) {
-            nData = data;
-            nTimestamp = timestamp;
-        }
-
-        @Override
-        public void run() {
-            ImageProcessorOld.processImage(nData, nTimestamp);
-        }
-    }
-
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    //**********************************************************************************************
     // Constructors
-    //-------------
-
-    // Package-private
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // ImageReaderListener..........................................................................
@@ -113,14 +74,9 @@ final class ImageReaderListener implements ImageReader.OnImageAvailableListener 
      */
     ImageReaderListener() {
         super();
-        //Log.e(Thread.currentThread().getName(), "ImageReaderListener ImageReaderListener");
     }
 
-    //**********************************************************************************************
-    // Class Methods
-    //---------------------
-
-    // Package-private
+    // Package-private Instance Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // openSurface..................................................................................
@@ -132,26 +88,18 @@ final class ImageReaderListener implements ImageReader.OnImageAvailableListener 
      */
     void openSurface(@NonNull Activity activity,
                      @NonNull Integer imageFormat, @NonNull Size imageSize) {
-        //Log.e(Thread.currentThread().getName(), "ImageReaderListener openSurface");
-
         mImageFormat = imageFormat;
         mImageWidth  = imageSize.getWidth();
         mImageHeight = imageSize.getHeight();
 
-        mImageReader = ImageReader.newInstance(mImageWidth, mImageHeight, mImageFormat, MAX_IMAGES);
+        mImageReader = ImageReader.newInstance(mImageWidth, mImageHeight, mImageFormat, GlobalSettings.MAX_SIMULTANEOUS_IMAGES);
         mImageReader.setOnImageAvailableListener(this, mHandler);
 
         SurfaceManager.surfaceHasOpened(mImageReader.getSurface(), ImageReaderListener.class);
     }
 
-    //**********************************************************************************************
-    // Overriding Methods
-    //-------------------
-
-    // Public
+    // Public Overriding Instance Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-    private final static Object lock = new Object();
 
     // onImageAvailable.............................................................................
     /**
@@ -160,15 +108,16 @@ final class ImageReaderListener implements ImageReader.OnImageAvailableListener 
      */
     @Override
     public void onImageAvailable(@NonNull ImageReader reader) {
-
-        synchronized (lock) {
+        synchronized (LOCK) {
 
             // TODO: better wait solution
             while (HeapMemory.isMemoryLow()) {
-                Log.e("LOW MEMORY", "ImageReaderListener is waiting for memory to clear.........");
+
+                Log.e("LOW MEMORY", "ImageReaderListener is waiting for memory to clear...");
                 HeapMemory.logAvailableMiB();
+
                 try {
-                    lock.wait(2 * CaptureManager.getTargetFrameNanos() / 1000 / 1000);
+                    LOCK.wait(3 * CaptureManager.getTargetFrameNanos() / 1000 / 1000);
                 } catch (InterruptedException e) {
                 }
                 System.gc();
@@ -176,7 +125,7 @@ final class ImageReaderListener implements ImageReader.OnImageAvailableListener 
                     reader.discardFreeBuffers();
                 }
 
-                if (!ImageProcessor.isBusy()) {
+                if (!AnalysisManager.isBusy()) {
                     break;
                 }
             }

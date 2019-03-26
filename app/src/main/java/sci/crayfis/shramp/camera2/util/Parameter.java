@@ -11,11 +11,7 @@ import android.support.annotation.Nullable;
 @TargetApi(21)
 public class Parameter<T> {
 
-    //**********************************************************************************************
-    // Class Fields
-    //-------------
-
-    // Private Constants
+    // Private Instance Constants
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // mDefaultFormat...............................................................................
@@ -27,7 +23,7 @@ public class Parameter<T> {
         }
     };
 
-    // Private
+    // Private Instance Fields
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // mDescription.................................................................................
@@ -50,11 +46,7 @@ public class Parameter<T> {
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    //**********************************************************************************************
     // Constructors
-    //-------------
-
-    // Public
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // Parameter....................................................................................
@@ -90,20 +82,13 @@ public class Parameter<T> {
         }
     }
 
-    // Private
-    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
     // Parameter....................................................................................
     /**
      * TODO: description, comments and logging
      */
     private Parameter() {}
 
-    //**********************************************************************************************
-    // Class Methods
-    //--------------
-
-    // Public
+    // Public Instance Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // getDescription...............................................................................
@@ -143,14 +128,21 @@ public class Parameter<T> {
      * TODO: description, comments and logging
      * @param parameterFormatter bla
      */
-    public void setFormatter(ParameterFormatter<T> parameterFormatter) { mParameterFormatter = parameterFormatter; }
+    public void setFormatter(@Nullable ParameterFormatter<T> parameterFormatter) {
+        if (parameterFormatter == null) {
+            mParameterFormatter = mDefaultFormat;
+        }
+        else {
+            mParameterFormatter = parameterFormatter;
+        }
+    }
 
     // setUnits.....................................................................................
     /**
      * TODO: description, comments and logging
      * @param units bla
      */
-    public void setUnits(String units) { mUnits = units; }
+    public void setUnits(@Nullable String units) { mUnits = units; }
 
     // setValueString...............................................................................
     /**
@@ -159,11 +151,7 @@ public class Parameter<T> {
      */
     public void setValueString(@NonNull String valueString) { mParameterFormatter.setValueString(valueString); }
 
-    //**********************************************************************************************
-    // Overriden Methods
-    //------------------
-
-    // Public
+    // Public Overriding Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // toString.....................................................................................
@@ -177,6 +165,4 @@ public class Parameter<T> {
         return mParameterFormatter.toString(mDescription, mValue, mUnits);
     }
 
-
 }
-

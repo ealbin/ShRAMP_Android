@@ -12,13 +12,15 @@ import android.util.Log;
 import android.util.Range;
 import android.view.Surface;
 
+import org.jetbrains.annotations.Contract;
+
 import java.util.LinkedHashMap;
 import java.util.List;
 
 import sci.crayfis.shramp.CaptureOverseer;
 import sci.crayfis.shramp.GlobalSettings;
+import sci.crayfis.shramp.analysis.AnalysisManager;
 import sci.crayfis.shramp.analysis.DataQueue;
-import sci.crayfis.shramp.analysis.ImageProcessor;
 import sci.crayfis.shramp.camera2.CameraController;
 import sci.crayfis.shramp.camera2.requests.RequestMaker;
 import sci.crayfis.shramp.camera2.util.Parameter;
@@ -32,78 +34,99 @@ import sci.crayfis.shramp.util.StopWatch;
  * TODO: description, comments and logging
  */
 @TargetApi(21)
-public class CaptureManager extends CameraCaptureSession.StateCallback {
+final public class CaptureManager extends CameraCaptureSession.StateCallback {
 
-    //**********************************************************************************************
-    // Static Class Fields
-    //---------------------
-
-    // Private Constants
+    // Private Class Constants
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // THREAD_NAME..................................................................................
     // TODO: description
     private static final String THREAD_NAME = "CaptureManagerThread";
 
-    // Private Object Constants
-    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
     // mHandler.....................................................................................
     // TODO: description
-    private static final Handler mHandler = HandlerManager.newHandler(THREAD_NAME, GlobalSettings.CAPTURE_MANAGER_THREAD_PRIORITY);
+    private static final Handler mHandler = HandlerManager.newHandler(THREAD_NAME,
+            GlobalSettings.CAPTURE_MANAGER_THREAD_PRIORITY);
 
     // mInstance....................................................................................
     // TODO: description
     private static final CaptureManager mInstance = new CaptureManager();
 
-    // Private
+    // Private Class Fields
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+    // mFpsLockAttempts.............................................................................
+    // TODO: description
     private static int mFpsLockAttempts;
 
+    // mDataRunAttempts.............................................................................
+    // TODO: description
+    private static int mDataRunAttempts;
+
+    // mTarget......................................................................................
+    // TODO: description
     abstract private static class mTarget {
+
+        // TODO: description
         static long FrameExposureNanos;
         static int  TotalFrames;
 
+        /**
+         * TODO: description, comments and logging
+         */
         static void reset() {
             FrameExposureNanos = GlobalSettings.DEFAULT_FRAME_EXPOSURE_NANOS;
             TotalFrames        = GlobalSettings.DEFAULT_N_FRAMES;
         }
     }
 
+    // mCurrentSession..............................................................................
+    // TODO: description
     abstract private static class mCurrentSession {
+
+        // TODO: description
         enum State {RUNNING, PAUSED, OPEN, CLOSED};
 
+        // TODO: description
         static CameraCaptureSession captureSession;
         static CaptureRequest       captureRequest;
         static CaptureStream        captureStream;
         static List<Surface>        surfaceList;
         static State                state;
 
-        static void newSession(CameraCaptureSession session) {
+        // newSession...............................................................................
+        /**
+         * TODO: description, comments and logging
+         * @param session bla
+         */
+        static void newSession(@NonNull CameraCaptureSession session) {
             captureSession = session;
+            renewSession();
+        }
+
+        // renewSession.............................................................................
+        /**
+         * TODO: description, comments and logging
+         */
+        static void renewSession() {
             captureRequest = buildCaptureRequest();
             captureStream  = new CaptureStream(mTarget.TotalFrames);
             state          = State.OPEN;
         }
 
+        // refreshSurface...........................................................................
+        /**
+         * TODO: description, comments and logging
+         */
         static void refreshSurfaces() {
             surfaceList = SurfaceManager.getOpenSurfaces();
         }
 
-        static void reset() {
-            if (captureSession != null) {
-                captureSession.close();
-            }
-            captureSession = null;
-            captureRequest = null;
-            captureStream  = null;
-            surfaceList    = null;
-            refreshSurfaces();
-
-            state = State.CLOSED;
-        }
-
+        // pause....................................................................................
+        /**
+         * TODO: description, comments and logging
+         * @return bla
+         */
         static boolean pause() {
             if (state == State.RUNNING) {
                 try {
@@ -123,14 +146,19 @@ public class CaptureManager extends CameraCaptureSession.StateCallback {
             return (state == State.PAUSED);
         }
 
+        // restart..................................................................................
+        /**
+         * TODO: description, comments and logging
+         * @return bla
+         */
         static boolean restart() {
 
             if (state == State.PAUSED || state == State.OPEN) {
                 HeapMemory.logAvailableMiB();
-                if (!HeapMemory.isMemoryGood()) {
+                if (!HeapMemory.isMemoryAmple()) {
                     DataQueue.purge();
                     System.gc();
-                    if (!DataQueue.isEmpty() || ImageProcessor.isBusy()) {
+                    if (!DataQueue.isEmpty() || AnalysisManager.isBusy()) {
                         return false;
                     }
                     Log.e(Thread.currentThread().getName(), "Forcing Restart");
@@ -152,13 +180,30 @@ public class CaptureManager extends CameraCaptureSession.StateCallback {
 
             return !(state == State.CLOSED);
         }
+
+        // reset....................................................................................
+        /**
+         * TODO: description, comments and logging
+         */
+        static void reset() {
+            if (captureSession != null) {
+                captureSession.close();
+            }
+            captureSession = null;
+            captureRequest = null;
+            captureStream  = null;
+            surfaceList    = null;
+            refreshSurfaces();
+
+            state = State.CLOSED;
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // Private Constructor
+    // Constructors
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // CaptureManager...............................................................................
@@ -170,7 +215,7 @@ public class CaptureManager extends CameraCaptureSession.StateCallback {
         reset();
     }
 
-    // Public Static Class Methods
+    // Public Class Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // startCaptureSession..........................................................................
@@ -184,7 +229,11 @@ public class CaptureManager extends CameraCaptureSession.StateCallback {
         CameraController.createCaptureSession(mCurrentSession.surfaceList, mInstance, mHandler);
     }
 
-    public static void pauseCaptureSession() {
+    // pauseCaptureSession..........................................................................
+    /**
+     * TODO: description, comments and logging
+     */
+    static void pauseCaptureSession() {
         mCurrentSession.pause();
     }
 
@@ -192,11 +241,11 @@ public class CaptureManager extends CameraCaptureSession.StateCallback {
     /**
      * TODO: description, comments and logging
      */
-    public static void restartCaptureSession() {
+    static void restartCaptureSession() {
         synchronized (mInstance) {
             while (!mCurrentSession.restart()) {
                 try {
-                    mInstance.wait(2 * mTarget.FrameExposureNanos / 1000 / 1000);
+                    mInstance.wait(3 * mTarget.FrameExposureNanos / 1000 / 1000);
                 }
                 catch (InterruptedException e) {
                     // TODO: error
@@ -207,13 +256,18 @@ public class CaptureManager extends CameraCaptureSession.StateCallback {
         Log.e(Thread.currentThread().getName(), "STARTING CAPTURE - STARTING CAPTURE - STARTING CAPTURE - STARTING CAPTURE - STARTING CAPTURE - STARTING CAPTURE");
     }
 
+    // getTargetFrameNanos..........................................................................
+    /**
+     * TODO: description, comments and logging
+     * @return bla
+     */
+    @Contract(pure = true)
     public static long getTargetFrameNanos() {
         return mTarget.FrameExposureNanos;
     }
 
-    // Package-private Static Class Methods
+    // Package-private Class Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
 
     // sessionFinished..............................................................................
     /**
@@ -224,81 +278,62 @@ public class CaptureManager extends CameraCaptureSession.StateCallback {
     static void sessionFinished(double averageFps, double averageDuty) {
         Log.e(Thread.currentThread().getName(), "CaptureManager sessionFinished");
 
-        // TODO: data queue purge
-        DataQueue.purge();
-        synchronized (mInstance) {
-            try {
-                mInstance.wait(1000);
-            } catch (InterruptedException e) {
-
-            }
-        }
         String string = " \n";
         string += "Session performance: \n";
         string += "\t Average FPS:  " + NumToString.decimal(averageFps) + " [frames / sec] \n";
         string += "\t Average Duty: " + NumToString.decimal(averageDuty * 100.) + " % \n";
         Log.e(Thread.currentThread().getName(), string);
 
+        mTarget.FrameExposureNanos = (long) ( Math.floor(1e9 / averageFps) );
+        Log.e(Thread.currentThread().getName(), "Start next session with frame rate target: "
+                + NumToString.decimal(1. / ( mTarget.FrameExposureNanos * 1e-9) )
+                + " [frames / sec]");
+
+        AnalysisManager.runStatistics();
+
+//        AnalysisManager.peekExposureValue();
+//        AnalysisManager.peekExposureValue2();
+        AnalysisManager.peekMeanAndErr();
+//        AnalysisManager.peekStdDev();
+        if (AnalysisManager.isSignificanceEnabled()) {
+            AnalysisManager.peekSignificance();
+        }
+
+        AnalysisManager.resetRunningTotals();
+
         if (averageDuty < GlobalSettings.DUTY_THRESHOLD && mFpsLockAttempts < GlobalSettings.FPS_ATTEMPT_LIMIT) {
             mFpsLockAttempts += 1;
-            mTarget.FrameExposureNanos = (long) ( Math.floor(1e9 / averageFps) );
 
-            Log.e(Thread.currentThread().getName(), "Start next session with frame rate target: "
-                    + NumToString.decimal(1. / ( mTarget.FrameExposureNanos * 1e-9) )
-                    + " [frames / sec]");
-
-            // TODO: do this:
-            //mCurrentSession.newSession(mCurrentSession.captureSession);
-            //restartCaptureSession();
-
-            //Runnable startAgain = new Runnable() {
-            //    @Override
-            //    public void run() {
-            //        startCaptureSession();
-            //    }
-            //};
-            //Log.e(Thread.currentThread().getName(), "CaptureManager Posting startAgain");
-            //CaptureOverseer.setNextAction(startAgain);
-
-            //return;
+            // TODO: update mean, std dev
+            Log.e(Thread.currentThread().getName(), "*******************************************************************************");
+            Log.e(Thread.currentThread().getName(), "*******************************************************************************");
+            Log.e(Thread.currentThread().getName(), "*******************************************************************************");
+            Log.e(Thread.currentThread().getName(), "*******************************************************************************");
+            Log.e(Thread.currentThread().getName(), "*******************************************************************************");
+            mCurrentSession.renewSession();
+            restartCaptureSession();
         }
-        CaptureOverseer.quitSafely();
+        else if (mDataRunAttempts < GlobalSettings.DATA_ATTEMPT_LIMIT) {
+            mDataRunAttempts += 1;
+            mTarget.TotalFrames = GlobalSettings.DATARUN_N_FRAMES;
+            AnalysisManager.enableSignificance();
 
-        /*
-        if (true) { // TODO: if take another run
-            Runnable doStatistics;
-            doStatistics = new Runnable() {
-                @Override
-                public void run() {
-                    //00000000000000000000000000000000000000000000000000000000000000000000000000
-                    //ImageProcessorOld.processStatistics();
-                    startCaptureSession();
-                }
-            };
-            Log.e(Thread.currentThread().getName(), "CaptureManager Posting statistics then startAgain");
-            CaptureOverseer.setNextAction(doStatistics);
-            return;
+            // TODO: enable saving
+            Log.e(Thread.currentThread().getName(), "*******************************************************************************");
+            Log.e(Thread.currentThread().getName(), "*******************************************************************************");
+            Log.e(Thread.currentThread().getName(), "*******************************************************************************");
+            Log.e(Thread.currentThread().getName(), "*******************************************************************************");
+            Log.e(Thread.currentThread().getName(), "*******************************************************************************");
+            mCurrentSession.renewSession();
+            restartCaptureSession();
         }
-
-        if (true) { // TODO: if quitting time
-            mCurrentSession.reset();
-            Runnable doStatistics;
-            doStatistics = new Runnable() {
-                @Override
-                public void run() {
-                    //00000000000000000000000000000000000000000000000000000000000000000000000000
-                    //ImageProcessorOld.processStatistics();
-                    CaptureOverseer.quitSafely();
-                }
-            };
-            Log.e(Thread.currentThread().getName(), "CaptureManager Posting statistics and quit");
-            CaptureOverseer.setNextAction(doStatistics);
-            return;
+        else {
+            reset();
+            CaptureOverseer.quitSafely();
         }
-        */
     }
 
-    // Private Static Class Methods
+    // Private Class Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // buildCaptureRequest..........................................................................
@@ -306,6 +341,7 @@ public class CaptureManager extends CameraCaptureSession.StateCallback {
      * TODO: description, comments and logging
      * @return bla
      */
+    @NonNull
     private static CaptureRequest buildCaptureRequest() {
         Log.e(Thread.currentThread().getName(), "CaptureManager buildCaptureRequest");
         StopWatch stopWatch = new StopWatch();
@@ -337,7 +373,11 @@ public class CaptureManager extends CameraCaptureSession.StateCallback {
     }
 
     // getAeTargetFpsRange..........................................................................
+    /**
+     * TODO: description, comments and logging
+     */
     @SuppressWarnings("unchecked")
+    @NonNull
     private static Range<Integer> getAeTargetFpsRange() {
         StopWatch stopWatch = new StopWatch();
         // Set FPS range closest to target FPS
@@ -384,12 +424,13 @@ public class CaptureManager extends CameraCaptureSession.StateCallback {
      */
     private static void reset() {
         Log.e(Thread.currentThread().getName(), "CaptureManager reset");
-        mFpsLockAttempts = 0;
+        mFpsLockAttempts = 1;
+        mDataRunAttempts = 0;
         mTarget.reset();
         mCurrentSession.reset();
     }
 
-    // Public Overriding Methods
+    // Public Overriding Instance Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // onConfigured.................................................................................
@@ -419,8 +460,6 @@ public class CaptureManager extends CameraCaptureSession.StateCallback {
         super.onClosed(session);
         Log.e(Thread.currentThread().getName(), "CaptureManager onClosed");
     }
-
-
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // TODO: IGNORE ////////////////////////////////////////////////////////////////////////////////

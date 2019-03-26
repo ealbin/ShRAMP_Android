@@ -14,6 +14,8 @@ import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
 
+import org.jetbrains.annotations.Contract;
+
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -27,13 +29,9 @@ import sci.crayfis.shramp.util.HandlerManager;
  * TODO: description, comments and logging
  */
 @TargetApi(21)
-final public class CameraController {
+abstract public class CameraController {
 
-    //**********************************************************************************************
-    // Static Class Fields
-    //---------------------
-
-    // Public Constants
+    // Public Class Constants
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // Select.......................................................................................
@@ -43,90 +41,52 @@ final public class CameraController {
     // Private Constants
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    // PRIORITY.....................................................................................
-    // TODO: description
-    private static final Integer PRIORITY = GlobalSettings.CAMERA_CONTROLLER_THREAD_PRIORITY;
-
     // THREAD_NAME..................................................................................
     // TODO: description
     private static final String THREAD_NAME = "CameraControllerThread";
 
-    // Private Object Constants
-    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+    // mHandler.....................................................................................
+    // TODO: description
+    private static final Handler mHandler = HandlerManager.newHandler(THREAD_NAME,
+            GlobalSettings.CAMERA_CONTROLLER_THREAD_PRIORITY);
 
     // mCameras.....................................................................................
     // TODO: description
-    private static final HashMap<Select, Camera> mCameras  = new HashMap<>();
+    private static final HashMap<Select, Camera> mCameras = new HashMap<>();
 
-    // mHandler.....................................................................................
-    // TODO: description
-    private static final Handler mHandler = HandlerManager.newHandler(THREAD_NAME, PRIORITY);
-
-    // mInstance....................................................................................
-    // TODO: description
-    private static final CameraController mInstance = new CameraController();
-
-    //**********************************************************************************************
-    // Class Fields
-    //-------------
-
-    // Private
+    // Private Class Fields
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // mCameraManager...............................................................................
     // TODO: description
-    private CameraManager mCameraManager;
-
-    // mNextHandler.................................................................................
-    // TODO: description
-    private Handler mNextHandler;
-
-    // mNextRunnable................................................................................
-    // TODO: description
-    private Runnable mNextRunnable;
+    private static CameraManager mCameraManager;
 
     // mOpenCamera..................................................................................
     // TODO: description
-    private Camera mOpenCamera;
+    private static Camera mOpenCamera;
+
+    // mNextRunnable................................................................................
+    // TODO: description
+    private static Runnable mNextRunnable;
+
+    // mNextHandler.................................................................................
+    // TODO: description
+    private static Handler mNextHandler;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    //**********************************************************************************************
     // Constructors
-    //-------------
-
-    // Private
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // CameraController.............................................................................
     private CameraController() {
-        //Log.e(Thread.currentThread().getName(), "CameraController CameraController");
         mOpenCamera = null;
-        //Log.e("CameraControllerClass", ".");
-        //Log.e("CameraControllerClass", "CameraController()");
     }
 
-    //**********************************************************************************************
-    // Static Class Methods
-    //---------------------
-
-    // Public
+    // Public Class Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-    // closeCamera..................................................................................
-    /**
-     * TODO: description, comments and logging
-     */
-    public static void closeCamera() {
-        Log.e(Thread.currentThread().getName(), "CameraController closeCamera");
-
-        if (mInstance.mOpenCamera == null) {
-            return;
-        }
-        mInstance.mOpenCamera.close();
-    }
 
     // createCaptureSession.........................................................................
     /**
@@ -139,8 +99,8 @@ final public class CameraController {
                                             @NonNull CameraCaptureSession.StateCallback stateCallback,
                                             @NonNull Handler handler) {
         Log.e(Thread.currentThread().getName(), "CameraController createCaptureSession");
-        if (mInstance.mOpenCamera != null) {
-            CameraDevice cameraDevice = mInstance.mOpenCamera.getCameraDevice();
+        if (mOpenCamera != null) {
+            CameraDevice cameraDevice = mOpenCamera.getCameraDevice();
             assert cameraDevice != null;
             try {
                 cameraDevice.createCaptureSession(surfaceList, stateCallback, handler);
@@ -151,22 +111,33 @@ final public class CameraController {
         }
     }
 
+    // closeCamera..................................................................................
+    /**
+     * TODO: description, comments and logging
+     */
+    public static void closeCamera() {
+        Log.e(Thread.currentThread().getName(), "CameraController closeCamera");
+
+        if (mOpenCamera == null) {
+            return;
+        }
+        mOpenCamera.close();
+    }
+
     // discoverCameras..............................................................................
     /**
      * TODO: description, comments and logging
      * @param cameraManager bla
      */
     public static void discoverCameras(@NonNull CameraManager cameraManager) {
-
-        //Log.e(Thread.currentThread().getName(), "CameraController discoverCameras");
-        mInstance.mCameraManager = cameraManager;
+        mCameraManager = cameraManager;
 
         String[] cameraIds;
         try {
-            cameraIds = mInstance.mCameraManager.getCameraIdList();
+            cameraIds = mCameraManager.getCameraIdList();
             for (String id : cameraIds) {
                 CameraCharacteristics cameraCharacteristics
-                        = mInstance.mCameraManager.getCameraCharacteristics(id);
+                        = mCameraManager.getCameraCharacteristics(id);
                 Integer lens_facing  = cameraCharacteristics.get(CameraCharacteristics.LENS_FACING);
                 assert  lens_facing != null;
 
@@ -206,12 +177,12 @@ final public class CameraController {
      * TODO: description, comments and logging
      * @return bla
      */
+    @Nullable
     public static List<CaptureRequest.Key<?>> getAvailableCaptureRequestKeys() {
-        //Log.e(Thread.currentThread().getName(), "CameraController getAvailableCaptureRequestKeys");
-        if (mInstance.mOpenCamera == null) {
+        if (mOpenCamera == null) {
             return null;
         }
-        return mInstance.mOpenCamera.getAvailableCaptureRequestKeys();
+        return mOpenCamera.getAvailableCaptureRequestKeys();
     }
 
     // getBitsPerPixel..............................................................................
@@ -220,12 +191,12 @@ final public class CameraController {
      * @return bla
      */
     @Nullable
+    @Contract(pure = true)
     public static Integer getBitsPerPixel() {
-        //Log.e(Thread.currentThread().getName(), "CameraController getBitsPerPixel");
-        if (mInstance.mOpenCamera == null) {
+        if (mOpenCamera == null) {
             return null;
         }
-        return mInstance.mOpenCamera.getBitsPerPixel();
+        return mOpenCamera.getBitsPerPixel();
     }
 
     // getCaptureRequestBuilder.....................................................................
@@ -233,12 +204,13 @@ final public class CameraController {
      * TODO: description, comments and logging
      * @return bla
      */
+    @Nullable
+    @Contract(pure = true)
     public static CaptureRequest.Builder getCaptureRequestBuilder() {
-        //Log.e(Thread.currentThread().getName(), "CameraController getCaptureRequestBuilder");
-        if (mInstance.mOpenCamera == null) {
+        if (mOpenCamera == null) {
             return null;
         }
-        return mInstance.mOpenCamera.getCaptureRequestBuilder();
+        return mOpenCamera.getCaptureRequestBuilder();
     }
 
     // getOpenedCharacteristicsMap..................................................................
@@ -247,12 +219,12 @@ final public class CameraController {
      * @return bla
      */
     @Nullable
+    @Contract(pure = true)
     public static LinkedHashMap<CameraCharacteristics.Key, Parameter> getOpenedCharacteristicsMap() {
-        //Log.e(Thread.currentThread().getName(), "CameraController getOpenedCharacteristicsMap");
-        if (mInstance.mOpenCamera == null) {
+        if (mOpenCamera == null) {
             return null;
         }
-        return mInstance.mOpenCamera.getCharacteristicsMap();
+        return mOpenCamera.getCharacteristicsMap();
     }
 
     // getOpenedCamera..............................................................................
@@ -261,12 +233,12 @@ final public class CameraController {
      * @return bla
      */
     @Nullable
+    @Contract(pure = true)
     public static CameraDevice getOpenedCameraDevice() {
-        //Log.e(Thread.currentThread().getName(), "CameraController getOpenedCameraDevice");
-        if (mInstance.mOpenCamera == null) {
+        if (mOpenCamera == null) {
             return null;
         }
-        return mInstance.mOpenCamera.getCameraDevice();
+        return mOpenCamera.getCameraDevice();
     }
 
     // getOutputFormat..............................................................................
@@ -275,12 +247,12 @@ final public class CameraController {
      * @return bla
      */
     @Nullable
+    @Contract(pure = true)
     public static Integer getOutputFormat() {
-        //Log.e(Thread.currentThread().getName(), "CameraController getOutputFormat");
-        if (mInstance.mOpenCamera == null) {
+        if (mOpenCamera == null) {
             return null;
         }
-        return mInstance.mOpenCamera.getOutputFormat();
+        return mOpenCamera.getOutputFormat();
     }
 
     // getOutputSize................................................................................
@@ -289,12 +261,12 @@ final public class CameraController {
      * @return bla
      */
     @Nullable
+    @Contract(pure = true)
     public static Size getOutputSize() {
-        //Log.e(Thread.currentThread().getName(), "CameraController getOutputSize");
-        if (mInstance.mOpenCamera == null) {
+        if (mOpenCamera == null) {
             return null;
         }
-        return mInstance.mOpenCamera.getOutputSize();
+        return mOpenCamera.getOutputSize();
     }
 
     // openCamera...................................................................................
@@ -314,11 +286,11 @@ final public class CameraController {
             return false;
         }
 
-        mInstance.mNextRunnable = runnable;
-        mInstance.mNextHandler  = handler;
+        mNextRunnable = runnable;
+        mNextHandler  = handler;
 
         try {
-            mInstance.mCameraManager.openCamera(camera.getCameraId(), camera, mHandler);
+            mCameraManager.openCamera(camera.getCameraId(), camera, mHandler);
             return true;
         }
         catch (SecurityException e) {
@@ -332,27 +304,16 @@ final public class CameraController {
         return false;
     }
 
-    // post.........................................................................................
-    /**
-     * TODO: description, comments and logging
-     * @param runnable bla
-     */
-    public synchronized static void post(Runnable runnable) {
-        Log.e(Thread.currentThread().getName(), "CameraController post");
-        mHandler.post(runnable);
-    }
-
     // setCaptureRequestBuilder.....................................................................
     /**
      * TODO: description, comments and logging
      * @param builder bla
      */
     public static void setCaptureRequestBuilder(@NonNull CaptureRequest.Builder builder) {
-        //Log.e(Thread.currentThread().getName(), "CameraController setCaptureRequestBuilder");
-        if (mInstance.mOpenCamera == null) {
+        if (mOpenCamera == null) {
             return;
         }
-        mInstance.mOpenCamera.setCaptureRequestBuilder(builder);
+        mOpenCamera.setCaptureRequestBuilder(builder);
     }
 
     // setCaptureRequestMap.........................................................................
@@ -361,11 +322,10 @@ final public class CameraController {
      * @param map bla
      */
     public static void setCaptureRequestMap(@NonNull LinkedHashMap<CaptureRequest.Key, Parameter>  map) {
-        //Log.e(Thread.currentThread().getName(), "CameraController setCaptureRequestMap");
-        if (mInstance.mOpenCamera == null) {
+        if (mOpenCamera == null) {
             return;
         }
-        mInstance.mOpenCamera.setCaptureRequestMap(map);
+        mOpenCamera.setCaptureRequestMap(map);
     }
 
     // setCaptureRequestTemplate....................................................................
@@ -374,22 +334,19 @@ final public class CameraController {
      * @param template bla
      */
     public static void setCaptureRequestTemplate(@NonNull Integer template) {
-        //Log.e(Thread.currentThread().getName(), "CameraController setCaptureRequestTemplate");
-        if (mInstance.mOpenCamera == null) {
+        if (mOpenCamera == null) {
             return;
         }
-        mInstance.mOpenCamera.setCaptureRequestTemplate(template);
+        mOpenCamera.setCaptureRequestTemplate(template);
     }
 
-    // writeBuilder.................................................................................
-
+    // writeFPS.....................................................................................
     /**
      * TODO: description, comments and logging
      */
     public static void writeFPS() {
-        //Log.e(Thread.currentThread().getName(), "CameraController writeBuilder");
-        if (mInstance.mOpenCamera != null) {
-            mInstance.mOpenCamera.writeFPS();
+        if (mOpenCamera != null) {
+            mOpenCamera.writeFPS();
         }
     }
 
@@ -398,11 +355,8 @@ final public class CameraController {
      * TODO: description, comments and logging
      */
     public static void writeCaptureRequest() {
-        //Log.e(Thread.currentThread().getName(), "CameraController writeCaptureRequest");
-        if (mInstance.mOpenCamera != null) {
-            //Log.e("CameraController", ".");
-            mInstance.mOpenCamera.writeRequest();
-            //Log.e("CameraController", ".");
+        if (mOpenCamera != null) {
+            mOpenCamera.writeRequest();
         }
     }
 
@@ -411,16 +365,13 @@ final public class CameraController {
      * TODO: description, comments and logging
      */
     public static void writeCameraCharacteristics() {
-        //Log.e(Thread.currentThread().getName(), "CameraController writeCameraCharacteristics");
-        //Log.e("CameraController", ".");
         for (Camera camera : mCameras.values()) {
             camera.writeCharacteristics();
             Log.e("CameraController", ".");
         }
-        //Log.e("CameraController", ".");
     }
 
-    // Package-private
+    // Package-private Instance Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // cameraHasOpened..............................................................................
@@ -430,20 +381,20 @@ final public class CameraController {
      */
     static void cameraHasOpened(@NonNull Camera camera) {
         Log.e(Thread.currentThread().getName(), "CameraController cameraHasOpened");
-        mInstance.mOpenCamera = camera;
+
+        mOpenCamera = camera;
         RequestMaker.makeDefault();
-        //Log.e("CameraController", ".");
         camera.writeRequest();
-        //Log.e("CameraController", ".");
-        if (mInstance.mNextRunnable != null) {
-            if (mInstance.mNextHandler != null) {
-                mInstance.mNextHandler.post(mInstance.mNextRunnable);
-                mInstance.mNextHandler = null;
+
+        if (mNextRunnable != null) {
+            if (mNextHandler != null) {
+                mNextHandler.post(mNextRunnable);
+                mNextHandler = null;
             }
             else {
-                mHandler.post(mInstance.mNextRunnable);
+                mHandler.post(mNextRunnable);
             }
-            mInstance.mNextRunnable = null;
+            mNextRunnable = null;
         }
     }
 
@@ -453,7 +404,7 @@ final public class CameraController {
      */
     static void cameraHasClosed() {
         Log.e(Thread.currentThread().getName(), "CameraController cameraHasClosed");
-        mInstance.mOpenCamera = null;
+        mOpenCamera = null;
     }
 
 }

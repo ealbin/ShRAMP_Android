@@ -2,6 +2,7 @@ package sci.crayfis.shramp.util;
 
 import android.annotation.TargetApi;
 import android.os.Build;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 /**
@@ -10,11 +11,7 @@ import android.util.Log;
 @TargetApi(21)
 abstract public class BuildString {
 
-    //**********************************************************************************************
-    // Static Class Methods
-    //---------------------
-
-    // Public
+    // Public Class Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // get..........................................................................................
@@ -22,6 +19,7 @@ abstract public class BuildString {
      * Get a nice build string of the form: vX.X API XX Name (Date)
      * @return string
      */
+    @NonNull
     public static String get() {
         Log.e(Thread.currentThread().getName(), "BuildString get");
         int buildCode = Build.VERSION.SDK_INT;

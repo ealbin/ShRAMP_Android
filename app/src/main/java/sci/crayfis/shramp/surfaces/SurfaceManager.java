@@ -11,15 +11,11 @@ import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import sci.crayfis.shramp.GlobalSettings;
 import sci.crayfis.shramp.camera2.CameraController;
-import sci.crayfis.shramp.logging.ShrampLogger;
 
 /**
  * TODO: description, comments and logging
@@ -27,61 +23,38 @@ import sci.crayfis.shramp.logging.ShrampLogger;
 @TargetApi(21)
 final public class SurfaceManager {
 
-    //**********************************************************************************************
-    // Static Class Fields
-    //---------------------
-
-    // Private Constants
+    // Private Class Constants
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-    // TEXTURE_VIEW_SURFACE_ENABLED.................................................................
-    // TODO: description
-    private static final Boolean TEXTURE_VIEW_SURFACE_ENABLED = GlobalSettings.TEXTURE_VIEW_SURFACE_ENABLED;
-
-    // IMAGE_READER_SURFACE_ENABLED.................................................................
-    // TODO: description
-    private static final Boolean IMAGE_READER_SURFACE_ENABLED = GlobalSettings.IMAGE_READER_SURFACE_ENABLED;
-
-    // Object Constants
-    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-    // mImageReaderListener.........................................................................
-    // TODO: description
-    private static final ImageReaderListener mImageReaderListener = new ImageReaderListener();
 
     // mInstance....................................................................................
     // TODO: description
     private static final SurfaceManager mInstance = new SurfaceManager();
 
+    // mImageReaderListener.........................................................................
+    // TODO: description
+    private static final ImageReaderListener mImageReaderListener = new ImageReaderListener();
+
     // mSurfaces....................................................................................
     // TODO: description
     private static final List<Surface> mSurfaces = new ArrayList<>();
 
-    //**********************************************************************************************
-    // Class Fields
-    //-------------
-
-    // Object Constants
+    // Private Instance Constants
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // mTextureViewListener.........................................................................
     // TODO: description
     private final TextureViewListener mTextureViewListener = new TextureViewListener();
 
-    // Private
+    // Private Instance Fields
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // mImageReaderIsReady..........................................................................
     // TODO: description
     private Boolean mImageReaderIsReady = false;
 
-    // mNextHandler.................................................................................
+    // mTextureViewIsReady..........................................................................
     // TODO: description
-    private Handler mNextHandler;
-
-    // mNextRunnable................................................................................
-    // TODO: description
-    private Runnable mNextRunnable;
+    private Boolean mTextureViewIsReady = false;
 
     // mOutputFormat................................................................................
     // TODO: description
@@ -91,41 +64,28 @@ final public class SurfaceManager {
     // TODO: description
     private Size mOutputSize;
 
-    // mTextureViewIsReady..........................................................................
+    // mNextRunnable................................................................................
     // TODO: description
-    private Boolean mTextureViewIsReady = false;
+    private Runnable mNextRunnable;
 
-
-    //==============================================================================================
-    // logging
-    private static final ShrampLogger mLogger = new ShrampLogger(ShrampLogger.DEFAULT_STREAM);
-    private static final DecimalFormat mNanosFormatter = (DecimalFormat) NumberFormat.getInstance(Locale.US);
-    //==============================================================================================
+    // mNextHandler.................................................................................
+    // TODO: description
+    private Handler mNextHandler;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    //**********************************************************************************************
     // Constructors
-    //-------------
-
-    // Private
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // SurfaceManager...............................................................................
     /**
      * TODO: description, comments and logging
      */
-    private SurfaceManager() {
-        //Log.e(Thread.currentThread().getName(), "SurfaceManager SurfaceManager");
-    }
+    private SurfaceManager() {}
 
-    //**********************************************************************************************
-    // Static Class Methods
-    //---------------------
-
-    // Public
+    // Public Class Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // getOpenSurfaces..............................................................................
@@ -147,16 +107,15 @@ final public class SurfaceManager {
     public static List<Class> getOutputSurfaceClasses() {
         List<Class> classList = new ArrayList<>();
 
-        if (TEXTURE_VIEW_SURFACE_ENABLED) {
+        if (GlobalSettings.TEXTURE_VIEW_SURFACE_ENABLED) {
             // TextureView itself isn't known to StreamConfigurationMap
             // but TextureView uses SurfaceTexture, which is known
             classList.add(SurfaceTexture.class);
         }
 
-        if (IMAGE_READER_SURFACE_ENABLED) {
+        if (GlobalSettings.IMAGE_READER_SURFACE_ENABLED) {
             classList.add(ImageReader.class);
         }
-        //Log.e(Thread.currentThread().getName(), "SurfaceManager getOutputSurfaceClasses");
         return classList;
     }
 
@@ -184,24 +143,16 @@ final public class SurfaceManager {
         mInstance.mNextHandler  = handler;
         mInstance.mNextRunnable = runnable;
 
-        //long startTime = SystemClock.elapsedRealtimeNanos();
-        //mLogger.log("Opening TextureView");
-        if (TEXTURE_VIEW_SURFACE_ENABLED) {
+        if (GlobalSettings.TEXTURE_VIEW_SURFACE_ENABLED) {
             mInstance.mTextureViewListener.openSurface(activity);
         }
-        //String elapsed = mNanosFormatter.format(SystemClock.elapsedRealtimeNanos() - startTime);
-        //mLogger.log("TextureView prepared in: " + elapsed + " [ns]");
 
-        //sartTime = SystemClock.elapsedRealtimeNanos();
-        //mLogger.log("Opening ImageReader");
-        if (IMAGE_READER_SURFACE_ENABLED) {
+        if (GlobalSettings.IMAGE_READER_SURFACE_ENABLED) {
             mImageReaderListener.openSurface(activity, mInstance.mOutputFormat, mInstance.mOutputSize);
         }
-        //elapsed = mNanosFormatter.format(SystemClock.elapsedRealtimeNanos() - startTime);
-        //mLogger.log("ImageReader prepared in: " + elapsed + " [ns]");
     }
 
-    // Package-private
+    // Package-private Instance Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // surfaceHasOpened.............................................................................
@@ -224,7 +175,7 @@ final public class SurfaceManager {
         surfaceReady();
     }
 
-    // Private
+    // Private Instance Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // surfaceReady.................................................................................
@@ -234,10 +185,10 @@ final public class SurfaceManager {
     private static void surfaceReady() {
         Log.e(Thread.currentThread().getName(), "SurfaceManager SurfaceReady");
         boolean allReady = true;
-        if (TEXTURE_VIEW_SURFACE_ENABLED) {
+        if (GlobalSettings.TEXTURE_VIEW_SURFACE_ENABLED) {
             allReady = allReady && mInstance.mTextureViewIsReady;
         }
-        if (IMAGE_READER_SURFACE_ENABLED) {
+        if (GlobalSettings.IMAGE_READER_SURFACE_ENABLED) {
             allReady = allReady && mInstance.mImageReaderIsReady;
         }
 
@@ -251,4 +202,3 @@ final public class SurfaceManager {
     }
 
 }
-

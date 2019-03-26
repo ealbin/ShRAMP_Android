@@ -10,12 +10,9 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.Surface;
 
-import java.text.DecimalFormat;
-
+import sci.crayfis.shramp.analysis.AnalysisManager;
 import sci.crayfis.shramp.analysis.DataQueue;
-import sci.crayfis.shramp.analysis.ImageProcessor;
 import sci.crayfis.shramp.camera2.util.TimeCode;
-import sci.crayfis.shramp.logging.ShrampLogger;
 import sci.crayfis.shramp.util.HeapMemory;
 import sci.crayfis.shramp.util.NumToString;
 import sci.crayfis.shramp.util.StopWatch;
@@ -24,24 +21,44 @@ import sci.crayfis.shramp.util.StopWatch;
  * TODO: description, comments and logging
  */
 @TargetApi(21)
-class CaptureStream extends CameraCaptureSession.CaptureCallback {
+final class CaptureStream extends CameraCaptureSession.CaptureCallback {
 
-    enum State {ACTIVE, PAUSED, FINISHED}
+    // Private Class Constants
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+    // State........................................................................................
+    // TODO: description
+    private enum State {ACTIVE, PAUSED, FINISHED}
 
     // Private Instance Fields
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+    // mState.......................................................................................
+    // TODO: description
     private State mState;
 
+    // mFrame.......................................................................................
+    // TODO: description
     private class mFrame {
+
+        // TODO: description
         int FrameLimit;
         int FrameCount;
 
+        // setLimit.................................................................................
+        /**
+         * TODO: description, comments and logging
+         * @param limit bla
+         */
         void setLimit(int limit) {
             FrameLimit = limit;
             FrameCount = 0;
         }
 
+        // raiseFrameCount..........................................................................
+        /**
+         * TODO: description, comments and logging
+         */
         void raiseFrameCount() {
             FrameCount += 1;
 
@@ -58,11 +75,20 @@ class CaptureStream extends CameraCaptureSession.CaptureCallback {
     }
     private final mFrame mFrame = new mFrame();
 
+    // mTimestamp...................................................................................
+    // TODO: description
     class mTimestamp {
+
+        // TODO: description
         long First   = 0L;
         long Last    = 0L;
         long Elapsed = 0L;
 
+        // add......................................................................................
+        /**
+         * TODO: description, comments and logging
+         * @param result bla
+         */
         void add(TotalCaptureResult result) {
             Long timestamp = result.get(CaptureResult.SENSOR_TIMESTAMP);
             assert timestamp != null;
@@ -78,10 +104,19 @@ class CaptureStream extends CameraCaptureSession.CaptureCallback {
     }
     private final mTimestamp mTimestamp = new mTimestamp();
 
+    // mExposure....................................................................................
+    // TODO: description
     class mExposure {
+
+        // TODO: description
         long Total = 0L;
         long Last  = 0L;
 
+        // add......................................................................................
+        /**
+         * TODO: description, comments and logging
+         * @param result bla
+         */
         void add(TotalCaptureResult result) {
             Long exposure = result.get(CaptureResult.SENSOR_EXPOSURE_TIME);
             assert exposure != null;
@@ -90,13 +125,6 @@ class CaptureStream extends CameraCaptureSession.CaptureCallback {
         }
     }
     private final mExposure mExposure = new mExposure();
-
-
-    //==============================================================================================
-    // Logging
-    private static final ShrampLogger mLogger = new ShrampLogger(ShrampLogger.DEFAULT_STREAM);
-    private static final DecimalFormat mFormatter = new DecimalFormat("#.##");
-    //==============================================================================================
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -128,7 +156,12 @@ class CaptureStream extends CameraCaptureSession.CaptureCallback {
     // Private Instance Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    private void progressedNotification(CaptureResult partialResult) {
+    // progressedNotification.......................................................................
+    /**
+     * TODO: description, comments and logging
+     * @param partialResult bla
+     */
+    private void progressedNotification(@NonNull CaptureResult partialResult) {
         HeapMemory.logAvailableMiB();
         Long timestamp = partialResult.get(CaptureResult.SENSOR_TIMESTAMP);
         if (timestamp != null) {
@@ -139,7 +172,12 @@ class CaptureStream extends CameraCaptureSession.CaptureCallback {
         }
     }
 
-    private void completedNotification(TotalCaptureResult completedResult) {
+    // completedNotification........................................................................
+    /**
+     * TODO: description, comments and logging
+     * @param completedResult bla
+     */
+    private void completedNotification(@NonNull TotalCaptureResult completedResult) {
         Log.e(Thread.currentThread().getName(), "CaptureStream just posted the completed capture of " + TimeCode.toString(mTimestamp.Last));
 
         Long duration = completedResult.get(CaptureResult.SENSOR_FRAME_DURATION);
@@ -153,12 +191,11 @@ class CaptureStream extends CameraCaptureSession.CaptureCallback {
         double duty     = 100. * mExposure.Last / (double) duration;
         long   deadTime = mTimestamp.Elapsed - duration;
 
-        Log.e(Thread.currentThread().getName(), "Capture FPS: " + mFormatter.format(fps)
-                + ", Duty: " + mFormatter.format(duty) + "%"
+        Log.e(Thread.currentThread().getName(), "Capture FPS: " + NumToString.decimal(fps)
+                + ", Duty: " + NumToString.decimal(duty) + "%"
                 + ", Dead time: "    + Long.toString(deadTime)   + " [ns]");
 
     }
-
 
     // Public Overriding Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -246,9 +283,9 @@ class CaptureStream extends CameraCaptureSession.CaptureCallback {
 
             DataQueue.purge();
             synchronized (this) {
-                while (!DataQueue.isEmpty() || ImageProcessor.isBusy()) {
+                while (!DataQueue.isEmpty() || AnalysisManager.isBusy()) {
                     try {
-                        this.wait(2 * CaptureManager.getTargetFrameNanos() / 1000 / 1000);
+                        this.wait(3 * CaptureManager.getTargetFrameNanos() / 1000 / 1000);
                     }
                     catch (InterruptedException e) {
                         // TODO: error
@@ -371,5 +408,3 @@ class CaptureStream extends CameraCaptureSession.CaptureCallback {
     }
 
 }
-
-

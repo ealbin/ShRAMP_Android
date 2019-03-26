@@ -24,6 +24,7 @@ import sci.crayfis.shramp.camera2.requests.RequestMaker;
 import sci.crayfis.shramp.camera2.util.Parameter;
 import sci.crayfis.shramp.surfaces.SurfaceManager;
 import sci.crayfis.shramp.util.ArrayToList;
+import sci.crayfis.shramp.util.NumToString;
 import sci.crayfis.shramp.util.SizeSortedSet;
 
 /**
@@ -32,22 +33,7 @@ import sci.crayfis.shramp.util.SizeSortedSet;
 @TargetApi(21)
 final class Camera extends CameraDevice.StateCallback{
 
-    //**********************************************************************************************
-    // Static Class Fields
-    //--------------------
-
-    // Private Constants
-    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-    // DISABLE_RAW_OUTPUT...........................................................................
-    // TODO: description
-    private static final Boolean DISABLE_RAW_OUTPUT = GlobalSettings.DISABLE_RAW_OUTPUT;
-
-    //**********************************************************************************************
-    // Class Fields
-    //-------------
-
-    // Private
+    // Private Instance Fields
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // mBitsPerPixel................................................................................
@@ -98,11 +84,7 @@ final class Camera extends CameraDevice.StateCallback{
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    //**********************************************************************************************
     // Constructors
-    //-------------
-
-    // Package-private
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // Camera.......................................................................................
@@ -126,20 +108,13 @@ final class Camera extends CameraDevice.StateCallback{
         establishOutputFormatting();
     }
 
-    // Private
-    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
     // Camera.......................................................................................
     /**
      * TODO: description, comments and logging
      */
     private Camera() { super(); }
 
-    //**********************************************************************************************
-    // Class Methods
-    //--------------
-
-    // Package-private
+    // Package-private Instance Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // close........................................................................................
@@ -161,7 +136,6 @@ final class Camera extends CameraDevice.StateCallback{
      */
     @NonNull
     List<CaptureRequest.Key<?>> getAvailableCaptureRequestKeys() {
-        //Log.e(Thread.currentThread().getName(), "Camera getAvailableCaptureRequestKeys: " + mName);
         return mCameraCharacteristics.getAvailableCaptureRequestKeys();
     }
 
@@ -172,7 +146,6 @@ final class Camera extends CameraDevice.StateCallback{
      */
     @NonNull
     List<CameraCharacteristics.Key<?>> getAvailableCharacteristicsKeys() {
-        //Log.e(Thread.currentThread().getName(), "Camera getAvailableCharacteristicsKeys: " + mName);
         return mCameraCharacteristics.getKeys();
     }
 
@@ -183,7 +156,6 @@ final class Camera extends CameraDevice.StateCallback{
      */
     @Nullable
     Integer getBitsPerPixel() {
-        //Log.e(Thread.currentThread().getName(), "Camera getBitsPerPixel: " + mName);
         return mBitsPerPixel;
     }
 
@@ -194,7 +166,6 @@ final class Camera extends CameraDevice.StateCallback{
      */
     @Nullable
     CameraDevice getCameraDevice() {
-        //Log.e(Thread.currentThread().getName(), "Camera getCameraDevice: " + mName);
         return mCameraDevice;
     }
 
@@ -204,7 +175,6 @@ final class Camera extends CameraDevice.StateCallback{
      * @return bla
      */
     String getCameraId() {
-        //Log.e(Thread.currentThread().getName(), "Camera getCameraId: " + mName);
         return mCameraId;
     }
 
@@ -215,7 +185,6 @@ final class Camera extends CameraDevice.StateCallback{
      */
     @Nullable
     CaptureRequest.Builder getCaptureRequestBuilder() {
-        //Log.e(Thread.currentThread().getName(), "Camera getCaptureRequestBuilder: " + mName);
         return mCaptureRequestBuilder;
     }
 
@@ -226,7 +195,6 @@ final class Camera extends CameraDevice.StateCallback{
      */
     @NonNull
     LinkedHashMap<CameraCharacteristics.Key, Parameter> getCharacteristicsMap() {
-        //Log.e(Thread.currentThread().getName(), "Camera getCharacteristicsMap: " + mName);
         return mCharacteristicsMap;
     }
 
@@ -237,7 +205,6 @@ final class Camera extends CameraDevice.StateCallback{
      */
     @Nullable
     Integer getOutputFormat() {
-        //Log.e(Thread.currentThread().getName(), "Camera getOutputFormat: " + mName);
         return mOutputFormat;
     }
 
@@ -247,7 +214,6 @@ final class Camera extends CameraDevice.StateCallback{
      * @return bla
      */
     Size getOutputSize() {
-        //Log.e(Thread.currentThread().getName(), "Camera getOutputSize: " + mName);
         return mOutputSize;
     }
 
@@ -257,7 +223,6 @@ final class Camera extends CameraDevice.StateCallback{
      * @param builder bla
      */
     void setCaptureRequestBuilder(@NonNull CaptureRequest.Builder builder) {
-        //Log.e(Thread.currentThread().getName(), "Camera setCaptureRequestBuilder: " + mName);
         mCaptureRequestBuilder = builder;
     }
 
@@ -267,7 +232,6 @@ final class Camera extends CameraDevice.StateCallback{
      * @param map bla
      */
     void setCaptureRequestMap(@NonNull LinkedHashMap<CaptureRequest.Key, Parameter>  map) {
-        //Log.e(Thread.currentThread().getName(), "Camera setCaptureRequestMap: " + mName);
         mCaptureRequestMap = map;
     }
 
@@ -277,29 +241,28 @@ final class Camera extends CameraDevice.StateCallback{
      * @param template bla
      */
     void setCaptureRequestTemplate(@NonNull Integer template) {
-        //Log.e(Thread.currentThread().getName(), "Camera setCaptureRequestTemplate: " + mName);
         mCaptureRequestTemplate = template;
     }
 
-    // writeBuilder.................................................................................
-
+    // writeFPS.....................................................................................
     /**
      * TODO: description, comments and logging
      */
     void writeFPS() {
         Log.e(Thread.currentThread().getName(), "Camera writeBuilder: " + mName);
+
         Long frameDuration = mCaptureRequestBuilder.get(CaptureRequest.SENSOR_FRAME_DURATION);
         Long exposureTime  = mCaptureRequestBuilder.get(CaptureRequest.SENSOR_EXPOSURE_TIME);
         Range<Integer> fpsRange = mCaptureRequestBuilder.get(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE);
 
         if (frameDuration != null) {
             double fps = Math.round(1e9 / (double) frameDuration);
-            Log.e(mName + ", ID: " + mCameraId, "Frame Duration: " + Double.toString(fps) + " [frames per second]");
+            Log.e(mName + ", ID: " + mCameraId, "Frame Duration: " + NumToString.decimal(fps) + " [frames per second]");
         }
 
         if (exposureTime != null && frameDuration != null) {
             double duty = Math.round(100. * exposureTime / (double) frameDuration);
-            Log.e(mName + ", ID: " + mCameraId, "Exposure Duty: " + Double.toString(duty) + " [%]");
+            Log.e(mName + ", ID: " + mCameraId, "Exposure Duty: " + NumToString.decimal(duty) + " [%]");
         }
 
         if (fpsRange != null) {
@@ -327,7 +290,7 @@ final class Camera extends CameraDevice.StateCallback{
         RequestMaker.write(label, mCaptureRequestMap, getAvailableCaptureRequestKeys());
     }
 
-    // Private
+    // Private Instance Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // establishOutputFormatting....................................................................
@@ -335,9 +298,6 @@ final class Camera extends CameraDevice.StateCallback{
      * TODO: description, comments and logging
      */
     private void establishOutputFormatting() {
-
-        //Log.e(Thread.currentThread().getName(), "Camera establishOutputFormatting: " + mName);
-
         Parameter parameter;
 
         parameter = mCharacteristicsMap.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
@@ -351,7 +311,7 @@ final class Camera extends CameraDevice.StateCallback{
         assert capabilities != null;
         List<Integer> abilities = ArrayToList.convert(capabilities);
 
-        if (!DISABLE_RAW_OUTPUT && abilities.contains(CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_RAW)) {
+        if (!GlobalSettings.DISABLE_RAW_OUTPUT && abilities.contains(CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_RAW)) {
             mOutputFormat = ImageFormat.RAW_SENSOR;
         }
         else {
@@ -380,11 +340,7 @@ final class Camera extends CameraDevice.StateCallback{
         mOutputSize = outputSizes.last();
     }
 
-    //**********************************************************************************************
-    // Overriding Methods
-    //-------------------
-
-    // Public
+    // Public Overriding Instance Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // onClosed.....................................................................................

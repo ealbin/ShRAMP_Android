@@ -3,6 +3,7 @@ package sci.crayfis.shramp.analysis;
 import android.annotation.TargetApi;
 import android.hardware.camera2.TotalCaptureResult;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -19,21 +20,21 @@ import sci.crayfis.shramp.util.StopWatch;
 @TargetApi(21)
 abstract public class DataQueue {
 
-    // ACCESS_LOCK..................................................................................
-    // TODO: description
-    private static final Object ACCESS_LOCK = new Object();
+    // Private Class Constants
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // THREAD_NAME..................................................................................
     // TODO: description
     private static final String THREAD_NAME = "DataQueueThread";
 
-    // PRIORITY.....................................................................................
-    // TODO: description
-    private static final Integer PRIORITY = GlobalSettings.DATA_QUEUE_THREAD_PRIORITY;
-
     // mHandler.....................................................................................
     // TODO: description
-    private static final Handler mHandler = HandlerManager.newHandler(THREAD_NAME, PRIORITY);
+    private static final Handler mHandler = HandlerManager.newHandler(THREAD_NAME,
+            GlobalSettings.DATA_QUEUE_THREAD_PRIORITY);
+
+    // ACCESS_LOCK..................................................................................
+    // TODO: description
+    private static final Object ACCESS_LOCK = new Object();
 
     // mCaptureResultQueue..........................................................................
     // TODO: description
@@ -43,6 +44,8 @@ abstract public class DataQueue {
     // TODO: description
     private static final List<ImageWrapper> mImageQueue = new ArrayList<>();
 
+    // ProcessQueue.................................................................................
+    // TODO: description
     private static final Runnable ProcessQueue = new Runnable() {
         @Override
         public void run() {
@@ -56,41 +59,19 @@ abstract public class DataQueue {
         }
     };
 
-    public static void clear() {
-        synchronized (ACCESS_LOCK) {
-            mCaptureResultQueue.clear();
-            mImageQueue.clear();
-        }
-    }
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public static boolean isEmpty() {
-        synchronized (ACCESS_LOCK) {
-            return (mCaptureResultQueue.size() == 0) && (mImageQueue.size() == 0);
-        }
-    }
+    // Public Class Methods
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    private static boolean processQueue() {
-        StopWatch stopWatch = new StopWatch();
-        Log.e("DATA QUEUE", "processing queue");
-        synchronized (ACCESS_LOCK) {
-            int resultSize = mCaptureResultQueue.size();
-            int imageSize = mImageQueue.size();
-
-            if (resultSize > 0 && imageSize > 0) {
-                TotalCaptureResult result = mCaptureResultQueue.remove(0);
-                ImageWrapper wrapper = mImageQueue.remove(0);
-                if (!GlobalSettings.DEBUG_DISABLE_PROCESSING) {
-                    ImageProcessor.process(result, wrapper);
-                }
-                Log.e(Thread.currentThread().getName(), "<processQueue()> time: " + NumToString.number(stopWatch.stop()) + " [ns]");
-                return (resultSize != 1 && imageSize != 1);
-            }
-            Log.e(Thread.currentThread().getName(), "<processQueue()> time: " + NumToString.number(stopWatch.stop()) + " [ns]");
-            return false;
-        }
-    }
-
-    public static void add(TotalCaptureResult result) {
+    // add..........................................................................................
+    /**
+     * TODO: description, comments and logging
+     * @param result bla
+     */
+    public static void add(@NonNull TotalCaptureResult result) {
         StopWatch stopWatch = new StopWatch();
         Log.e("DATA QUEUE", "added total capture result");
         class Add implements Runnable {
@@ -112,7 +93,12 @@ abstract public class DataQueue {
         Log.e(Thread.currentThread().getName(), "<add(TotalCaptureResult)> time: " + NumToString.number(stopWatch.stop()) + " [ns]");
     }
 
-    public static void add(ImageWrapper wrapper) {
+    // add..........................................................................................
+    /**
+     * TODO: description, comments and logging
+     * @param wrapper bla
+     */
+    public static void add(@NonNull ImageWrapper wrapper) {
         StopWatch stopWatch = new StopWatch();
         Log.e("DATA QUEUE", "added image data");
         class Add implements Runnable {
@@ -133,12 +119,67 @@ abstract public class DataQueue {
         Log.e(Thread.currentThread().getName(), "<add(ImageWrapper)> time: " + NumToString.number(stopWatch.stop()) + " [ns]");
     }
 
+    // isEmpty......................................................................................
+    /**
+     * TODO: description, comments and logging
+     * @return bla
+     */
+    public static boolean isEmpty() {
+        synchronized (ACCESS_LOCK) {
+            return (mCaptureResultQueue.size() == 0) && (mImageQueue.size() == 0);
+        }
+    }
+
+    // purge........................................................................................
+    /**
+     * TODO: description, comments and logging
+     */
     public static void purge() {
-       if (!GlobalSettings.DEBUG_DISABLE_QUEUE) {
-           if (!isEmpty()) {
-               mHandler.post(ProcessQueue);
-           }
-       }
+        if (!GlobalSettings.DEBUG_DISABLE_QUEUE) {
+            if (!isEmpty()) {
+                mHandler.post(ProcessQueue);
+            }
+        }
+    }
+
+    // clear........................................................................................
+    /**
+     * TODO: description, comments and logging
+     */
+    public static void clear() {
+        synchronized (ACCESS_LOCK) {
+            mCaptureResultQueue.clear();
+            mImageQueue.clear();
+        }
+    }
+
+    // Private Class Methods
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+    // processQueue.................................................................................
+    /**
+     * TODO: description, comments and logging
+     * @return bla
+     */
+    private static boolean processQueue() {
+        StopWatch stopWatch = new StopWatch();
+        Log.e("DATA QUEUE", "processing queue");
+        synchronized (ACCESS_LOCK) {
+            int resultSize = mCaptureResultQueue.size();
+            int imageSize = mImageQueue.size();
+
+            if (resultSize > 0 && imageSize > 0) {
+                TotalCaptureResult result = mCaptureResultQueue.remove(0);
+                ImageWrapper wrapper = mImageQueue.remove(0);
+                if (!GlobalSettings.DEBUG_DISABLE_PROCESSING) {
+                    ImageProcessor.process(result, wrapper);
+                }
+                Log.e(Thread.currentThread().getName(), "<processQueue()> time: " + NumToString.number(stopWatch.stop()) + " [ns]");
+                return (resultSize != 1 && imageSize != 1);
+            }
+            Log.e(Thread.currentThread().getName(), "<processQueue()> time: " + NumToString.number(stopWatch.stop()) + " [ns]");
+            return false;
+        }
     }
 
 }

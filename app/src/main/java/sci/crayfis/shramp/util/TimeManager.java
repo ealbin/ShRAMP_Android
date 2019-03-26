@@ -13,24 +13,16 @@ import java.util.TimeZone;
  * TODO: description, comments and logging
  */
 @TargetApi(21)
-public class TimeManager {
+public final class TimeManager {
 
-    //**********************************************************************************************
-    // Static Class Fields
-    //---------------------
-
-    // Private Object Constants
+    // Private Static Constants
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // mInstance....................................................................................
     // TODO: description
     private static final TimeManager mInstance = new TimeManager();
 
-    //**********************************************************************************************
-    // Class Fields
-    //-------------
-
-    // Private
+    // Private Instance Fields
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // mFirstTimestamp..............................................................................
@@ -49,11 +41,7 @@ public class TimeManager {
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    //**********************************************************************************************
     // Constructors
-    //-------------
-
-    // Private
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // TimeManager..................................................................................
@@ -61,7 +49,6 @@ public class TimeManager {
      * TODO: description, comments and logging
      */
     private TimeManager() {
-        //Log.e(Thread.currentThread().getName(), "TimeManager TimeManager");
 
         // Make sure time zone is Pacific Standard Time (no daylight savings)
         TimeZone pst = TimeZone.getTimeZone("Etc/GMT+8");
@@ -92,26 +79,7 @@ public class TimeManager {
         Log.e(Thread.currentThread().getName(), "TimeManager mStartDate: " + mStartDate);
     }
 
-    //**********************************************************************************************
-    // Static Class Methods
-    //---------------------
-
-    // Public
-    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-    // getInstance..................................................................................
-    /**
-     * TODO: description, comments and logging
-     * @return bla
-     */
-    @NonNull
-    public static TimeManager getInstance() { return mInstance; }
-
-    //**********************************************************************************************
-    // Class Methods
-    //--------------
-
-    // Public
+    // Public Class Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // getElapsedNanos..............................................................................
@@ -120,13 +88,12 @@ public class TimeManager {
      * @param timestamp bla
      * @return bla
      */
-    public long getElapsedNanos(long timestamp) {
-        //Log.e(Thread.currentThread().getName(), "TimeManager getElapsedNanos");
-        if (mFirstTimestamp.equals(0L)) {
-            mFirstTimestamp = timestamp;
+    public static long getElapsedNanos(long timestamp) {
+        if (mInstance.mFirstTimestamp.equals(0L)) {
+            mInstance.mFirstTimestamp = timestamp;
             return 0L;
         }
-        return timestamp - mFirstTimestamp;
+        return timestamp - mInstance.mFirstTimestamp;
     }
 
     // getElapsedSystemNanos.......................................................................
@@ -134,9 +101,8 @@ public class TimeManager {
      * TODO: description, comments and logging
      * @return bla
      */
-    public long getElapsedSystemNanos() {
-        //Log.e(Thread.currentThread().getName(), "TimeManager getElapsedSystemNanos");
-        return SystemClock.elapsedRealtimeNanos() - mSystemStartNanos;
+    public static long getElapsedSystemNanos() {
+        return SystemClock.elapsedRealtimeNanos() - mInstance.mSystemStartNanos;
     }
 
     // getStartDate.................................................................................
@@ -145,9 +111,8 @@ public class TimeManager {
      * @return bla
      */
     @NonNull
-    public String getStartDate() {
-        //Log.e(Thread.currentThread().getName(), "TimeManager getStartDate");
-        return mStartDate;
+    public static String getStartDate() {
+        return mInstance.mStartDate;
     }
 
 }

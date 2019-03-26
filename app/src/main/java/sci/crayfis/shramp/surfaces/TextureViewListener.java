@@ -14,11 +14,7 @@ import android.view.TextureView;
 @TargetApi(21)
 final class TextureViewListener implements TextureView.SurfaceTextureListener {
 
-    //**********************************************************************************************
-    // Class Fields
-    //-------------
-
-    // Private
+    // Private Instance Fields
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // mSurface.....................................................................................
@@ -41,11 +37,7 @@ final class TextureViewListener implements TextureView.SurfaceTextureListener {
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    //**********************************************************************************************
     // Constructors
-    //-------------
-
-    // Package-private
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // TextureViewListener..........................................................................
@@ -54,14 +46,9 @@ final class TextureViewListener implements TextureView.SurfaceTextureListener {
      */
     TextureViewListener() {
         super();
-        Log.e(Thread.currentThread().getName(), "TextureViewListener TextureViewListener");
     }
 
-    //**********************************************************************************************
-    // Class Methods
-    //---------------------
-
-    // Package-private
+    // Package-private Instance Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // openSurface..................................................................................
@@ -78,11 +65,7 @@ final class TextureViewListener implements TextureView.SurfaceTextureListener {
         activity.setContentView(mTextureView);
     }
 
-    //**********************************************************************************************
-    // Overriding Class Methods
-    //-------------------------
-
-    // Public
+    // Public Overriding Instance Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // onSurfaceTextureAvailable....................................................................
@@ -122,6 +105,8 @@ final class TextureViewListener implements TextureView.SurfaceTextureListener {
      */
     @Override
     public void onSurfaceTextureSizeChanged(@NonNull SurfaceTexture texture, int width, int height) {
+        Log.e(Thread.currentThread().getName(), "TextureViewListener size has changed to: "
+        + Integer.toString(width) + " x " + Integer.toString(height) + " pixels");
         mSurfaceWidth = width;
         mSurfaceHeight = height;
     }

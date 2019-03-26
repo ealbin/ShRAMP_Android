@@ -25,26 +25,7 @@ import sci.crayfis.shramp.util.ArrayToList;
 @TargetApi(21)
 abstract class step01_Control_ {
 
-    //**********************************************************************************************
-    // Static Class Fields
-    //--------------------
-
-    // Private Constants
-    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-    // FORCE_CONTROL_MODE_AUTO......................................................................
-    // TODO: description
-    private static final boolean FORCE_CONTROL_MODE_AUTO = GlobalSettings.FORCE_CONTROL_MODE_AUTO;
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    //**********************************************************************************************
     // Constructors
-    //-------------
-
-    // Protected
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // step01_Control_..............................................................................
@@ -53,11 +34,7 @@ abstract class step01_Control_ {
      */
     protected step01_Control_() {}
 
-    //**********************************************************************************************
-    // Class Methods
-    //--------------
-
-    // Protected
+    // Protected Instance Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // makeDefault..................................................................................
@@ -99,7 +76,7 @@ abstract class step01_Control_ {
                 //Integer USE_SCENE_MODE = CameraMetadata.CONTROL_MODE_USE_SCENE_MODE;
                 //Integer OFF_KEEP_STATE = CameraMetadata.CONTROL_MODE_OFF_KEEP_STATE;
 
-                if (FORCE_CONTROL_MODE_AUTO) {
+                if (GlobalSettings.FORCE_CONTROL_MODE_AUTO) {
                     value = AUTO;
                     valueString = "AUTO (FORCED)";
                     formatter = new ParameterFormatter<Integer>(valueString) {
@@ -236,7 +213,7 @@ abstract class step01_Control_ {
                 mode = captureRequestMap.get(CaptureRequest.CONTROL_MODE);
                 assert mode != null;
 
-                if (FORCE_CONTROL_MODE_AUTO) {
+                if (GlobalSettings.FORCE_CONTROL_MODE_AUTO) {
                     value = CameraMetadata.CONTROL_AWB_MODE_AUTO;
                     valueString = "AUTO (FORCED)";
                     formatter = new ParameterFormatter<Integer>(valueString) {
@@ -385,7 +362,7 @@ abstract class step01_Control_ {
                 mode = captureRequestMap.get(CaptureRequest.CONTROL_MODE);
                 assert mode != null;
 
-                if (FORCE_CONTROL_MODE_AUTO) {
+                if (GlobalSettings.FORCE_CONTROL_MODE_AUTO) {
                     value = CameraMetadata.CONTROL_AF_MODE_AUTO;
                     valueString = "AUTO (FORCED)";
                     formatter = new ParameterFormatter<Integer>(valueString) {
@@ -502,7 +479,7 @@ abstract class step01_Control_ {
                 mode = captureRequestMap.get(CaptureRequest.CONTROL_MODE);
                 assert mode != null;
 
-                if (FORCE_CONTROL_MODE_AUTO) {
+                if (GlobalSettings.FORCE_CONTROL_MODE_AUTO) {
                     value = CameraMetadata.CONTROL_AWB_MODE_AUTO;
                     valueString = "AUTO (FORCED)";
                     formatter = new ParameterFormatter<Integer>(valueString) {
