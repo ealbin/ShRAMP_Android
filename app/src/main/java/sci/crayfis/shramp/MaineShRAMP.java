@@ -29,7 +29,6 @@ import android.support.annotation.NonNull;
 import android.os.Bundle;
 import android.system.Os;
 import android.system.StructUtsname;
-import android.util.Log;
 import android.widget.TextView;
 
 import java.io.File;
@@ -49,7 +48,7 @@ import sci.crayfis.shramp.error.FailManager;
 
 /**
  * Entry point for the ShRAMP app
- * Checks permissions then runs CaptureOverseer
+ * Checks permissions then runs MasterController
  */
 @TargetApi(21)
 public final class MaineShRAMP extends Activity implements AsyncResponse {
@@ -85,7 +84,7 @@ public final class MaineShRAMP extends Activity implements AsyncResponse {
 
         //Log.e(Thread.currentThread().getName(), "MaineShRAMP onCreate");
 
-       mNextActivity = new Intent(this, CaptureOverseer.class);
+       mNextActivity = new Intent(this, MasterController.class);
        mFailActivity = new Intent(this, FailManager.class);
 
        mNextActivity.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -130,7 +129,7 @@ public final class MaineShRAMP extends Activity implements AsyncResponse {
         // if API 22 or below, user would have granted permissions on start
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             MaineShRAMP.mLogger.log("API 22 or below, permissions granted on start");
-            MaineShRAMP.mLogger.log("Starting CaptureOverseer");
+            MaineShRAMP.mLogger.log("Starting MasterController");
             //Log.e(Thread.currentThread().getName(), "MaineShRAMP -> NextActivity");
             //Log.e(Thread.currentThread().getName(), ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
             super.startActivity(this.mNextActivity);
@@ -140,7 +139,7 @@ public final class MaineShRAMP extends Activity implements AsyncResponse {
             // if API > 22
             if (permissionsGranted()) {
                 //MaineShRAMP.mLogger.log("API 23 or above, and permissions have previously been granted");
-                //MaineShRAMP.mLogger.log("Starting CaptureOverseer");
+                //MaineShRAMP.mLogger.log("Starting MasterController");
                 //Log.e(Thread.currentThread().getName(), "MaineShRAMP -> NextActivity");
                 //Log.e(Thread.currentThread().getName(), ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
                 super.startActivity(this.mNextActivity);
@@ -206,7 +205,7 @@ public final class MaineShRAMP extends Activity implements AsyncResponse {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (this.permissionsGranted()) {
             MaineShRAMP.mLogger.log("Permissions asked and granted");
-            //MaineShRAMP.mLogger.log("Starting CaptureOverseer");
+            //MaineShRAMP.mLogger.log("Starting MasterController");
             //Log.e(Thread.currentThread().getName(), "MaineShRAMP -> NextActivity");
             //Log.e(Thread.currentThread().getName(), ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
             super.startActivity(mNextActivity);

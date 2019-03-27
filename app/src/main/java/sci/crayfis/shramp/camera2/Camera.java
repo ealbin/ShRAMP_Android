@@ -32,6 +32,8 @@ import android.util.Log;
 import android.util.Range;
 import android.util.Size;
 
+import org.jetbrains.annotations.Contract;
+
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -40,7 +42,7 @@ import sci.crayfis.shramp.GlobalSettings;
 import sci.crayfis.shramp.camera2.characteristics.CharacteristicsReader;
 import sci.crayfis.shramp.camera2.requests.RequestMaker;
 import sci.crayfis.shramp.camera2.util.Parameter;
-import sci.crayfis.shramp.surfaces.SurfaceManager;
+import sci.crayfis.shramp.surfaces.SurfaceController;
 import sci.crayfis.shramp.util.ArrayToList;
 import sci.crayfis.shramp.util.NumToString;
 import sci.crayfis.shramp.util.SizeSortedSet;
@@ -48,6 +50,8 @@ import sci.crayfis.shramp.util.SizeSortedSet;
 /**
  * TODO: description, comments and logging
  */
+// TODO: figure out who is giving the unchecked warning
+@SuppressWarnings("unchecked")
 @TargetApi(21)
 final class Camera extends CameraDevice.StateCallback{
 
@@ -172,6 +176,7 @@ final class Camera extends CameraDevice.StateCallback{
      * TODO: description, comments and logging
      * @return bla
      */
+    @Contract(pure = true)
     @Nullable
     Integer getBitsPerPixel() {
         return mBitsPerPixel;
@@ -182,6 +187,7 @@ final class Camera extends CameraDevice.StateCallback{
      * TODO: description, comments and logging
      * @return bla
      */
+    @Contract(pure = true)
     @Nullable
     CameraDevice getCameraDevice() {
         return mCameraDevice;
@@ -192,6 +198,8 @@ final class Camera extends CameraDevice.StateCallback{
      * TODO: description, comments and logging
      * @return bla
      */
+    @Contract(pure = true)
+    @NonNull
     String getCameraId() {
         return mCameraId;
     }
@@ -201,6 +209,7 @@ final class Camera extends CameraDevice.StateCallback{
      * TODO: description, comments and logging
      * @return bla
      */
+    @Contract(pure = true)
     @Nullable
     CaptureRequest.Builder getCaptureRequestBuilder() {
         return mCaptureRequestBuilder;
@@ -211,6 +220,7 @@ final class Camera extends CameraDevice.StateCallback{
      * TODO: description, comments and logging
      * @return bla
      */
+    @Contract(pure = true)
     @NonNull
     LinkedHashMap<CameraCharacteristics.Key, Parameter> getCharacteristicsMap() {
         return mCharacteristicsMap;
@@ -221,6 +231,7 @@ final class Camera extends CameraDevice.StateCallback{
      * TODO: description, comments and logging
      * @return bla
      */
+    @Contract(pure = true)
     @Nullable
     Integer getOutputFormat() {
         return mOutputFormat;
@@ -231,6 +242,8 @@ final class Camera extends CameraDevice.StateCallback{
      * TODO: description, comments and logging
      * @return bla
      */
+    @Contract(pure = true)
+    @NonNull
     Size getOutputSize() {
         return mOutputSize;
     }
@@ -341,12 +354,12 @@ final class Camera extends CameraDevice.StateCallback{
         // Find the largest output size supported by all output surfaces
         SizeSortedSet outputSizes = new SizeSortedSet();
 
-        Size[] streamOutputSizes = (Size[]) streamConfigurationMap.getOutputSizes(mOutputFormat);
+        Size[] streamOutputSizes = streamConfigurationMap.getOutputSizes(mOutputFormat);
         Collections.addAll(outputSizes, streamOutputSizes);
 
-        List<Class> outputClasses = SurfaceManager.getOutputSurfaceClasses();
+        List<Class> outputClasses = SurfaceController.getOutputSurfaceClasses();
         for (Class klass : outputClasses) {
-            Size[] classOutputSizes = (Size[]) streamConfigurationMap.getOutputSizes(klass);
+            Size[] classOutputSizes = streamConfigurationMap.getOutputSizes(klass);
             assert classOutputSizes != null;
             for (Size s : classOutputSizes) {
                 if (!outputSizes.contains(s)) {
@@ -395,26 +408,27 @@ final class Camera extends CameraDevice.StateCallback{
      */
     @Override
     public void onError(@NonNull CameraDevice camera, int error) {
-        String err = "";
+        String err;
         switch (error) {
-            case (ERROR_CAMERA_DEVICE): {
+            case (CameraDevice.StateCallback.ERROR_CAMERA_DEVICE): {
                 err = "ERROR_CAMERA_DEVICE";
                 break;
             }
-            case (ERROR_CAMERA_DISABLED): {
+            case (CameraDevice.StateCallback.ERROR_CAMERA_DISABLED): {
                 err = "ERROR_CAMERA_DISABLED";
                 break;
             }
-            case (ERROR_CAMERA_IN_USE): {
+            case (CameraDevice.StateCallback.ERROR_CAMERA_IN_USE): {
                 err = "ERROR_CAMERA_IN_USE";
                 break;
             }
-            case (ERROR_CAMERA_SERVICE): {
+            case (CameraDevice.StateCallback.ERROR_CAMERA_SERVICE): {
                 err = "ERROR_CAMERA_SERVICE";
                 break;
             }
-            case (ERROR_MAX_CAMERAS_IN_USE): {
+            case (CameraDevice.StateCallback.ERROR_MAX_CAMERAS_IN_USE): {
                 err = "ERROR_MAX_CAMERAS_IN_USE";
+                break;
             }
             default: {
                 err = "UNKNOWN_ERROR";

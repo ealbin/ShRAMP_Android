@@ -46,6 +46,8 @@ rs_allocation gMeanRate;
 rs_allocation gStdDevRate;
 rs_allocation gStdErrRate;
 
+rs_allocation gAnomalousStdDev;
+
 // RenderScript Kernels
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
@@ -66,7 +68,7 @@ float RS_KERNEL getMeanRate(uint32_t x, uint32_t y) {
     float mean_exposure = gExposureSum / (float) gNframes;
 
     // mean pixel value / exposure time (nanoseconds)
-    float mean_val_per_nanos = mean_pixel_val / (float) mean_exposure;
+    float mean_val_per_nanos = (float) mean_pixel_val / (float) mean_exposure;
 
     rsSetElementAt_float(gMeanRate, mean_val_per_nanos, x, y);
 
@@ -81,7 +83,9 @@ float RS_KERNEL getMeanRate(uint32_t x, uint32_t y) {
     float stddev_per_nanos;
     // TODO: figure out what's going on with var
     if (var < 0.) {
-        stddev_per_nanos = sqrt((float) mean_pixel_val) / mean_exposure;
+        long count = rsGetElementAt_long(gAnomalousStdDev, 0, 0);
+        rsSetElementAt_long(gAnomalousStdDev, count + 1, 0, 0);
+        stddev_per_nanos = 0.;
     }
     else {
         stddev_per_nanos = sqrt((float) var) / mean_exposure;
@@ -117,4 +121,8 @@ float RS_KERNEL getStdDevRate(uint32_t x, uint32_t y) {
 // @return bla
 float RS_KERNEL getStdErrRate(uint32_t x, uint32_t y) {
     return rsGetElementAt_float(gStdErrRate, x, y);
+}
+
+long RS_KERNEL getAnomalousStdDev(uint32_t x, uint32_t y) {
+    return rsGetElementAt_long(gAnomalousStdDev, 0, 0);
 }

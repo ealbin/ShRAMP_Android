@@ -32,7 +32,7 @@
         </activity>
 
         <activity
-            android:name=".CaptureOverseer"
+            android:name=".MasterController"
             android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
@@ -45,7 +45,37 @@
             android:launchMode="singleTask">
         </activity>
 
+        <!-- Battery Receivers -->
+        <!--:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::-->
+        <receiver android:name=".battery.BatteryChanged">
+            <intent-filter>
+                <action android:name="android.intent.action.BATTERY_CHANGED"/>
+            </intent-filter>
+        </receiver>
+
+        <!--
+        <receiver android:name=".battery.BatteryChanged">
+            <intent-filter>
+                <action android:name="android.intent.action.BATTERY_LOW"/>
+            </intent-filter>
+        </receiver>
+
+        <receiver android:name=".battery.BatteryChanged">
+            <intent-filter>
+                <action android:name="android.intent.action.BATTERY_OKAY"/>
+            </intent-filter>
+        </receiver>
+
+        <receiver android:name=".battery.BatteryChanged">
+            <intent-filter>
+                <action android:name="android.intent.action.ACTION_POWER_CONNECTED"/>
+                <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED"/>
+            </intent-filter>
+        </receiver>
+        -->
     </application>
+
+
 </manifest>
 
     <!--

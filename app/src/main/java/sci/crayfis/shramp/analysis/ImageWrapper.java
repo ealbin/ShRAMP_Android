@@ -41,7 +41,7 @@ public final class ImageWrapper {
 
     // mNpixels.....................................................................................
     // TODO: description
-    private static int mNpixels = 0;
+    private static long mNpixels = 0;
 
     // mTimestamp...................................................................................
     // TODO: description
@@ -134,7 +134,7 @@ public final class ImageWrapper {
      * TODO: description, comments and logging
      * @param nPixels
      */
-    static void setNpixels(int nPixels) {
+    static void setNpixels(long nPixels) {
         mNpixels = nPixels;
     }
 

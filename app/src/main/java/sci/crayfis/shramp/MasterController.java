@@ -27,10 +27,12 @@ import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
-import sci.crayfis.shramp.analysis.AnalysisManager;
+import sci.crayfis.shramp.analysis.AnalysisController;
+import sci.crayfis.shramp.battery.BatteryController;
 import sci.crayfis.shramp.camera2.CameraController;
-import sci.crayfis.shramp.camera2.capture.CaptureManager;
-import sci.crayfis.shramp.surfaces.SurfaceManager;
+import sci.crayfis.shramp.camera2.capture.CaptureController;
+import sci.crayfis.shramp.sensor.SensorController;
+import sci.crayfis.shramp.surfaces.SurfaceController;
 import sci.crayfis.shramp.util.DataManager;
 import sci.crayfis.shramp.util.HandlerManager;
 import sci.crayfis.shramp.util.HeapMemory;
@@ -39,7 +41,7 @@ import sci.crayfis.shramp.util.HeapMemory;
  * Oversees the setup of surfaces, cameras and capture session
  */
 @TargetApi(21)
-public final class CaptureOverseer extends Activity {
+public final class MasterController extends Activity {
 
     // Private Static Fields
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -50,7 +52,7 @@ public final class CaptureOverseer extends Activity {
 
     // mInstance....................................................................................
     // Static reference to single instance of this class.
-    private static CaptureOverseer mInstance;
+    private static MasterController mInstance;
 
     // Execution Routing
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -103,6 +105,13 @@ public final class CaptureOverseer extends Activity {
         Log.e(Thread.currentThread().getName(),"Clearing ShRAMP data directory, starting from scratch");
         DataManager.clean();
 
+        //Log.e(Thread.currentThread().getName(), "Loading sensor package");
+        //SensorController.initializeTemperature(mInstance, false);
+
+        Log.e(Thread.currentThread().getName(), "Battery Info:");
+        BatteryController.initialize(mInstance);
+        Log.e(Thread.currentThread().getName(), " \n" + BatteryController.getString() + " \n");
+
         // Get system camera manager
         CameraManager cameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
         assert cameraManager != null;
@@ -124,7 +133,7 @@ public final class CaptureOverseer extends Activity {
      * TODO: description, comments and logging
      */
     public static void prepareSurfaces() {
-        SurfaceManager.openSurfaces(mInstance, GoTo_prepareAnalysis, mHandler);
+        SurfaceController.openSurfaces(mInstance, GoTo_prepareAnalysis, mHandler);
     }
 
     // prepareAnalysis.......................................................................
@@ -132,8 +141,8 @@ public final class CaptureOverseer extends Activity {
      * TODO: description, comments and logging
      */
     public static void prepareAnalysis() {
-        Log.e(Thread.currentThread().getName(), "CaptureOverseer prepareAnalysis");
-        AnalysisManager.initialize(mInstance);
+        Log.e(Thread.currentThread().getName(), "MasterController prepareAnalysis");
+        AnalysisController.initialize(mInstance);
         startCaptureSession();
     }
 
@@ -151,7 +160,7 @@ public final class CaptureOverseer extends Activity {
 
         Log.e(Thread.currentThread().getName(), ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
         HeapMemory.logAvailableMiB();
-        CaptureManager.startCaptureSession();
+        CaptureController.startCaptureSession();
     }
 
     // quitSafely...................................................................................
@@ -160,8 +169,9 @@ public final class CaptureOverseer extends Activity {
      */
     public static void quitSafely() {
         Log.e(Thread.currentThread().getName(), ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
-        Log.e(Thread.currentThread().getName(), "CaptureOverseer quitSafely");
+        Log.e(Thread.currentThread().getName(), "MasterController quitSafely");
         CameraController.closeCamera();
+        BatteryController.shutdown();
         HandlerManager.finish();
         mInstance.finish();
     }
@@ -175,6 +185,20 @@ public final class CaptureOverseer extends Activity {
      */
     public void finish() {
         finishAffinity();
-        Log.e(Thread.currentThread().getName(), "CaptureOverseer finished");
+        Log.e(Thread.currentThread().getName(), "MasterController finished");
     }
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        SensorController.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        SensorController.onPause();
+    }
+
 }

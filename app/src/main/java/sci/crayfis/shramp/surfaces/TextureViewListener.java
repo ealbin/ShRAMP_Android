@@ -99,7 +99,7 @@ final class TextureViewListener implements TextureView.SurfaceTextureListener {
         mSurfaceWidth  = width;
         mSurfaceHeight = height;
         mSurface = new Surface(texture);
-        SurfaceManager.surfaceHasOpened(mSurface, TextureViewListener.class);
+        SurfaceController.surfaceHasOpened(mSurface, TextureViewListener.class);
     }
 
     // onSurfaceTextureDestroyed....................................................................

@@ -19,6 +19,7 @@
 package sci.crayfis.shramp.camera2.capture;
 
 import android.annotation.TargetApi;
+import android.hardware.SensorEvent;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CaptureFailure;
 import android.hardware.camera2.CaptureRequest;
@@ -28,9 +29,11 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.Surface;
 
-import sci.crayfis.shramp.analysis.AnalysisManager;
+import sci.crayfis.shramp.analysis.AnalysisController;
 import sci.crayfis.shramp.analysis.DataQueue;
+import sci.crayfis.shramp.battery.BatteryController;
 import sci.crayfis.shramp.camera2.util.TimeCode;
+import sci.crayfis.shramp.sensor.SensorController;
 import sci.crayfis.shramp.util.HeapMemory;
 import sci.crayfis.shramp.util.NumToString;
 import sci.crayfis.shramp.util.StopWatch;
@@ -87,7 +90,7 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
 
             if (FrameCount >= FrameLimit) {
                 mState = State.FINISHED;
-                CaptureManager.pauseCaptureSession();
+                CaptureController.pauseCaptureSession();
             }
         }
     }
@@ -211,7 +214,7 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
 
         Log.e(Thread.currentThread().getName(), "Capture FPS: " + NumToString.decimal(fps)
                 + ", Duty: " + NumToString.decimal(duty) + "%"
-                + ", Dead time: "    + Long.toString(deadTime)   + " [ns]");
+                + ", Dead time: "    + NumToString.number(deadTime)   + " [ns]");
 
     }
 
@@ -238,7 +241,7 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
             Log.e("DANGER LOW MEMORY", "DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER");
             HeapMemory.logAvailableMiB();
             mState = State.PAUSED;
-            CaptureManager.pauseCaptureSession();
+            CaptureController.pauseCaptureSession();
         }
         Log.e(Thread.currentThread().getName(), "<onCaptureProgressed()> time: " + NumToString.number(stopWatch.stop()) + " [ns]");
     }
@@ -264,6 +267,27 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
         completedNotification(result);
         mFrame.raiseFrameCount();
         Log.e(Thread.currentThread().getName(), "<onCaptureCompleted()> time: " + NumToString.number(stopWatch.stop()) + " [ns]");
+
+        Double temperature = BatteryController.getCurrentTemperature();
+        String tempString;
+        if (temperature == null) {
+            tempString = "UNAVAILABLE";
+        }
+        else {
+            tempString = NumToString.number(temperature) + " [Celsius]";
+        }
+
+        Double power = BatteryController.getInstantaneousPower();
+        String powerString;
+        if (power == null) {
+            powerString = "UNAVAILABLE";
+        }
+        else {
+            powerString = NumToString.number(power) + " [mW]";
+        }
+
+        Log.e(Thread.currentThread().getName(), "________Temperature: " + tempString);
+        Log.e(Thread.currentThread().getName(), "________Power:       " + powerString);
     }
 
     // onCaptureSequenceCompleted...................................................................
@@ -285,7 +309,7 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
 
         if (mState == State.PAUSED) {
             Log.e(Thread.currentThread().getName(), "captureStream *** pause *** pause *** pause *** pause *** pause *** pause *** pause *** pause *** pause *** pause *** pause *** pause");
-            CaptureManager.restartCaptureSession();
+            CaptureController.restartCaptureSession();
             Log.e(Thread.currentThread().getName(), "<onCaptureSequenceCompleted()> time: " + NumToString.number(stopWatch.stop()) + " [ns]");
             return;
         }
@@ -301,9 +325,9 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
 
             DataQueue.purge();
             synchronized (this) {
-                while (!DataQueue.isEmpty() || AnalysisManager.isBusy()) {
+                while (!DataQueue.isEmpty() || AnalysisController.isBusy()) {
                     try {
-                        this.wait(3 * CaptureManager.getTargetFrameNanos() / 1000 / 1000);
+                        this.wait(3 * CaptureController.getTargetFrameNanos() / 1000 / 1000);
                     }
                     catch (InterruptedException e) {
                         // TODO: error
@@ -311,7 +335,7 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
                 }
             }
 
-            CaptureManager.sessionFinished(averageFps, averageDuty);
+            CaptureController.sessionFinished(averageFps, averageDuty);
 
             // TODO: dump mTotalCaptureResult info
 
@@ -398,11 +422,11 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
         Log.e("Tag", errInfo);
 
         // End exposure block after EXPOSURE_DURATION_NANOS time
-        if (SystemClock.elapsedRealtimeNanos() >= CaptureOverseer.mFinishEpoch) {
+        if (SystemClock.elapsedRealtimeNanos() >= MasterController.mFinishEpoch) {
             try {
                 session.stopRepeating();
             } catch (CameraAccessException e) {
-                CaptureOverseer.mLogger.log("ERROR: Camera Access Exception");
+                MasterController.mLogger.log("ERROR: Camera Access Exception");
             }
         }
         */

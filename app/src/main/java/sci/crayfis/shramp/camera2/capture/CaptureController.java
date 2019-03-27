@@ -35,14 +35,14 @@ import org.jetbrains.annotations.Contract;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import sci.crayfis.shramp.CaptureOverseer;
+import sci.crayfis.shramp.MasterController;
 import sci.crayfis.shramp.GlobalSettings;
-import sci.crayfis.shramp.analysis.AnalysisManager;
+import sci.crayfis.shramp.analysis.AnalysisController;
 import sci.crayfis.shramp.analysis.DataQueue;
 import sci.crayfis.shramp.camera2.CameraController;
 import sci.crayfis.shramp.camera2.requests.RequestMaker;
 import sci.crayfis.shramp.camera2.util.Parameter;
-import sci.crayfis.shramp.surfaces.SurfaceManager;
+import sci.crayfis.shramp.surfaces.SurfaceController;
 import sci.crayfis.shramp.util.HandlerManager;
 import sci.crayfis.shramp.util.HeapMemory;
 import sci.crayfis.shramp.util.NumToString;
@@ -52,7 +52,7 @@ import sci.crayfis.shramp.util.StopWatch;
  * TODO: description, comments and logging
  */
 @TargetApi(21)
-final public class CaptureManager extends CameraCaptureSession.StateCallback {
+final public class CaptureController extends CameraCaptureSession.StateCallback {
 
     // Private Class Constants
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -68,7 +68,7 @@ final public class CaptureManager extends CameraCaptureSession.StateCallback {
 
     // mInstance....................................................................................
     // TODO: description
-    private static final CaptureManager mInstance = new CaptureManager();
+    private static final CaptureController mInstance = new CaptureController();
 
     // Private Class Fields
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -137,7 +137,7 @@ final public class CaptureManager extends CameraCaptureSession.StateCallback {
          * TODO: description, comments and logging
          */
         static void refreshSurfaces() {
-            surfaceList = SurfaceManager.getOpenSurfaces();
+            surfaceList = SurfaceController.getOpenSurfaces();
         }
 
         // pause....................................................................................
@@ -176,7 +176,7 @@ final public class CaptureManager extends CameraCaptureSession.StateCallback {
                 if (!HeapMemory.isMemoryAmple()) {
                     DataQueue.purge();
                     System.gc();
-                    if (!DataQueue.isEmpty() || AnalysisManager.isBusy()) {
+                    if (!DataQueue.isEmpty() || AnalysisController.isBusy()) {
                         return false;
                     }
                     Log.e(Thread.currentThread().getName(), "Forcing Restart");
@@ -224,11 +224,11 @@ final public class CaptureManager extends CameraCaptureSession.StateCallback {
     // Constructors
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    // CaptureManager...............................................................................
+    // CaptureController...............................................................................
     /**
      * TODO: description, comments and logging
      */
-    private CaptureManager() {
+    private CaptureController() {
         super();
         reset();
     }
@@ -241,8 +241,9 @@ final public class CaptureManager extends CameraCaptureSession.StateCallback {
      * TODO: description, comments and logging
      */
     public static void startCaptureSession() {
-        Log.e(Thread.currentThread().getName(), "CaptureManager startCaptureSession");
+        Log.e(Thread.currentThread().getName(), "CaptureController startCaptureSession");
         mCurrentSession.reset();
+        AnalysisController.resetRunningTotals();
         // execution continues in onConfigured
         CameraController.createCaptureSession(mCurrentSession.surfaceList, mInstance, mHandler);
     }
@@ -294,7 +295,7 @@ final public class CaptureManager extends CameraCaptureSession.StateCallback {
      * @param averageDuty bla
      */
     static void sessionFinished(double averageFps, double averageDuty) {
-        Log.e(Thread.currentThread().getName(), "CaptureManager sessionFinished");
+        Log.e(Thread.currentThread().getName(), "CaptureController sessionFinished");
 
         String string = " \n";
         string += "Session performance: \n";
@@ -307,17 +308,18 @@ final public class CaptureManager extends CameraCaptureSession.StateCallback {
                 + NumToString.decimal(1. / ( mTarget.FrameExposureNanos * 1e-9) )
                 + " [frames / sec]");
 
-        AnalysisManager.runStatistics();
+        AnalysisController.runStatistics();
 
-//        AnalysisManager.peekExposureValue();
-//        AnalysisManager.peekExposureValue2();
-        AnalysisManager.peekMeanAndErr();
-//        AnalysisManager.peekStdDev();
-        if (AnalysisManager.isSignificanceEnabled()) {
-            AnalysisManager.peekSignificance();
+//        AnalysisController.peekExposureValue();
+//        AnalysisController.peekExposureValue2();
+        AnalysisController.peekMeanAndErr();
+//        AnalysisController.peekStdDev();
+        if (AnalysisController.isSignificanceEnabled()) {
+            AnalysisController.peekSignificance();
         }
 
-        AnalysisManager.resetRunningTotals();
+        AnalysisController.resetRunningTotals();
+        //AnalysisController.partialReset();
 
         if (averageDuty < GlobalSettings.DUTY_THRESHOLD && mFpsLockAttempts < GlobalSettings.FPS_ATTEMPT_LIMIT) {
             mFpsLockAttempts += 1;
@@ -334,7 +336,9 @@ final public class CaptureManager extends CameraCaptureSession.StateCallback {
         else if (mDataRunAttempts < GlobalSettings.DATA_ATTEMPT_LIMIT) {
             mDataRunAttempts += 1;
             mTarget.TotalFrames = GlobalSettings.DATARUN_N_FRAMES;
-            AnalysisManager.enableSignificance();
+
+            AnalysisController.enableSignificance();
+            AnalysisController.setSignificanceThreshold(mTarget.TotalFrames);
 
             // TODO: enable saving
             Log.e(Thread.currentThread().getName(), "*******************************************************************************");
@@ -347,7 +351,7 @@ final public class CaptureManager extends CameraCaptureSession.StateCallback {
         }
         else {
             reset();
-            CaptureOverseer.quitSafely();
+            MasterController.quitSafely();
         }
     }
 
@@ -361,7 +365,7 @@ final public class CaptureManager extends CameraCaptureSession.StateCallback {
      */
     @NonNull
     private static CaptureRequest buildCaptureRequest() {
-        Log.e(Thread.currentThread().getName(), "CaptureManager buildCaptureRequest");
+        Log.e(Thread.currentThread().getName(), "CaptureController buildCaptureRequest");
         StopWatch stopWatch = new StopWatch();
 
         RequestMaker.makeDefault();
@@ -441,7 +445,7 @@ final public class CaptureManager extends CameraCaptureSession.StateCallback {
      * TODO: description, comments and logging
      */
     private static void reset() {
-        Log.e(Thread.currentThread().getName(), "CaptureManager reset");
+        Log.e(Thread.currentThread().getName(), "CaptureController reset");
         mFpsLockAttempts = 1;
         mDataRunAttempts = 0;
         mTarget.reset();
@@ -462,7 +466,7 @@ final public class CaptureManager extends CameraCaptureSession.StateCallback {
     @Override
     public void onConfigured(@NonNull CameraCaptureSession session) {
         //super.onConfigured(session); is abstract
-        Log.e(Thread.currentThread().getName(), "CaptureManager onConfigured");
+        Log.e(Thread.currentThread().getName(), "CaptureController onConfigured");
         mCurrentSession.newSession(session);
         restartCaptureSession();
     }
@@ -476,7 +480,7 @@ final public class CaptureManager extends CameraCaptureSession.StateCallback {
     @Override
     public void onClosed(@NonNull CameraCaptureSession session) {
         super.onClosed(session);
-        Log.e(Thread.currentThread().getName(), "CaptureManager onClosed");
+        Log.e(Thread.currentThread().getName(), "CaptureController onClosed");
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -492,7 +496,7 @@ final public class CaptureManager extends CameraCaptureSession.StateCallback {
     @Override
     public void onReady(@NonNull CameraCaptureSession session) {
         super.onReady(session);
-        //Log.e(Thread.currentThread().getName(), "CaptureManager onReady");
+        //Log.e(Thread.currentThread().getName(), "CaptureController onReady");
     }
 
     // onActive.....................................................................................
@@ -504,7 +508,7 @@ final public class CaptureManager extends CameraCaptureSession.StateCallback {
     @Override
     public void onActive(@NonNull CameraCaptureSession session) {
         super.onActive(session);
-        //Log.e(Thread.currentThread().getName(), "CaptureManager onActive");
+        //Log.e(Thread.currentThread().getName(), "CaptureController onActive");
     }
 
     // onCaptureQueueEmpty..........................................................................
@@ -517,7 +521,7 @@ final public class CaptureManager extends CameraCaptureSession.StateCallback {
     @Override
     public void onCaptureQueueEmpty(@NonNull CameraCaptureSession session) {
         super.onCaptureQueueEmpty(session);
-        //Log.e(Thread.currentThread().getName(), "CaptureManager onCaptureQueueEmpty");
+        //Log.e(Thread.currentThread().getName(), "CaptureController onCaptureQueueEmpty");
     }
 
     // onSurfacePrepared............................................................................
@@ -530,7 +534,7 @@ final public class CaptureManager extends CameraCaptureSession.StateCallback {
     @Override
     public void onSurfacePrepared(@NonNull CameraCaptureSession session, @NonNull Surface surface) {
         super.onSurfacePrepared(session, surface);
-        //Log.e(Thread.currentThread().getName(), "CaptureManager onSurfacePrepared: " + surface.toString());
+        //Log.e(Thread.currentThread().getName(), "CaptureController onSurfacePrepared: " + surface.toString());
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -546,7 +550,7 @@ final public class CaptureManager extends CameraCaptureSession.StateCallback {
     @Override
     public void onConfigureFailed(@NonNull CameraCaptureSession session) {
         //super.onConfigureFailed(session); is abstract
-        Log.e(Thread.currentThread().getName(), "CaptureManager onConfigureFailed");
+        Log.e(Thread.currentThread().getName(), "CaptureController onConfigureFailed");
         // TODO: SHUTDOWN
     }
 

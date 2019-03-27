@@ -30,18 +30,21 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 import android.util.Size;
 
+import org.apache.commons.math3.special.Erf;
+import org.jetbrains.annotations.Contract;
+
 import sci.crayfis.shramp.GlobalSettings;
 import sci.crayfis.shramp.ScriptC_PostProcessing;
 import sci.crayfis.shramp.ScriptC_LiveProcessing;
 import sci.crayfis.shramp.camera2.CameraController;
-import sci.crayfis.shramp.camera2.capture.CaptureManager;
+import sci.crayfis.shramp.camera2.capture.CaptureController;
 import sci.crayfis.shramp.util.NumToString;
 
 /**
  * TODO: description, comments and logging
  */
 @TargetApi(21)
-public abstract class AnalysisManager {
+public abstract class AnalysisController {
 
     // Private Class Constants
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -77,6 +80,14 @@ public abstract class AnalysisManager {
     // TODO: description
     private static float[] mFloatData;
 
+    // mSimpleLongType..............................................................................
+    // TODO: description
+    private static Type mSimpleLongType;
+
+    // mNpixels.....................................................................................
+    // TODO: description
+    private static long mNpixels;
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -102,17 +113,25 @@ public abstract class AnalysisManager {
         Element shortElement  = Element.U16(mRS);
         Element floatElement  = Element.F32(mRS);
 
+        Element simpleLongElement = Element.I64(mRS);
+
         Size outputSize = CameraController.getOutputSize();
         assert outputSize != null;
         int width  = outputSize.getWidth();
         int height = outputSize.getHeight();
-        ImageWrapper.setNpixels(width * height);
+        mNpixels = width * height;
+        ImageWrapper.setNpixels(mNpixels);
 
-        mFloatData = new float[width * height];
+        if ((int) mNpixels < 0) {
+            // TODO: error, overflow
+        }
+        mFloatData = new float[(int) mNpixels];
 
         mCharType  = new Type.Builder(mRS, charElement ).setX(width).setY(height).create();
         mShortType = new Type.Builder(mRS, shortElement).setX(width).setY(height).create();
         mFloatType = new Type.Builder(mRS, floatElement).setX(width).setY(height).create();
+
+        mSimpleLongType = new Type.Builder(mRS, simpleLongElement).setX(1).setY(1).create();
 
         Integer outputFormat = CameraController.getOutputFormat();
         assert outputFormat != null;
@@ -135,6 +154,8 @@ public abstract class AnalysisManager {
 
         ImageProcessor.setStatistics(newFloatAllocation(), newFloatAllocation(), newFloatAllocation());
         ImageProcessor.setSignificanceAllocation(newFloatAllocation());
+        ImageProcessor.setCountAboveThresholdAllocation(newSimpleLongAllocation());
+        ImageProcessor.setAnomalousStdDevAllocation(newSimpleLongAllocation());
         ImageProcessor.disableSignificance();
         ImageProcessor.resetTotals();
     }
@@ -160,8 +181,27 @@ public abstract class AnalysisManager {
      * TODO: description, comments and logging
      * @return bla
      */
+    @Contract(pure = true)
     public static boolean isSignificanceEnabled() {
         return ImageProcessor.isSignificanceEnabled();
+    }
+
+    // setSignificanceThreshold.....................................................................
+    /**
+     * TODO: description, comments and logging
+     * @param n_frames bla
+     */
+    public static void setSignificanceThreshold(int n_frames) {
+        double n_samples = (double) mNpixels * n_frames;
+        double n_chanceAboveThreshold = 1.;
+
+        double probabilityThreshold = n_chanceAboveThreshold / n_samples;
+
+        // TODO: settle on significance threshold
+        double threshold = Math.sqrt(2.) * Erf.erfInv(1. - probabilityThreshold);
+
+        ImageProcessor.setSignificanceThreshold((float) threshold);
+        Log.e(Thread.currentThread().getName(), "__________Threshold: " + NumToString.decimal(threshold));
     }
 
     // isBusy.......................................................................................
@@ -181,6 +221,8 @@ public abstract class AnalysisManager {
         ImageProcessor.resetTotals();
     }
 
+    public static void partialReset() {ImageProcessor.partialReset();}
+
     // runStatistics................................................................................
     /**
      * TODO: description, comments and logging
@@ -191,7 +233,7 @@ public abstract class AnalysisManager {
             DataQueue.purge();
             while (!DataQueue.isEmpty() || ImageProcessor.isBusy()) {
                 try {
-                    WAIT.wait(3 * CaptureManager.getTargetFrameNanos() / 1000 / 1000);
+                    WAIT.wait(3 * CaptureController.getTargetFrameNanos() / 1000 / 1000);
                 }
                 catch (InterruptedException e) {
                     // TODO: error
@@ -202,7 +244,7 @@ public abstract class AnalysisManager {
 
             while (ImageProcessor.isBusy()) {
                 try {
-                    WAIT.wait(3 * CaptureManager.getTargetFrameNanos() / 1000 / 1000);
+                    WAIT.wait(3 * CaptureController.getTargetFrameNanos() / 1000 / 1000);
                 }
                 catch (InterruptedException e) {
                     // TODO: error
@@ -373,6 +415,15 @@ public abstract class AnalysisManager {
     @NonNull
     static Allocation newFloatAllocation() {
         return Allocation.createTyped(mRS, mFloatType, Allocation.USAGE_SCRIPT);
+    }
+
+    // newSimpleLongAllocation
+    /**
+     * TODO: description, comments and logging
+     * @return bla
+     */
+    static Allocation newSimpleLongAllocation() {
+        return Allocation.createTyped(mRS, mSimpleLongType, Allocation.USAGE_SCRIPT);
     }
 
     // resetAllocation..............................................................................

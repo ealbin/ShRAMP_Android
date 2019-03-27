@@ -28,10 +28,10 @@ import android.util.Size;
 import android.view.Surface;
 
 import sci.crayfis.shramp.GlobalSettings;
-import sci.crayfis.shramp.analysis.AnalysisManager;
+import sci.crayfis.shramp.analysis.AnalysisController;
 import sci.crayfis.shramp.analysis.DataQueue;
 import sci.crayfis.shramp.analysis.ImageWrapper;
-import sci.crayfis.shramp.camera2.capture.CaptureManager;
+import sci.crayfis.shramp.camera2.capture.CaptureController;
 import sci.crayfis.shramp.util.HandlerManager;
 import sci.crayfis.shramp.util.HeapMemory;
 
@@ -113,7 +113,7 @@ final class ImageReaderListener implements ImageReader.OnImageAvailableListener 
         mImageReader = ImageReader.newInstance(mImageWidth, mImageHeight, mImageFormat, GlobalSettings.MAX_SIMULTANEOUS_IMAGES);
         mImageReader.setOnImageAvailableListener(this, mHandler);
 
-        SurfaceManager.surfaceHasOpened(mImageReader.getSurface(), ImageReaderListener.class);
+        SurfaceController.surfaceHasOpened(mImageReader.getSurface(), ImageReaderListener.class);
     }
 
     // Public Overriding Instance Methods
@@ -135,7 +135,7 @@ final class ImageReaderListener implements ImageReader.OnImageAvailableListener 
                 HeapMemory.logAvailableMiB();
 
                 try {
-                    LOCK.wait(3 * CaptureManager.getTargetFrameNanos() / 1000 / 1000);
+                    LOCK.wait(3 * CaptureController.getTargetFrameNanos() / 1000 / 1000);
                 } catch (InterruptedException e) {
                 }
                 System.gc();
@@ -143,7 +143,7 @@ final class ImageReaderListener implements ImageReader.OnImageAvailableListener 
                     reader.discardFreeBuffers();
                 }
 
-                if (!AnalysisManager.isBusy()) {
+                if (!AnalysisController.isBusy()) {
                     break;
                 }
             }

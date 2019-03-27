@@ -34,13 +34,13 @@ public abstract class GlobalSettings {
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // TODO: description
-    public static final Integer DEFAULT_N_FRAMES = 100;
-    public static final Integer DATARUN_N_FRAMES = 100;//1000;
+    public static final Integer DEFAULT_N_FRAMES = 10;
+    public static final Integer DATARUN_N_FRAMES = 30;//1000;
 
     // TODO: description
-    public static final Double  DUTY_THRESHOLD     = 2.0;//0.97;
-    public static final Integer FPS_ATTEMPT_LIMIT  = 1;//3; // minimum is 1
-    public static final Integer DATA_ATTEMPT_LIMIT = 2;//10;
+    public static final Double  DUTY_THRESHOLD     = 0.98;
+    public static final Integer FPS_ATTEMPT_LIMIT  = 3; // minimum is 1
+    public static final Integer DATA_ATTEMPT_LIMIT = 10;//10;
 
     // TODO: description
     private static final Long FPS_30 =  33333333L;
@@ -66,7 +66,7 @@ public abstract class GlobalSettings {
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // TODO: description
-    public static final Long AMPLE_MEMORY_MiB = 200L;
+    public static final Long    AMPLE_MEMORY_MiB        = 200L;
     public static final Long    LOW_MEMORY_MiB          = 100L;
     public static final Integer MAX_SIMULTANEOUS_IMAGES = 1;
 

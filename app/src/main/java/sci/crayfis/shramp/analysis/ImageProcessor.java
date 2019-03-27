@@ -28,6 +28,7 @@ import android.util.Log;
 
 import org.jetbrains.annotations.Contract;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import sci.crayfis.shramp.GlobalSettings;
@@ -59,6 +60,15 @@ abstract public class ImageProcessor {
     // TODO: description
     private static final AtomicInteger mBacklog = new AtomicInteger();
 
+    // mIsFirstFrame................................................................................
+    // TODO: description
+    private static final AtomicBoolean mIsFirstFrame = new AtomicBoolean();
+
+    // mCountAboveThresholdArray....................................................................
+    // TODO: description
+    private static final long[] mCountAboveThresholdArray = new long[1];
+    private static final long[] mAnomalousStdDevArray = new long[1];
+
     // Private Class Fields
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
@@ -81,6 +91,11 @@ abstract public class ImageProcessor {
     // mSignificance................................................................................
     // TODO: description
     private static Allocation mSignificance;
+
+    // mCountAboveThreshold.........................................................................
+    // TODO: description
+    private static Allocation mCountAboveThreshold;
+    private static Allocation mAnomalousStdDev;
 
     // RunningTotal.................................................................................
     // TODO: description
@@ -246,10 +261,31 @@ abstract public class ImageProcessor {
 
     // setSignificanceAllocation....................................................................
     /**
-     * TODO: description, commments and logging
+     * TODO: description, comments and logging
      * @param significance bla
      */
     static void setSignificanceAllocation(@NonNull Allocation significance) { mSignificance = significance; }
+
+    // setSignificanceThreshold.....................................................................
+    /**
+     * TODO: description, comments and logging
+     * @param threshold bla
+     */
+    static void setSignificanceThreshold(float threshold) {
+        mLiveScript.set_gSignificanceThreshold(threshold);
+    }
+
+    // setCountAboveThresholdAllocation.............................................................
+    /**
+     * TODO: description, comments and logging
+     * @param countAboveThreshold bla
+     */
+    static void setCountAboveThresholdAllocation(@NonNull Allocation countAboveThreshold) {
+        mCountAboveThreshold = countAboveThreshold;
+    }
+    static void setAnomalousStdDevAllocation(@NonNull Allocation anomalousStdDev) {
+        mAnomalousStdDev = anomalousStdDev;
+    }
 
     // setStatistics................................................................................
     /**
@@ -273,23 +309,32 @@ abstract public class ImageProcessor {
     static void resetTotals() {
         DataQueue.clear();
         mBacklog.set(0);
+        mIsFirstFrame.set(true);
 
         RunningTotal.Nframes = 0L;
         RunningTotal.ExposureNanos = 0L;
 
-        AnalysisManager.resetAllocation(RunningTotal.ExposureValueSum);
-        AnalysisManager.resetAllocation(RunningTotal.ExposureValue2Sum);
+        AnalysisController.resetAllocation(RunningTotal.ExposureValueSum);
+        AnalysisController.resetAllocation(RunningTotal.ExposureValue2Sum);
 
-        RunningTotal.ExposureValueSum  = AnalysisManager.newFloatAllocation();
-        RunningTotal.ExposureValue2Sum = AnalysisManager.newFloatAllocation();
+        RunningTotal.ExposureValueSum  = AnalysisController.newFloatAllocation();
+        RunningTotal.ExposureValue2Sum = AnalysisController.newFloatAllocation();
 
         mLiveScript.set_gExposureValueSum(RunningTotal.ExposureValueSum);
         mLiveScript.set_gExposureValue2Sum(RunningTotal.ExposureValue2Sum);
 
         mLiveScript.set_gSignificance(mSignificance);
+        mLiveScript.set_gCountAboveThreshold(mCountAboveThreshold);
         mLiveScript.set_gMeanRate(Statistics.MeanRate);
         mLiveScript.set_gStdDevRate(Statistics.StdDevRate);
     }
+
+    static void partialReset() {
+        DataQueue.clear();
+        mBacklog.set(0);
+        mIsFirstFrame.set(true);
+    }
+
 
     // process......................................................................................
     /**
@@ -298,6 +343,13 @@ abstract public class ImageProcessor {
      * @param wrapper bla
      */
     static void process(@NonNull TotalCaptureResult result, @NonNull ImageWrapper wrapper) {
+
+        // skip first frame, for YUV_420_888 tends to be anomalous
+        if (mIsFirstFrame.get()) {
+            mIsFirstFrame.set(false);
+            return;
+        }
+
         StopWatch stopWatch = new StopWatch();
 
         // TODO: description
@@ -323,6 +375,12 @@ abstract public class ImageProcessor {
                 mLiveScript.set_gExposureTime(exposureTime);
                 Log.e(Thread.currentThread().getName(), "<renderscript set_> time: " + NumToString.number(setupWatch.stop()) + " [ns]");
 
+                if (mEnableSignificance == 1) {
+                    mCountAboveThresholdArray[0] = 0L;
+                    mCountAboveThreshold.copyFrom(mCountAboveThresholdArray);
+                    mLiveScript.set_gCountAboveThreshold(mCountAboveThreshold);
+                }
+
                 if (ImageWrapper.is8bitData()) {
                     mImage.copyFrom(Wrapper.get8bitData());
                     mLiveScript.forEach_process8bitData(mImage);
@@ -336,6 +394,10 @@ abstract public class ImageProcessor {
                 }
                 if (mEnableSignificance == 1) {
                     mLiveScript.forEach_getSignificance(mSignificance);
+                    mLiveScript.forEach_getCountAboveThreshold(mCountAboveThreshold);
+                    mCountAboveThreshold.copyTo(mCountAboveThresholdArray);
+                    Log.e(Thread.currentThread().getName(), "______________________________ N above threshold: "
+                    + NumToString.number(mCountAboveThresholdArray[0]));
                 }
                 Log.e(Thread.currentThread().getName(), "<renderscript run()> time: " + NumToString.number(stopWatch.stop()) + " [ns]");
                 mBacklog.decrementAndGet();
@@ -343,6 +405,7 @@ abstract public class ImageProcessor {
             }
         }
         Log.e(Thread.currentThread().getName(), "<process(result, wrapper)> time: " + NumToString.number(stopWatch.stop()) + " [ns]");
+
         mBacklog.incrementAndGet();
         mHandler.post(new Processor(result, wrapper));
     }
@@ -363,6 +426,10 @@ abstract public class ImageProcessor {
                 mLiveScript.forEach_getExposureValue2Sum(RunningTotal.ExposureValue2Sum);
                 mPostScript.set_gExposureValue2Sum(RunningTotal.ExposureValue2Sum);
 
+                mAnomalousStdDevArray[0] = 0L;
+                mAnomalousStdDev.copyFrom(mAnomalousStdDevArray);
+                mPostScript.set_gAnomalousStdDev(mAnomalousStdDev);
+
                 mPostScript.set_gNframes(RunningTotal.Nframes);
                 mPostScript.set_gExposureSum(RunningTotal.ExposureNanos);
                 mPostScript.set_gMeanRate(Statistics.MeanRate);
@@ -372,6 +439,11 @@ abstract public class ImageProcessor {
                 mPostScript.forEach_getMeanRate(Statistics.MeanRate);
                 mPostScript.forEach_getStdDevRate(Statistics.StdDevRate);
                 mPostScript.forEach_getStdErrRate(Statistics.StdErrRate);
+
+                mPostScript.forEach_getAnomalousStdDev(mAnomalousStdDev);
+                mAnomalousStdDev.copyTo(mAnomalousStdDevArray);
+                Log.e(Thread.currentThread().getName(), "________Anomalous Std Dev: "
+                + NumToString.number(mAnomalousStdDevArray[0]));
 
                 mBacklog.decrementAndGet();
             }
