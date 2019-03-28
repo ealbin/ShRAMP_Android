@@ -310,16 +310,13 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
 
         AnalysisController.runStatistics();
 
-//        AnalysisController.peekExposureValue();
-//        AnalysisController.peekExposureValue2();
         AnalysisController.peekMeanAndErr();
-//        AnalysisController.peekStdDev();
+        //AnalysisController.peekStdDev();
         if (AnalysisController.isSignificanceEnabled()) {
             AnalysisController.peekSignificance();
         }
 
         AnalysisController.resetRunningTotals();
-        //AnalysisController.partialReset();
 
         if (averageDuty < GlobalSettings.DUTY_THRESHOLD && mFpsLockAttempts < GlobalSettings.FPS_ATTEMPT_LIMIT) {
             mFpsLockAttempts += 1;

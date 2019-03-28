@@ -76,6 +76,10 @@ public abstract class AnalysisController {
     // TODO: description
     private static Type mFloatType;
 
+    // mDoubleType..................................................................................
+    // TODO: description
+    private static Type mDoubleType;
+
     // mFloatData...................................................................................
     // TODO: description
     private static float[] mFloatData;
@@ -112,6 +116,7 @@ public abstract class AnalysisController {
         Element charElement   = Element.U8(mRS);
         Element shortElement  = Element.U16(mRS);
         Element floatElement  = Element.F32(mRS);
+        Element doubleElement = Element.F64(mRS);
 
         Element simpleLongElement = Element.I64(mRS);
 
@@ -127,9 +132,10 @@ public abstract class AnalysisController {
         }
         mFloatData = new float[(int) mNpixels];
 
-        mCharType  = new Type.Builder(mRS, charElement ).setX(width).setY(height).create();
-        mShortType = new Type.Builder(mRS, shortElement).setX(width).setY(height).create();
-        mFloatType = new Type.Builder(mRS, floatElement).setX(width).setY(height).create();
+        mCharType   = new Type.Builder(mRS, charElement ).setX(width).setY(height).create();
+        mShortType  = new Type.Builder(mRS, shortElement).setX(width).setY(height).create();
+        mFloatType  = new Type.Builder(mRS, floatElement).setX(width).setY(height).create();
+        mDoubleType = new Type.Builder(mRS, doubleElement).setX(width).setY(height).create();
 
         mSimpleLongType = new Type.Builder(mRS, simpleLongElement).setX(1).setY(1).create();
 
@@ -220,8 +226,6 @@ public abstract class AnalysisController {
     public static void resetRunningTotals() {
         ImageProcessor.resetTotals();
     }
-
-    public static void partialReset() {ImageProcessor.partialReset();}
 
     // runStatistics................................................................................
     /**
@@ -332,6 +336,10 @@ public abstract class AnalysisController {
      * TODO: description, comments and logging
      */
     public static void peekExposureValue() {
+        if (true) {
+            return;
+        }
+        // TODO: THIS WONT WORK NOW
         ImageProcessor.getExposureValueSum().copyTo(mFloatData);
         String[] values = new String[PEEK_SIZE];
         for (int i = 0; i < PEEK_SIZE; i++) {
@@ -351,6 +359,10 @@ public abstract class AnalysisController {
      * TODO: description, comments and logging
      */
     public static void peekExposureValue2() {
+        if (true) {
+            return;
+        }
+        // TODO: THIS WONT WORK NOW
         ImageProcessor.getExposureValue2Sum().copyTo(mFloatData);
         String[] values = new String[PEEK_SIZE];
         for (int i = 0; i < PEEK_SIZE; i++) {
@@ -407,7 +419,7 @@ public abstract class AnalysisController {
         return Allocation.createTyped(mRS, mShortType, Allocation.USAGE_SCRIPT);
     }
 
-    // newFloatAllocation
+    // newFloatAllocation...........................................................................
     /**
      * TODO: description, comments and logging
      * @return bla
@@ -415,6 +427,16 @@ public abstract class AnalysisController {
     @NonNull
     static Allocation newFloatAllocation() {
         return Allocation.createTyped(mRS, mFloatType, Allocation.USAGE_SCRIPT);
+    }
+
+    // newDoubleAllocation..........................................................................
+    /**
+     * TODO: description, comments and logging
+     * @return bla
+     */
+    @NonNull
+    static Allocation newDoubleAllocation() {
+        return Allocation.createTyped(mRS, mDoubleType, Allocation.USAGE_SCRIPT);
     }
 
     // newSimpleLongAllocation

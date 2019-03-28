@@ -61,23 +61,23 @@ float RS_KERNEL getMeanRate(uint32_t x, uint32_t y) {
     // Mean Pixel Rate
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    float exp_val_sum    = rsGetElementAt_float(gExposureValueSum, x, y);
-    float mean_pixel_val = exp_val_sum / (float) gExposureSum;
+    double exp_val_sum    = rsGetElementAt_double(gExposureValueSum, x, y);
+    double mean_pixel_val = exp_val_sum / (double) gExposureSum;
 
     // mean exposure time
-    float mean_exposure = gExposureSum / (float) gNframes;
+    double mean_exposure = gExposureSum / (double) gNframes;
 
     // mean pixel value / exposure time (nanoseconds)
-    float mean_val_per_nanos = (float) mean_pixel_val / (float) mean_exposure;
+    double mean_val_per_nanos = mean_pixel_val / mean_exposure;
 
-    rsSetElementAt_float(gMeanRate, mean_val_per_nanos, x, y);
+    rsSetElementAt_float(gMeanRate, (float) mean_val_per_nanos, x, y);
 
     // Standard Deviation Rate
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    float exp_val2_sum = rsGetElementAt_float(gExposureValue2Sum, x, y);
+    double exp_val2_sum = rsGetElementAt_double(gExposureValue2Sum, x, y);
 
-    float var = ( exp_val2_sum / (float) gExposureSum ) - ( mean_pixel_val * mean_pixel_val );
+    double var = ( exp_val2_sum / (double) gExposureSum ) - ( mean_pixel_val * mean_pixel_val );
 
     // standard deviation / exposure time (nanoseconds)
     float stddev_per_nanos;
@@ -88,7 +88,7 @@ float RS_KERNEL getMeanRate(uint32_t x, uint32_t y) {
         stddev_per_nanos = 0.;
     }
     else {
-        stddev_per_nanos = sqrt((float) var) / mean_exposure;
+        stddev_per_nanos = sqrt((float) var) / (float) mean_exposure;
     }
 
     rsSetElementAt_float(gStdDevRate, stddev_per_nanos, x, y);

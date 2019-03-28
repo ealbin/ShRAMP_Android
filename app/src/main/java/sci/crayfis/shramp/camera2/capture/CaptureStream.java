@@ -141,8 +141,16 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
         void add(TotalCaptureResult result) {
             Long exposure = result.get(CaptureResult.SENSOR_EXPOSURE_TIME);
             assert exposure != null;
-            Last   = exposure;
-            Total += exposure;
+
+            // assert isn't reliable :-(
+            if (exposure == null) {
+                // turn exposure into frame count
+                Last = 1L;
+            }
+            else {
+                Last = exposure;
+            }
+            Total += Last;
         }
     }
     private final mExposure mExposure = new mExposure();
@@ -204,6 +212,11 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
         Long duration = completedResult.get(CaptureResult.SENSOR_FRAME_DURATION);
         assert duration != null;
 
+        // assert isn't reliable :-(
+        if (duration == null) {
+            // turn duration into frame count
+            duration = 1L;
+        }
         Log.e(Thread.currentThread().getName(), "Frame duration: " + Long.toString(duration)
                 + ",  Exposure: " + Long.toString(mExposure.Last));
 

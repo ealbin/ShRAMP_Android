@@ -141,27 +141,28 @@ abstract class Info_ extends Hot_ {
             String name;
             String value;
 
-            key  = CameraCharacteristics.INFO_VERSION;//////////////////////////////////////////////
-            name = key.getName();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                key  = CameraCharacteristics.INFO_VERSION;//////////////////////////////////////////
+                name = key.getName();
 
-            if (keychain.contains(key)) {
-                value = cameraCharacteristics.get(key);
-                assert value != null;
+                if (keychain.contains(key)) {
+                    value = cameraCharacteristics.get(key);
+                    assert value != null;
 
-                formatter = new ParameterFormatter<String>() {
-                    @NonNull
-                    @Override
-                    public String formatValue(@NonNull String value) {
-                        return value;
-                    }
-                };
-                property = new Parameter<>(name, value, null, formatter);
+                    formatter = new ParameterFormatter<String>() {
+                        @NonNull
+                        @Override
+                        public String formatValue(@NonNull String value) {
+                            return value;
+                        }
+                    };
+                    property = new Parameter<>(name, value, null, formatter);
+                } else {
+                    property = new Parameter<>(name);
+                    property.setValueString("NOT SUPPORTED");
+                }
+                characteristicsMap.put(key, property);
             }
-            else {
-                property = new Parameter<>(name);
-                property.setValueString("NOT SUPPORTED");
-            }
-            characteristicsMap.put(key, property);
         }
         //==========================================================================================
     }

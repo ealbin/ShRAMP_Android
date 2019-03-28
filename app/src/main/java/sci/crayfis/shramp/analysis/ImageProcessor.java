@@ -314,11 +314,12 @@ abstract public class ImageProcessor {
         RunningTotal.Nframes = 0L;
         RunningTotal.ExposureNanos = 0L;
 
-        AnalysisController.resetAllocation(RunningTotal.ExposureValueSum);
-        AnalysisController.resetAllocation(RunningTotal.ExposureValue2Sum);
-
-        RunningTotal.ExposureValueSum  = AnalysisController.newFloatAllocation();
-        RunningTotal.ExposureValue2Sum = AnalysisController.newFloatAllocation();
+        if (RunningTotal.ExposureValueSum == null || RunningTotal.ExposureValue2Sum == null) {
+            RunningTotal.ExposureValueSum  = AnalysisController.newDoubleAllocation();
+            RunningTotal.ExposureValue2Sum = AnalysisController.newDoubleAllocation();
+        }
+        mLiveScript.forEach_zeroDoubleAllocation(RunningTotal.ExposureValueSum);
+        mLiveScript.forEach_zeroDoubleAllocation(RunningTotal.ExposureValue2Sum);
 
         mLiveScript.set_gExposureValueSum(RunningTotal.ExposureValueSum);
         mLiveScript.set_gExposureValue2Sum(RunningTotal.ExposureValue2Sum);
@@ -328,13 +329,6 @@ abstract public class ImageProcessor {
         mLiveScript.set_gMeanRate(Statistics.MeanRate);
         mLiveScript.set_gStdDevRate(Statistics.StdDevRate);
     }
-
-    static void partialReset() {
-        DataQueue.clear();
-        mBacklog.set(0);
-        mIsFirstFrame.set(true);
-    }
-
 
     // process......................................................................................
     /**
@@ -368,6 +362,11 @@ abstract public class ImageProcessor {
                 Long exposureTime = Result.get(CaptureResult.SENSOR_EXPOSURE_TIME);
                 assert exposureTime != null;
 
+                // assert isn't reliable :-(
+                if (exposureTime == null) {
+                    // turn exposureTime into frame count
+                    exposureTime = 1L;
+                }
                 RunningTotal.ExposureNanos += exposureTime;
                 RunningTotal.Nframes += 1;
 
@@ -420,6 +419,7 @@ abstract public class ImageProcessor {
         mHandler.post(new Runnable() {
             @Override
             public void run() {
+
                 mLiveScript.forEach_getExposureValueSum(RunningTotal.ExposureValueSum);
                 mPostScript.set_gExposureValueSum(RunningTotal.ExposureValueSum);
 

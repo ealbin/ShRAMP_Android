@@ -463,7 +463,11 @@ abstract class Lens_ extends Jpeg_ {
                     Integer calValue = calibration.getValue();
                     assert calValue != null;
 
-                    if (!calValue.equals(CameraMetadata.LENS_INFO_FOCUS_DISTANCE_CALIBRATION_UNCALIBRATED)){
+                    // assert is unreliable :-(
+                    if (calValue == null) {
+                        units = "uncalibrated diopters";
+                    }
+                    else if (!calValue.equals(CameraMetadata.LENS_INFO_FOCUS_DISTANCE_CALIBRATION_UNCALIBRATED)){
                         units = "diopters";
                     }
                     else {

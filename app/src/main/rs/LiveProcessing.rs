@@ -56,15 +56,15 @@ rs_allocation gSignificance;
 // @param x bla
 // @param y bla
 void RS_KERNEL process8bitData(uchar val, uint32_t x, uint32_t y) {
-    float old_exp_val_sum = rsGetElementAt_float(gExposureValueSum, x, y);
-    float this_exp_val    = (float) gExposureTime * (float) val;
-    float new_exp_val_sum = (float) (old_exp_val_sum + this_exp_val);
-    rsSetElementAt_float(gExposureValueSum, new_exp_val_sum, x, y);
+    double old_exp_val_sum = rsGetElementAt_double(gExposureValueSum, x, y);
+    double this_exp_val    = (double) gExposureTime * (double) val;
+    double new_exp_val_sum = (double) (old_exp_val_sum + this_exp_val);
+    rsSetElementAt_double(gExposureValueSum, new_exp_val_sum, x, y);
 
-    float old_exp_val2_sum = rsGetElementAt_float(gExposureValue2Sum, x, y);
-    float this_exp_val2    = (float) this_exp_val * (float) val;
-    float new_exp_val2_sum = (float) (old_exp_val2_sum + this_exp_val2);
-    rsSetElementAt_float(gExposureValue2Sum, new_exp_val2_sum, x, y);
+    double old_exp_val2_sum = rsGetElementAt_double(gExposureValue2Sum, x, y);
+    double this_exp_val2    = (double) this_exp_val * (double) val;
+    double new_exp_val2_sum = (double) (old_exp_val2_sum + this_exp_val2);
+    rsSetElementAt_double(gExposureValue2Sum, new_exp_val2_sum, x, y);
 
     if (gEnableSignificance == 1) {
         float mean_rate    = rsGetElementAt_float(gMeanRate, x, y);
@@ -91,15 +91,15 @@ void RS_KERNEL process8bitData(uchar val, uint32_t x, uint32_t y) {
 // @param x bla
 // @param y bla
 void RS_KERNEL process16bitData(ushort val, uint32_t x, uint32_t y) {
-    float old_exp_val_sum = rsGetElementAt_float(gExposureValueSum, x, y);
-    float this_exp_val    = (float) gExposureTime * (float) val;
-    float new_exp_val_sum = (float) (old_exp_val_sum + this_exp_val);
-    rsSetElementAt_float(gExposureValueSum, new_exp_val_sum, x, y);
+    double old_exp_val_sum = rsGetElementAt_double(gExposureValueSum, x, y);
+    double this_exp_val    = (double) gExposureTime * (double) val;
+    double new_exp_val_sum = (double) (old_exp_val_sum + this_exp_val);
+    rsSetElementAt_double(gExposureValueSum, new_exp_val_sum, x, y);
 
-    float old_exp_val2_sum = rsGetElementAt_float(gExposureValue2Sum, x, y);
-    float this_exp_val2    = (float) this_exp_val * (float) val;
-    float new_exp_val2_sum = (float) (old_exp_val2_sum + this_exp_val2);
-    rsSetElementAt_float(gExposureValue2Sum, new_exp_val2_sum, x, y);
+    double old_exp_val2_sum = rsGetElementAt_double(gExposureValue2Sum, x, y);
+    double this_exp_val2    = (double) this_exp_val * (double) val;
+    double new_exp_val2_sum = (double) (old_exp_val2_sum + this_exp_val2);
+    rsSetElementAt_double(gExposureValue2Sum, new_exp_val2_sum, x, y);
 
     if (gEnableSignificance == 1) {
         float mean_rate    = rsGetElementAt_float(gMeanRate, x, y);
@@ -120,13 +120,17 @@ void RS_KERNEL process16bitData(ushort val, uint32_t x, uint32_t y) {
     }
 }
 
+double RS_KERNEL zeroDoubleAllocation(uint32_t x, uint32_t y) {
+    return 0.;
+}
+
 // getExposureValueSum..............................................................................
 // TODO: description, comments and logging
 // @param x bla
 // @param y bla
 // @return bla
-float RS_KERNEL getExposureValueSum(uint32_t x, uint32_t y) {
-    return rsGetElementAt_float(gExposureValueSum, x, y);
+double RS_KERNEL getExposureValueSum(uint32_t x, uint32_t y) {
+    return rsGetElementAt_double(gExposureValueSum, x, y);
 }
 
 // getExposureValue2Sum.............................................................................
@@ -134,8 +138,8 @@ float RS_KERNEL getExposureValueSum(uint32_t x, uint32_t y) {
 // @param x bla
 // @param y bla
 // @return bla
-float RS_KERNEL getExposureValue2Sum(uint32_t x, uint32_t y) {
-    return rsGetElementAt_float(gExposureValue2Sum, x, y);
+double RS_KERNEL getExposureValue2Sum(uint32_t x, uint32_t y) {
+    return rsGetElementAt_double(gExposureValue2Sum, x, y);
 }
 
 // getSignificance..................................................................................

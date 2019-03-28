@@ -35,12 +35,12 @@ public abstract class GlobalSettings {
 
     // TODO: description
     public static final Integer DEFAULT_N_FRAMES = 10;
-    public static final Integer DATARUN_N_FRAMES = 30;//1000;
+    public static final Integer DATARUN_N_FRAMES = 100;//1000;
 
     // TODO: description
     public static final Double  DUTY_THRESHOLD     = 0.98;
     public static final Integer FPS_ATTEMPT_LIMIT  = 3; // minimum is 1
-    public static final Integer DATA_ATTEMPT_LIMIT = 10;//10;
+    public static final Integer DATA_ATTEMPT_LIMIT = 5;//10;
 
     // TODO: description
     private static final Long FPS_30 =  33333333L;
