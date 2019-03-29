@@ -25,6 +25,9 @@
 // Global Variables
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+const double gMax8bitValue  = 255.;
+const double gMax16bitValue = 1023.;
+
 // gEnableSignificance..............................................................................
 // TODO: description
 int gEnableSignificance;
@@ -56,13 +59,14 @@ rs_allocation gSignificance;
 // @param x bla
 // @param y bla
 void RS_KERNEL process8bitData(uchar val, uint32_t x, uint32_t y) {
+    double val_fraction = val / 1.; //gMax8bitValue;
     double old_exp_val_sum = rsGetElementAt_double(gExposureValueSum, x, y);
-    double this_exp_val    = (double) gExposureTime * (double) val;
+    double this_exp_val    = (double) gExposureTime * val_fraction;
     double new_exp_val_sum = (double) (old_exp_val_sum + this_exp_val);
     rsSetElementAt_double(gExposureValueSum, new_exp_val_sum, x, y);
 
     double old_exp_val2_sum = rsGetElementAt_double(gExposureValue2Sum, x, y);
-    double this_exp_val2    = (double) this_exp_val * (double) val;
+    double this_exp_val2    = (double) this_exp_val * val_fraction;
     double new_exp_val2_sum = (double) (old_exp_val2_sum + this_exp_val2);
     rsSetElementAt_double(gExposureValue2Sum, new_exp_val2_sum, x, y);
 
@@ -75,7 +79,7 @@ void RS_KERNEL process8bitData(uchar val, uint32_t x, uint32_t y) {
             significance = 1./0.;
         }
         else {
-            significance = ( ( val / (float) gExposureTime ) - mean_rate ) / stddev_rate;
+            significance = (float) ( ( val_fraction / (double) gExposureTime ) - (double) mean_rate ) / stddev_rate;
             if (significance >= gSignificanceThreshold) {
                 long count = rsGetElementAt_long(gCountAboveThreshold, 0, 0);
                 rsSetElementAt_long(gCountAboveThreshold, count + 1, 0, 0);
@@ -91,13 +95,14 @@ void RS_KERNEL process8bitData(uchar val, uint32_t x, uint32_t y) {
 // @param x bla
 // @param y bla
 void RS_KERNEL process16bitData(ushort val, uint32_t x, uint32_t y) {
+    double val_fraction = val / gMax16bitValue;
     double old_exp_val_sum = rsGetElementAt_double(gExposureValueSum, x, y);
-    double this_exp_val    = (double) gExposureTime * (double) val;
+    double this_exp_val    = (double) gExposureTime * val_fraction;
     double new_exp_val_sum = (double) (old_exp_val_sum + this_exp_val);
     rsSetElementAt_double(gExposureValueSum, new_exp_val_sum, x, y);
 
     double old_exp_val2_sum = rsGetElementAt_double(gExposureValue2Sum, x, y);
-    double this_exp_val2    = (double) this_exp_val * (double) val;
+    double this_exp_val2    = (double) this_exp_val * val_fraction;
     double new_exp_val2_sum = (double) (old_exp_val2_sum + this_exp_val2);
     rsSetElementAt_double(gExposureValue2Sum, new_exp_val2_sum, x, y);
 
@@ -110,7 +115,7 @@ void RS_KERNEL process16bitData(ushort val, uint32_t x, uint32_t y) {
             significance = 1./0.;
         }
         else {
-            significance = ( ( val / (float) gExposureTime ) - mean_rate ) / stddev_rate;
+            significance = (float) ( ( val_fraction / (double) gExposureTime ) - (double) mean_rate ) / stddev_rate;
             if (significance >= gSignificanceThreshold) {
                 long count = rsGetElementAt_long(gCountAboveThreshold, 0, 0);
                 rsSetElementAt_long(gCountAboveThreshold, count + 1, 0, 0);
@@ -120,6 +125,11 @@ void RS_KERNEL process16bitData(ushort val, uint32_t x, uint32_t y) {
     }
 }
 
+// zeroDoubleAllocation.............................................................................
+// TODO: description, comments and logging
+// @param x bla
+// @param y bla
+// @return bla
 double RS_KERNEL zeroDoubleAllocation(uint32_t x, uint32_t y) {
     return 0.;
 }

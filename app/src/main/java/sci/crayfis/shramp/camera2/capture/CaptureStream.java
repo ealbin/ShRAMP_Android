@@ -19,7 +19,6 @@
 package sci.crayfis.shramp.camera2.capture;
 
 import android.annotation.TargetApi;
-import android.hardware.SensorEvent;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CaptureFailure;
 import android.hardware.camera2.CaptureRequest;
@@ -33,7 +32,6 @@ import sci.crayfis.shramp.analysis.AnalysisController;
 import sci.crayfis.shramp.analysis.DataQueue;
 import sci.crayfis.shramp.battery.BatteryController;
 import sci.crayfis.shramp.camera2.util.TimeCode;
-import sci.crayfis.shramp.sensor.SensorController;
 import sci.crayfis.shramp.util.HeapMemory;
 import sci.crayfis.shramp.util.NumToString;
 import sci.crayfis.shramp.util.StopWatch;

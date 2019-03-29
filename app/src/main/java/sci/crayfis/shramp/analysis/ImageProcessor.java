@@ -326,8 +326,6 @@ abstract public class ImageProcessor {
 
         mLiveScript.set_gSignificance(mSignificance);
         mLiveScript.set_gCountAboveThreshold(mCountAboveThreshold);
-        mLiveScript.set_gMeanRate(Statistics.MeanRate);
-        mLiveScript.set_gStdDevRate(Statistics.StdDevRate);
     }
 
     // process......................................................................................
@@ -439,6 +437,9 @@ abstract public class ImageProcessor {
                 mPostScript.forEach_getMeanRate(Statistics.MeanRate);
                 mPostScript.forEach_getStdDevRate(Statistics.StdDevRate);
                 mPostScript.forEach_getStdErrRate(Statistics.StdErrRate);
+
+                mLiveScript.set_gMeanRate(Statistics.MeanRate);
+                mLiveScript.set_gStdDevRate(Statistics.StdDevRate);
 
                 mPostScript.forEach_getAnomalousStdDev(mAnomalousStdDev);
                 mAnomalousStdDev.copyTo(mAnomalousStdDevArray);
