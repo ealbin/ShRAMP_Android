@@ -67,7 +67,11 @@ public final class TimeManager {
      * TODO: description, comments and logging
      */
     private TimeManager() {
+        setStartDate();
+    }
 
+
+    private void setStartDate() {
         // Make sure time zone is Pacific Standard Time (no daylight savings)
         TimeZone pst = TimeZone.getTimeZone("Etc/GMT+8");
         if (pst.useDaylightTime()) {
@@ -108,10 +112,14 @@ public final class TimeManager {
      */
     public static long getElapsedNanos(long timestamp) {
         if (mInstance.mFirstTimestamp.equals(0L)) {
-            mInstance.mFirstTimestamp = timestamp;
+            resetElapsedNanos(timestamp);
             return 0L;
         }
         return timestamp - mInstance.mFirstTimestamp;
+    }
+
+    public static void resetElapsedNanos(long timestamp) {
+        mInstance.mFirstTimestamp = timestamp;
     }
 
     // getElapsedSystemNanos.......................................................................
@@ -131,6 +139,10 @@ public final class TimeManager {
     @NonNull
     public static String getStartDate() {
         return mInstance.mStartDate;
+    }
+
+    static void resetStartDate() {
+        mInstance.setStartDate();
     }
 
 }

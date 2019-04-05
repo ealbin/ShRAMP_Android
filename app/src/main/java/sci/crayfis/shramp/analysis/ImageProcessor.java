@@ -21,6 +21,7 @@ package sci.crayfis.shramp.analysis;
 import android.annotation.TargetApi;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
+import android.icu.util.Output;
 import android.os.Handler;
 import android.renderscript.Allocation;
 import android.support.annotation.NonNull;
@@ -28,6 +29,7 @@ import android.util.Log;
 
 import org.jetbrains.annotations.Contract;
 
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -37,6 +39,7 @@ import sci.crayfis.shramp.ScriptC_LiveProcessing;
 import sci.crayfis.shramp.util.HandlerManager;
 import sci.crayfis.shramp.util.NumToString;
 import sci.crayfis.shramp.util.StopWatch;
+import sci.crayfis.shramp.util.TimeManager;
 
 /**
  * TODO: description, comments and logging
@@ -60,6 +63,10 @@ abstract public class ImageProcessor {
     // TODO: description
     private static final AtomicInteger mBacklog = new AtomicInteger();
 
+    // mFramesAboveThreshold........................................................................
+    // TODO: description
+    private static final AtomicInteger mFramesAboveThreshold = new AtomicInteger();
+
     // mIsFirstFrame................................................................................
     // TODO: description
     private static final AtomicBoolean mIsFirstFrame = new AtomicBoolean();
@@ -68,6 +75,9 @@ abstract public class ImageProcessor {
     // TODO: description
     private static final long[] mCountAboveThresholdArray = new long[1];
     private static final long[] mAnomalousStdDevArray = new long[1];
+
+    private static final int ENABLED = 1;
+    private static final int DISABLED = 0;
 
     // Private Class Fields
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -86,7 +96,7 @@ abstract public class ImageProcessor {
 
     // mEnableSignificance..........................................................................
     // TODO: description
-    private static int mEnableSignificance = 0;
+    private static int mEnableSignificance = DISABLED;
 
     // mSignificance................................................................................
     // TODO: description
@@ -109,10 +119,10 @@ abstract public class ImageProcessor {
     // Statistics...................................................................................
     // TODO: description
     private abstract static class Statistics {
-        static int Exists = 0;
         static Allocation MeanRate;
         static Allocation StdDevRate;
         static Allocation StdErrRate;
+        static float SignificanceThreshold;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -127,7 +137,7 @@ abstract public class ImageProcessor {
      * TODO: description, comments and logging
      */
     static void enableSignificance() {
-        mEnableSignificance = 1;
+        mEnableSignificance = ENABLED;
         mLiveScript.set_gEnableSignificance(mEnableSignificance);
     }
 
@@ -136,7 +146,7 @@ abstract public class ImageProcessor {
      * TODO: description, comments and logging
      */
     static void disableSignificance() {
-        mEnableSignificance = 0;
+        mEnableSignificance = DISABLED;
         mLiveScript.set_gEnableSignificance(mEnableSignificance);
     }
 
@@ -147,7 +157,7 @@ abstract public class ImageProcessor {
      */
     @Contract(pure = true)
     static boolean isSignificanceEnabled() {
-        return mEnableSignificance == 1;
+        return mEnableSignificance == ENABLED;
     }
 
     // isBusy.......................................................................................
@@ -273,6 +283,7 @@ abstract public class ImageProcessor {
      */
     static void setSignificanceThreshold(float threshold) {
         mLiveScript.set_gSignificanceThreshold(threshold);
+        Statistics.SignificanceThreshold = threshold;
     }
 
     // setCountAboveThresholdAllocation.............................................................
@@ -309,6 +320,7 @@ abstract public class ImageProcessor {
     static void resetTotals() {
         DataQueue.clear();
         mBacklog.set(0);
+        mFramesAboveThreshold.set(0);
         mIsFirstFrame.set(true);
 
         RunningTotal.Nframes = 0L;
@@ -323,6 +335,9 @@ abstract public class ImageProcessor {
 
         mLiveScript.set_gExposureValueSum(RunningTotal.ExposureValueSum);
         mLiveScript.set_gExposureValue2Sum(RunningTotal.ExposureValue2Sum);
+
+        //mLiveScript.set_gMeanRate(Statistics.MeanRate);
+        //mLiveScript.set_gStdDevRate(Statistics.StdDevRate);
 
         mLiveScript.set_gSignificance(mSignificance);
         mLiveScript.set_gCountAboveThreshold(mCountAboveThreshold);
@@ -372,11 +387,9 @@ abstract public class ImageProcessor {
                 mLiveScript.set_gExposureTime(exposureTime);
                 Log.e(Thread.currentThread().getName(), "<renderscript set_> time: " + NumToString.number(setupWatch.stop()) + " [ns]");
 
-                if (mEnableSignificance == 1) {
-                    mCountAboveThresholdArray[0] = 0L;
-                    mCountAboveThreshold.copyFrom(mCountAboveThresholdArray);
-                    mLiveScript.set_gCountAboveThreshold(mCountAboveThreshold);
-                }
+                mCountAboveThresholdArray[0] = 0L;
+                mCountAboveThreshold.copyFrom(mCountAboveThresholdArray);
+                mLiveScript.set_gCountAboveThreshold(mCountAboveThreshold);
 
                 if (ImageWrapper.is8bitData()) {
                     mImage.copyFrom(Wrapper.get8bitData());
@@ -389,12 +402,30 @@ abstract public class ImageProcessor {
                 else {
                     // TODO: error
                 }
-                if (mEnableSignificance == 1) {
-                    mLiveScript.forEach_getSignificance(mSignificance);
+
+                //String filename = String.format(Locale.US,"%05d", mFileCount.getAndIncrement());
+                //filename += "_" + Long.toString(TimeManager.getElapsedNanos(imageWrapper.getTimestamp())) + ".data";
+
+                if (mEnableSignificance == ENABLED) {
+                    if (GlobalSettings.DEBUG_SAVE_SIGNIFICANCE && RunningTotal.Nframes % 10 == 0) {
+                        mLiveScript.forEach_getSignificance(mSignificance);
+                        String filename = String.format(Locale.US, "%05d", RunningTotal.Nframes)
+                                + "_" + String.format(Locale.US, "%015d", TimeManager.getElapsedNanos(Wrapper.getTimestamp()))
+                                + ".signif";
+                        DataQueue.add(new OutputWrapper(filename, mSignificance, 1));
+                    }
                     mLiveScript.forEach_getCountAboveThreshold(mCountAboveThreshold);
                     mCountAboveThreshold.copyTo(mCountAboveThresholdArray);
                     Log.e(Thread.currentThread().getName(), "______________________________ N above threshold: "
                     + NumToString.number(mCountAboveThresholdArray[0]));
+
+                    if (false && mCountAboveThresholdArray[0] > 0L) {
+                        int nFrames = mFramesAboveThreshold.incrementAndGet();
+                        if (nFrames >= GlobalSettings.MAX_FRAMES_ABOVE_THRESHOLD) {
+                            Log.e(Thread.currentThread().getName(), ":::::: REQUESTING THRESHOLD INCREASE :::::::");
+                            AnalysisController.increaseSignificanceThreshold();
+                        }
+                    }
                 }
                 Log.e(Thread.currentThread().getName(), "<renderscript run()> time: " + NumToString.number(stopWatch.stop()) + " [ns]");
                 mBacklog.decrementAndGet();
@@ -445,6 +476,17 @@ abstract public class ImageProcessor {
                 mAnomalousStdDev.copyTo(mAnomalousStdDevArray);
                 Log.e(Thread.currentThread().getName(), "________Anomalous Std Dev: "
                 + NumToString.number(mAnomalousStdDevArray[0]));
+
+                if (GlobalSettings.DEBUG_SAVE_MEAN) {
+                    String filename = String.format(Locale.US, "%015d", TimeManager.getElapsedSystemNanos())
+                            + ".mean";
+                    DataQueue.add(new OutputWrapper(filename, Statistics.MeanRate, RunningTotal.Nframes));
+                }
+                if (GlobalSettings.DEBUG_SAVE_STDDEV) {
+                    String filename = String.format(Locale.US, "%015d", TimeManager.getElapsedSystemNanos())
+                            + ".stddev";
+                    DataQueue.add(new OutputWrapper(filename, Statistics.StdDevRate, RunningTotal.Nframes));
+                }
 
                 mBacklog.decrementAndGet();
             }

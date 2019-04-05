@@ -118,8 +118,8 @@ public abstract class AnalysisController {
         int height = outputSize.getHeight();
         mNpixels = width * height;
 
-        SneakPeek.setNpixels(mNpixels);
-        ImageWrapper.setNpixels(mNpixels);
+        ImageWrapper.setNpixels(height, width);
+        PrintAndSave.setNpixels(mNpixels);
 
         mCharType   = new Type.Builder(mRS, charElement ).setX(width).setY(height).create();
         mShortType  = new Type.Builder(mRS, shortElement).setX(width).setY(height).create();
@@ -146,6 +146,9 @@ public abstract class AnalysisController {
                 // TODO: error
             }
         }
+
+        // Must happen after ImageWrapper is set up (above)
+        OutputWrapper.configure();
 
         ImageProcessor.setStatistics(newFloatAllocation(), newFloatAllocation(), newFloatAllocation());
         ImageProcessor.setSignificanceAllocation(newFloatAllocation());
@@ -192,11 +195,18 @@ public abstract class AnalysisController {
 
         double probabilityThreshold = n_chanceAboveThreshold / n_samples;
 
-        // TODO: settle on significance threshold
-        double threshold = Math.sqrt(2.) * Erf.erfInv(1. - probabilityThreshold);
+        double threshold = Math.sqrt(2.) * Erf.erfInv(1. - 2. * probabilityThreshold);
+        threshold += mThresholdOffset;
 
         ImageProcessor.setSignificanceThreshold((float) threshold);
         Log.e(Thread.currentThread().getName(), "__________Threshold: " + NumToString.decimal(threshold));
+    }
+
+    private static double mThresholdOffset = 0.;
+
+    static void increaseSignificanceThreshold() {
+        mThresholdOffset += GlobalSettings.THRESHOLD_STEP;
+        CaptureController.resetCaptureSession();
     }
 
     // isBusy.......................................................................................
@@ -227,6 +237,7 @@ public abstract class AnalysisController {
             while (!DataQueue.isEmpty() || ImageProcessor.isBusy()) {
                 try {
                     WAIT.wait(3 * CaptureController.getTargetFrameNanos() / 1000 / 1000);
+                    Log.e(Thread.currentThread().getName(), "Waiting for queue to empty/processor to finish");
                 }
                 catch (InterruptedException e) {
                     // TODO: error
@@ -238,6 +249,7 @@ public abstract class AnalysisController {
             while (ImageProcessor.isBusy()) {
                 try {
                     WAIT.wait(3 * CaptureController.getTargetFrameNanos() / 1000 / 1000);
+                    Log.e(Thread.currentThread().getName(), "Waiting for processor to finish with statistics");
                 }
                 catch (InterruptedException e) {
                     // TODO: error

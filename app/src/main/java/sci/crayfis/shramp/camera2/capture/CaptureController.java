@@ -39,7 +39,7 @@ import sci.crayfis.shramp.MasterController;
 import sci.crayfis.shramp.GlobalSettings;
 import sci.crayfis.shramp.analysis.AnalysisController;
 import sci.crayfis.shramp.analysis.DataQueue;
-import sci.crayfis.shramp.analysis.SneakPeek;
+import sci.crayfis.shramp.analysis.PrintAndSave;
 import sci.crayfis.shramp.camera2.CameraController;
 import sci.crayfis.shramp.camera2.requests.RequestMaker;
 import sci.crayfis.shramp.camera2.util.Parameter;
@@ -48,6 +48,7 @@ import sci.crayfis.shramp.util.HandlerManager;
 import sci.crayfis.shramp.util.HeapMemory;
 import sci.crayfis.shramp.util.NumToString;
 import sci.crayfis.shramp.util.StopWatch;
+import sci.crayfis.shramp.util.StorageMedia;
 
 /**
  * TODO: description, comments and logging
@@ -185,7 +186,7 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
                 if (!HeapMemory.isMemoryAmple()) {
                     DataQueue.purge();
                     System.gc();
-                    if (!DataQueue.isEmpty() || AnalysisController.isBusy()) {
+                    if (!DataQueue.isEmpty() || AnalysisController.isBusy() || StorageMedia.isBusy()) {
                         return false;
                     }
                     Log.e(Thread.currentThread().getName(), "Forcing Restart");
@@ -196,8 +197,9 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
                     state = State.RUNNING;
                     return true;
                 } catch (CameraAccessException e) {
-                    // TODO: error
-                    return false;
+                    // TODO: handle this
+                    Log.e(Thread.currentThread().getName(), "CAMERA ACCESS EXCEPTION");
+                    MasterController.quitSafely();
                 }
             }
 
@@ -276,6 +278,7 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
             while (!mCurrentSession.restart()) {
                 try {
                     mInstance.wait(3 * mTarget.FrameExposureNanos / 1000 / 1000);
+                    Log.e(Thread.currentThread().getName(), "Waiting to restart capture session");
                 }
                 catch (InterruptedException e) {
                     // TODO: error
@@ -284,6 +287,17 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
         }
         Log.e(Thread.currentThread().getName(), "<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>");
         Log.e(Thread.currentThread().getName(), "STARTING CAPTURE - STARTING CAPTURE - STARTING CAPTURE - STARTING CAPTURE - STARTING CAPTURE - STARTING CAPTURE");
+    }
+
+    public static void resetCaptureSession() {
+        pauseCaptureSession();
+    }
+
+    static void sessionReset() {
+        AnalysisController.resetRunningTotals();
+        AnalysisController.setSignificanceThreshold(mTarget.TotalFrames);
+        mCurrentSession.renewSession();
+        restartCaptureSession();
     }
 
     // getTargetFrameNanos..........................................................................
@@ -314,7 +328,9 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
         string += "\t Average Duty: " + NumToString.decimal(averageDuty * 100.) + " % \n";
         Log.e(Thread.currentThread().getName(), string);
 
-        mTarget.FrameExposureNanos = (long) ( Math.floor(1e9 / averageFps) );
+        if (!GlobalSettings.CONSTANT_FPS) {
+            mTarget.FrameExposureNanos = (long) (Math.floor(1e9 / averageFps));
+        }
         Log.e(Thread.currentThread().getName(), "Start next session with frame rate target: "
                 + NumToString.decimal(1. / ( mTarget.FrameExposureNanos * 1e-9) )
                 + " [frames / sec]");
@@ -323,8 +339,16 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
 
             case FPS_LOCK: {
                 mFpsLockAttempts += 1;
+
+                CaptureRequest.Builder builder = CameraController.getCaptureRequestBuilder();
+                assert builder != null;
+
+                Integer mode = builder.get(CaptureRequest.CONTROL_AE_MODE);
+                assert mode != null;
+
                 if (averageDuty >= GlobalSettings.DUTY_THRESHOLD
-                                        || mFpsLockAttempts >= GlobalSettings.FPS_ATTEMPT_LIMIT) {
+                                    || mFpsLockAttempts >= GlobalSettings.FPS_ATTEMPT_LIMIT
+                                    || mode == CameraMetadata.CONTROL_AE_MODE_ON) {
 
                     if (GlobalSettings.CALIBRATION_N_FRAMES > 0) {
                         mMode = Mode.CALIBRATION;
@@ -340,9 +364,7 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
                         return;
                     }
                 }
-                AnalysisController.resetRunningTotals();
-                mCurrentSession.renewSession();
-                restartCaptureSession();
+                sessionReset();
                 break;
             }
 
@@ -350,16 +372,13 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
                 Log.e(Thread.currentThread().getName(), "FINISHED WITH CALIBRATION");
 
                 AnalysisController.runStatistics();
-                SneakPeek.meanAndErr();
+                PrintAndSave.printMeanAndErr();
                 AnalysisController.enableSignificance();
-                AnalysisController.setSignificanceThreshold(mTarget.TotalFrames);
 
                 if (GlobalSettings.DATARUN_N_FRAMES > 0 && GlobalSettings.DATA_ATTEMPT_LIMIT > 0) {
                     mMode = Mode.DATA;
                     mTarget.TotalFrames = GlobalSettings.DATARUN_N_FRAMES;
-                    AnalysisController.resetRunningTotals();
-                    mCurrentSession.renewSession();
-                    restartCaptureSession();
+                    sessionReset();
                 }
                 else {
                     reset();
@@ -372,9 +391,7 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
             case DATA: {
                 mDataRunAttempts += 1;
                 if (mDataRunAttempts < GlobalSettings.DATA_ATTEMPT_LIMIT) {
-                    AnalysisController.resetRunningTotals();
-                    mCurrentSession.renewSession();
-                    restartCaptureSession();
+                    sessionReset();
                 }
                 else {
                     reset();

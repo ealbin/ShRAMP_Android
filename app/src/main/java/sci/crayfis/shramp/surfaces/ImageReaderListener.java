@@ -38,7 +38,7 @@ import sci.crayfis.shramp.util.HeapMemory;
 /**
  * TODO: description, comments and logging
  */
-final class ImageReaderListener implements ImageReader.OnImageAvailableListener {
+public final class ImageReaderListener implements ImageReader.OnImageAvailableListener {
 
     // Private Constants
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -147,13 +147,7 @@ final class ImageReaderListener implements ImageReader.OnImageAvailableListener 
                     break;
                 }
             }
-
-            try {
-                DataQueue.add(new ImageWrapper(reader));
-            }
-            catch (IllegalStateException e) {
-                // TODO: error
-            }
+            DataQueue.add(new ImageWrapper(reader));
         }
     }
 

@@ -19,6 +19,7 @@
 package sci.crayfis.shramp.analysis;
 
 import android.annotation.TargetApi;
+import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -28,9 +29,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sci.crayfis.shramp.GlobalSettings;
+import sci.crayfis.shramp.camera2.util.TimeCode;
+import sci.crayfis.shramp.surfaces.ImageReaderListener;
 import sci.crayfis.shramp.util.HandlerManager;
 import sci.crayfis.shramp.util.NumToString;
 import sci.crayfis.shramp.util.StopWatch;
+import sci.crayfis.shramp.util.StorageMedia;
 
 /**
  * TODO: description, comments and logging
@@ -62,20 +66,38 @@ abstract public class DataQueue {
     // TODO: description
     private static final List<ImageWrapper> mImageQueue = new ArrayList<>();
 
+    // mOutputQueue.................................................................................
+    // TODO: description
+    private static final List<OutputWrapper> mOutputQueue = new ArrayList<>();
+
     // ProcessQueue.................................................................................
     // TODO: description
     private static final Runnable ProcessQueue = new Runnable() {
         @Override
         public void run() {
-            while(processQueue()) {
+            while (processQueue()) {
                 synchronized (ACCESS_LOCK) {
                     Log.e(Thread.currentThread().getName(), "Capture Result Queue Size: " + NumToString.number(mCaptureResultQueue.size())
-                    + ", Image Queue Size: " + NumToString.number(mImageQueue.size())
-                    + ", Processor Backlog: " + NumToString.number(ImageProcessor.getBacklog()));
+                            + ", Image Queue Size: " + NumToString.number(mImageQueue.size())
+                            + ", Processor Backlog: " + NumToString.number(ImageProcessor.getBacklog()));
                 }
-            };
+            }
+            ;
         }
     };
+
+    private static final Runnable writeOutput = new Runnable() {
+        @Override
+        public void run() {
+            while (writeOutput()) {
+                //synchronized (ACCESS_LOCK) {
+                    Log.e(Thread.currentThread().getName(), "Output Queue Size: " + NumToString.number(mOutputQueue.size())
+                            + ", I/O Backlog: " + NumToString.number(StorageMedia.getBacklog()));
+                //}
+            }
+        }
+    };
+
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -87,17 +109,21 @@ abstract public class DataQueue {
     // add..........................................................................................
     /**
      * TODO: description, comments and logging
+     *
      * @param result bla
      */
     public static void add(@NonNull TotalCaptureResult result) {
         StopWatch stopWatch = new StopWatch();
-        Log.e("DATA QUEUE", "added total capture result");
+        Long time = result.get(CaptureResult.SENSOR_TIMESTAMP);
+        assert time != null;
+        Log.e("DATA QUEUE", "added total capture result " + TimeCode.toString(time));
         class Add implements Runnable {
             private TotalCaptureResult mResult;
 
             private Add(TotalCaptureResult result) {
                 mResult = result;
             }
+
             public void run() {
                 synchronized (ACCESS_LOCK) {
                     mCaptureResultQueue.add(mResult);
@@ -114,16 +140,19 @@ abstract public class DataQueue {
     // add..........................................................................................
     /**
      * TODO: description, comments and logging
+     *
      * @param wrapper bla
      */
     public static void add(@NonNull ImageWrapper wrapper) {
         StopWatch stopWatch = new StopWatch();
-        Log.e("DATA QUEUE", "added image data");
+        Log.e("DATA QUEUE", "added image data " + wrapper.getTimeCode());
         class Add implements Runnable {
             private ImageWrapper mWrapper;
+
             private Add(ImageWrapper wrapper) {
                 mWrapper = wrapper;
             }
+
             public void run() {
                 synchronized (ACCESS_LOCK) {
                     mImageQueue.add(mWrapper);
@@ -137,14 +166,47 @@ abstract public class DataQueue {
         Log.e(Thread.currentThread().getName(), "<add(ImageWrapper)> time: " + NumToString.number(stopWatch.stop()) + " [ns]");
     }
 
+    public static void add(@NonNull OutputWrapper wrapper) {
+        StopWatch stopWatch = new StopWatch();
+        Log.e("DATA QUEUE", "added output");
+        class Add implements Runnable {
+            private OutputWrapper mWrapper;
+
+            private Add(OutputWrapper wrapper) {
+                mWrapper = wrapper;
+            }
+
+            public void run() {
+                //synchronized (ACCESS_LOCK) {
+                    mOutputQueue.add(mWrapper);
+                //}
+            }
+        }
+        if (!GlobalSettings.DEBUG_DISABLE_QUEUE) {
+            mHandler.post(new Add(wrapper));
+            mHandler.post(writeOutput);
+        }
+        Log.e(Thread.currentThread().getName(), "<add(OutputWrapper)> time: " + NumToString.number(stopWatch.stop()) + " [ns]");
+    }
+
     // isEmpty......................................................................................
     /**
      * TODO: description, comments and logging
+     *
      * @return bla
      */
     public static boolean isEmpty() {
         synchronized (ACCESS_LOCK) {
-            return (mCaptureResultQueue.size() == 0) && (mImageQueue.size() == 0);
+            int resultSize = mCaptureResultQueue.size();
+            int imageSize = mImageQueue.size();
+            int outputSize = mOutputQueue.size();
+
+            //if (imageSize == 0 && resultSize > 0) {
+            //    ImageReaderListener.purge();
+            //}
+            Log.e(Thread.currentThread().getName(), "R, I, O = " + Integer.toString(resultSize) +", "
+            + Integer.toString(imageSize) + ", " + Integer.toString(outputSize));
+            return (resultSize == 0) && (imageSize == 0) && (outputSize == 0);
         }
     }
 
@@ -168,6 +230,7 @@ abstract public class DataQueue {
         synchronized (ACCESS_LOCK) {
             mCaptureResultQueue.clear();
             mImageQueue.clear();
+            mOutputQueue.clear();
         }
     }
 
@@ -177,6 +240,7 @@ abstract public class DataQueue {
     // processQueue.................................................................................
     /**
      * TODO: description, comments and logging
+     *
      * @return bla
      */
     private static boolean processQueue() {
@@ -189,15 +253,60 @@ abstract public class DataQueue {
             if (resultSize > 0 && imageSize > 0) {
                 TotalCaptureResult result = mCaptureResultQueue.remove(0);
                 ImageWrapper wrapper = mImageQueue.remove(0);
+
+                Long result_timestamp = result.get(CaptureResult.SENSOR_TIMESTAMP);
+                assert result_timestamp != null;
+                String result_timecode = TimeCode.toString(result_timestamp);
+                String wrapper_timecode = wrapper.getTimeCode();
+                if (!result_timecode.equals(wrapper_timecode)) {
+                    Log.e(Thread.currentThread().getName(), "!!!!!!!!!!!!!!!! Time Code Miss-Match: "
+                    + result_timecode + " != " + wrapper_timecode + ", dropping result, re-queing image");
+                    mImageQueue.add(0, wrapper);
+                    return false;
+                }
+                else {
+                    Log.e(Thread.currentThread().getName(), "Time code match: "
+                    + result_timecode + " == " + wrapper_timecode);
+                }
+
+
                 if (!GlobalSettings.DEBUG_DISABLE_PROCESSING) {
                     ImageProcessor.process(result, wrapper);
                 }
                 Log.e(Thread.currentThread().getName(), "<processQueue()> time: " + NumToString.number(stopWatch.stop()) + " [ns]");
                 return (resultSize != 1 && imageSize != 1);
             }
+            Log.e(Thread.currentThread().getName(), "Result size: " + Integer.toString(resultSize) + ", Image size: "
+             + Integer.toString(imageSize));
             Log.e(Thread.currentThread().getName(), "<processQueue()> time: " + NumToString.number(stopWatch.stop()) + " [ns]");
             return false;
         }
+    }
+
+    // writeOutput..................................................................................
+    /**
+     * TODO: description, comments and logging
+     *
+     * @return bla
+     */
+    private static boolean writeOutput() {
+        StopWatch stopWatch = new StopWatch();
+        Log.e("DATA QUEUE", "writing output");
+        //synchronized (ACCESS_LOCK) {
+            int queueSize = mOutputQueue.size();
+
+            if (queueSize > 0) {
+                OutputWrapper wrapper = mOutputQueue.remove(0);
+                if (!GlobalSettings.DEBUG_DISABLE_SAVING) {
+                    StorageMedia.write(wrapper);
+                }
+                Log.e(Thread.currentThread().getName(), "<writeOutput()> time: " + NumToString.number(stopWatch.stop()) + " [ns]");
+                return (queueSize != 1);
+            }
+            Log.e(Thread.currentThread().getName(), "Output size: " + Integer.toString(queueSize));
+            Log.e(Thread.currentThread().getName(), "<writeOutput()> time: " + NumToString.number(stopWatch.stop()) + " [ns]");
+            return false;
+        //}
     }
 
 }

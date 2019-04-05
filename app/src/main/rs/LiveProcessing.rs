@@ -59,7 +59,7 @@ rs_allocation gSignificance;
 // @param x bla
 // @param y bla
 void RS_KERNEL process8bitData(uchar val, uint32_t x, uint32_t y) {
-    double val_fraction = val / 1.; //gMax8bitValue;
+    double val_fraction = val / gMax8bitValue;
     double old_exp_val_sum = rsGetElementAt_double(gExposureValueSum, x, y);
     double this_exp_val    = (double) gExposureTime * val_fraction;
     double new_exp_val_sum = (double) (old_exp_val_sum + this_exp_val);
@@ -70,23 +70,24 @@ void RS_KERNEL process8bitData(uchar val, uint32_t x, uint32_t y) {
     double new_exp_val2_sum = (double) (old_exp_val2_sum + this_exp_val2);
     rsSetElementAt_double(gExposureValue2Sum, new_exp_val2_sum, x, y);
 
-    if (gEnableSignificance == 1) {
-        float mean_rate    = rsGetElementAt_float(gMeanRate, x, y);
-        float stddev_rate  = rsGetElementAt_float(gStdDevRate, x, y);
+    float mean_rate    = rsGetElementAt_float(gMeanRate, x, y);
+    float stddev_rate  = rsGetElementAt_float(gStdDevRate, x, y);
 
-        float significance;
-        if (stddev_rate == 0.f) {
-            significance = 1./0.;
-        }
-        else {
-            significance = (float) ( ( val_fraction / (double) gExposureTime ) - (double) mean_rate ) / stddev_rate;
-            if (significance >= gSignificanceThreshold) {
-                long count = rsGetElementAt_long(gCountAboveThreshold, 0, 0);
-                rsSetElementAt_long(gCountAboveThreshold, count + 1, 0, 0);
-            }
-        }
-        rsSetElementAt_float(gSignificance, significance, x, y);
+    float significance;
+    if (gEnableSignificance == 0) {
+        significance = 0.f;
     }
+    else if (stddev_rate == 0.f) {
+        significance = 1./0.;
+    }
+    else {
+        significance = (float) ( ( val_fraction / (double) gExposureTime ) - (double) mean_rate ) / stddev_rate;
+        if (significance >= gSignificanceThreshold) {
+            long count = rsGetElementAt_long(gCountAboveThreshold, 0, 0);
+            rsSetElementAt_long(gCountAboveThreshold, count + 1, 0, 0);
+        }
+    }
+    rsSetElementAt_float(gSignificance, significance, x, y);
 }
 
 // process16bitData.................................................................................
@@ -106,23 +107,24 @@ void RS_KERNEL process16bitData(ushort val, uint32_t x, uint32_t y) {
     double new_exp_val2_sum = (double) (old_exp_val2_sum + this_exp_val2);
     rsSetElementAt_double(gExposureValue2Sum, new_exp_val2_sum, x, y);
 
-    if (gEnableSignificance == 1) {
-        float mean_rate    = rsGetElementAt_float(gMeanRate, x, y);
-        float stddev_rate  = rsGetElementAt_float(gStdDevRate, x, y);
+    float mean_rate    = rsGetElementAt_float(gMeanRate, x, y);
+    float stddev_rate  = rsGetElementAt_float(gStdDevRate, x, y);
 
-        float significance;
-        if (stddev_rate == 0.f) {
-            significance = 1./0.;
-        }
-        else {
-            significance = (float) ( ( val_fraction / (double) gExposureTime ) - (double) mean_rate ) / stddev_rate;
-            if (significance >= gSignificanceThreshold) {
-                long count = rsGetElementAt_long(gCountAboveThreshold, 0, 0);
-                rsSetElementAt_long(gCountAboveThreshold, count + 1, 0, 0);
-            }
-        }
-        rsSetElementAt_float(gSignificance, significance, x, y);
+    float significance;
+    if (gEnableSignificance == 0) {
+        significance = 0.f;
     }
+    else if (stddev_rate == 0.f) {
+        significance = 1./0.;
+    }
+    else {
+        significance = (float) ( ( val_fraction / (double) gExposureTime ) - (double) mean_rate ) / stddev_rate;
+        if (significance >= gSignificanceThreshold) {
+            long count = rsGetElementAt_long(gCountAboveThreshold, 0, 0);
+            rsSetElementAt_long(gCountAboveThreshold, count + 1, 0, 0);
+        }
+    }
+    rsSetElementAt_float(gSignificance, significance, x, y);
 }
 
 // zeroDoubleAllocation.............................................................................

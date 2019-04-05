@@ -33,7 +33,7 @@ import sci.crayfis.shramp.camera2.CameraController;
 import sci.crayfis.shramp.camera2.capture.CaptureController;
 import sci.crayfis.shramp.sensor.SensorController;
 import sci.crayfis.shramp.surfaces.SurfaceController;
-import sci.crayfis.shramp.util.DataManager;
+import sci.crayfis.shramp.util.StorageMedia;
 import sci.crayfis.shramp.util.HandlerManager;
 import sci.crayfis.shramp.util.HeapMemory;
 
@@ -98,12 +98,14 @@ public final class MasterController extends Activity {
         // Main thread
         mHandler = new Handler(getMainLooper());
 
-        // Set up ShRAMP data directory
-        DataManager.setUpShrampDirectory();
+        if (GlobalSettings.START_FROM_SCRATCH) {
+            Log.e(Thread.currentThread().getName(), "Clearing ShRAMP data directory, starting from scratch");
+            StorageMedia.cleanAll();
+        }
 
-        // TODO: Don't do this
-        Log.e(Thread.currentThread().getName(),"Clearing ShRAMP data directory, starting from scratch");
-        DataManager.clean();
+        // Set up ShRAMP data directory
+        StorageMedia.setUpShrampDirectory();
+
 
         //Log.e(Thread.currentThread().getName(), "Loading sensor package");
         //SensorController.initializeTemperature(mInstance, false);

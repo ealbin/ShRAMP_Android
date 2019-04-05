@@ -34,20 +34,35 @@ public abstract class GlobalSettings {
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // TODO: description
-    public static final Integer FPS_LOCK_N_FRAMES    = 200;
+    public static final Integer FPS_LOCK_N_FRAMES    = 0;
     public static final Integer CALIBRATION_N_FRAMES = 1000;
-    public static final Integer DATARUN_N_FRAMES     = 1000;//1000;
+    public static final Integer DATARUN_N_FRAMES     = 0;
 
     // TODO: description
     public static final Double  DUTY_THRESHOLD     = 0.98;
-    public static final Integer FPS_ATTEMPT_LIMIT  = 2; // minimum is 1
-    public static final Integer DATA_ATTEMPT_LIMIT = 2;//10;
+    public static final Integer FPS_ATTEMPT_LIMIT  = 0;
+    public static final Integer DATA_ATTEMPT_LIMIT = 0;//10;
 
     // TODO: description
-    private static final Long FPS_30 =  33333333L;
-    private static final Long FPS_20 =  50000000L;
-    private static final Long FPS_10 = 100000000L;
-    public  static final Long DEFAULT_FRAME_EXPOSURE_NANOS = FPS_20;
+    private static final Long FPS_30 =   33333333L;
+    private static final Long FPS_20 =   50000000L;
+    private static final Long FPS_15 =   66666666L;
+    private static final Long FPS_10 =  100000000L;
+    private static final Long FPS_05 =  200000000L;
+    private static final Long FPS_01 = 1000000000L;
+    public  static final Long DEFAULT_FRAME_EXPOSURE_NANOS = FPS_05;
+    public  static final Boolean CONSTANT_FPS = true;
+
+    // TODO: description
+    public static final Integer MAX_FRAMES_ABOVE_THRESHOLD = Math.min(
+            Math.max(10, DATARUN_N_FRAMES / 20), 400 ); // TODO: min( max_number_with_disk_space, max(abs min, fraction of frames) )
+    public static final Double THRESHOLD_STEP = 0.5;
+
+    // ShRAMP data folder
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+    public static final boolean START_FROM_SCRATCH = true;
+
 
     // Feature Locks
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -87,6 +102,7 @@ public abstract class GlobalSettings {
     public static final Integer DATA_QUEUE_THREAD_PRIORITY        = Process.THREAD_PRIORITY_FOREGROUND;
     public static final Integer IMAGE_READER_THREAD_PRIORITY      = Process.THREAD_PRIORITY_FOREGROUND;
     public static final Integer IMAGE_PROCESSOR_THREAD_PRIORITY   = Process.THREAD_PRIORITY_FOREGROUND;
+    public static final Integer STORAGE_MEDIA_THREAD_PRIORITY     = Process.THREAD_PRIORITY_BACKGROUND;
 
     // Camera Preference
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -101,5 +117,9 @@ public abstract class GlobalSettings {
     // TODO: description
     public static final Boolean DEBUG_DISABLE_QUEUE      = false;
     public static final Boolean DEBUG_DISABLE_PROCESSING = false;
+    public static final Boolean DEBUG_DISABLE_SAVING     = false;
+    public static final Boolean DEBUG_SAVE_SIGNIFICANCE  = false;
+    public static final Boolean DEBUG_SAVE_MEAN          = true;
+    public static final Boolean DEBUG_SAVE_STDDEV        = true;
 
 }

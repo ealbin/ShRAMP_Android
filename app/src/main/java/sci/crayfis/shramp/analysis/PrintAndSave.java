@@ -1,17 +1,19 @@
 package sci.crayfis.shramp.analysis;
 
 import android.annotation.TargetApi;
+import android.renderscript.Allocation;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
 import sci.crayfis.shramp.util.HeapMemory;
 import sci.crayfis.shramp.util.NumToString;
+import sci.crayfis.shramp.util.StorageMedia;
 
 /**
  * TODO: description, comments and logging
  */
 @TargetApi(21)
-abstract public class SneakPeek {
+abstract public class PrintAndSave {
 
     // Private Class Constants
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -48,11 +50,11 @@ abstract public class SneakPeek {
         mFloatData = new float[mNpixels];
     }
 
-    // exposureValueSum.............................................................................
+    // printExposureValueSum........................................................................
     /**
      * TODO: description, comments and logging
      */
-    public static void exposureValueSum() {
+    public static void printExposureValueSum() {
         System.gc();
         if (HeapMemory.isMemoryLow()) {
             return;
@@ -71,17 +73,17 @@ abstract public class SneakPeek {
         title += "// Exposure Value Sum /////////////////////////////////////////////////////////////\n";
         title += "-----------------------------------------------------------------------------------\n";
 
-        logValues(title, values);
+        printValues(title, values);
 
         doubleData = null;
         System.gc();
     }
 
-    // exposureValue2Sum............................................................................
+    // printExposureValue2Sum.......................................................................
     /**
      * TODO: description, comments and logging
      */
-    public static void exposureValue2Sum() {
+    public static void printExposureValue2Sum() {
         System.gc();
         if (HeapMemory.isMemoryLow()) {
             return;
@@ -100,18 +102,18 @@ abstract public class SneakPeek {
         title += "// Exposure Value^2 Sum ///////////////////////////////////////////////////////////\n";
         title += "-----------------------------------------------------------------------------------\n";
 
-        logValues(title, values);
+        printValues(title, values);
 
         doubleData = null;
         System.gc();
     }
 
 
-    // meanAndErr...................................................................................
+    // printMeanAndErr...............................................................................
     /**
      * TODO: description, comments and logging
      */
-    public static void meanAndErr() {
+    public static void printMeanAndErr() {
         
         ImageProcessor.getMeanRate().copyTo(mFloatData);
         String[] mean = new String[PEEK_SIZE];
@@ -163,11 +165,11 @@ abstract public class SneakPeek {
         Log.e(Thread.currentThread().getName(), out);
     }
 
-    // stdDev.......................................................................................
+    // printStdDev...................................................................................
     /**
      * TODO: description, comments and logging
      */
-    public static void stdDev() {
+    public static void printStdDev() {
 
         ImageProcessor.getStdDevRate().copyTo(mFloatData);
         String[] values = new String[PEEK_SIZE];
@@ -180,15 +182,14 @@ abstract public class SneakPeek {
         title += "// Standard Deviation Rate ////////////////////////////////////////////////////////\n";
         title += "-----------------------------------------------------------------------------------\n";
 
-        logValues(title, values);
+        printValues(title, values);
     }
 
-    // significance.................................................................................
+    // printSignificance.................................................................................
     /**
      * TODO: description, comments and logging
      */
-    public static void significance() {
-        
+    public static void printSignificance() {
         ImageProcessor.getSignificance().copyTo(mFloatData);
         String[] values = new String[PEEK_SIZE];
         for (int i = 0; i < PEEK_SIZE; i++) {
@@ -200,7 +201,7 @@ abstract public class SneakPeek {
         title += "// Significance ///////////////////////////////////////////////////////////////////\n";
         title += "-----------------------------------------------------------------------------------\n";
 
-        logValues(title, values);
+        printValues(title, values);
 
         mFloatData = null;
         System.gc();
@@ -209,13 +210,13 @@ abstract public class SneakPeek {
     // Private Class Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    // logValues....................................................................................
+    // printValues....................................................................................
     /**
      * TODO: description, comments and logging
      * @param title bla
      * @param values bla
      */
-    private static void logValues(@NonNull String title, @NonNull String[] values) {
+    private static void printValues(@NonNull String title, @NonNull String[] values) {
         int len = 0;
         for (int i = 0; i < PEEK_SIZE; i++) {
             int tmp = values[i].length();

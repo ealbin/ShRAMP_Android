@@ -22,6 +22,7 @@ import android.annotation.TargetApi;
 import android.media.Image;
 import android.media.ImageReader;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import org.jetbrains.annotations.Contract;
 
@@ -41,7 +42,11 @@ public final class ImageWrapper {
 
     // mNpixels.....................................................................................
     // TODO: description
-    private static long mNpixels = 0;
+    private static int mNpixels = 0;
+
+    private static int mRows = 0;
+
+    private static int mCols = 0;
 
     // mTimestamp...................................................................................
     // TODO: description
@@ -56,6 +61,8 @@ public final class ImageWrapper {
     // TODO: description
     private byte[]  mData_8bit;
     private short[] mData_16bit;
+
+    private boolean mHasData = false;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -79,6 +86,9 @@ public final class ImageWrapper {
         Image image = null;
         try {
             image = reader.acquireNextImage();
+            if (image == null) {
+                return;
+            }
             mTimestamp = image.getTimestamp();
 
             ByteBuffer byteBuffer = image.getPlanes()[0].getBuffer();
@@ -98,14 +108,20 @@ public final class ImageWrapper {
             }
 
             image.close();
+            mHasData = true;
         }
         catch (IllegalStateException e) {
             // TODO: error
             if (image != null) {
                 image.close();
             }
-            throw new IllegalStateException();
+            Log.e(Thread.currentThread().getName(), "!!!!!!!!! ILLEGAL STATE EXCEPTION");
+            //throw new IllegalStateException();
         }
+    }
+
+    public boolean hasData() {
+        return mHasData;
     }
 
     // Package-private Class Methods
@@ -132,10 +148,13 @@ public final class ImageWrapper {
     // setNpixels...................................................................................
     /**
      * TODO: description, comments and logging
-     * @param nPixels
+     * @param nRows bla
+     * @param nCols bla
      */
-    static void setNpixels(long nPixels) {
-        mNpixels = nPixels;
+    static void setNpixels(int nRows, int nCols) {
+        mRows = nRows;
+        mCols = nCols;
+        mNpixels = nRows * nCols;
     }
 
     // Public Instance Methods
@@ -180,7 +199,11 @@ public final class ImageWrapper {
      * @return bla
      */
     @Contract(pure = true)
-    public static long getNpixels() { return mNpixels; }
+    public static int getNpixels() { return mNpixels; }
+
+    public static int getNrows() { return mRows; }
+
+    public static int getNcols() { return mCols; }
 
     // is8bitData...................................................................................
     /**

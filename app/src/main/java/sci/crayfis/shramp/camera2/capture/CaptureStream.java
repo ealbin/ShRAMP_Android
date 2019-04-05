@@ -35,6 +35,8 @@ import sci.crayfis.shramp.camera2.util.TimeCode;
 import sci.crayfis.shramp.util.HeapMemory;
 import sci.crayfis.shramp.util.NumToString;
 import sci.crayfis.shramp.util.StopWatch;
+import sci.crayfis.shramp.util.StorageMedia;
+import sci.crayfis.shramp.util.TimeManager;
 
 /**
  * TODO: description, comments and logging
@@ -114,6 +116,7 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
 
             if (First == 0L) {
                 First = timestamp;
+                TimeManager.resetElapsedNanos(timestamp);
             }
             else {
                 Elapsed = timestamp - Last;
@@ -272,6 +275,11 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
                                    @NonNull TotalCaptureResult result) {
         super.onCaptureCompleted(session, request, result);
         StopWatch stopWatch = new StopWatch();
+
+        Long time = result.get(CaptureResult.SENSOR_TIMESTAMP);
+        assert time != null;
+        Log.e(Thread.currentThread().getName(), TimeCode.toString(time) + " result sent");
+
         DataQueue.add(result);
         mTimestamp.add(result);
         mExposure.add(result);
@@ -297,7 +305,7 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
             powerString = NumToString.number(power) + " [mW]";
         }
 
-        Log.e(Thread.currentThread().getName(), "________Temperature: " + tempString);
+        Log.e(Thread.currentThread().getName(), "________(frame) Temperature: " + tempString);
         Log.e(Thread.currentThread().getName(), "________Power:       " + powerString);
     }
 
@@ -324,8 +332,7 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
             Log.e(Thread.currentThread().getName(), "<onCaptureSequenceCompleted()> time: " + NumToString.number(stopWatch.stop()) + " [ns]");
             return;
         }
-
-        if (mState == State.FINISHED) {
+        else {
             Log.e(Thread.currentThread().getName(), "captureStream onCaptureSequenceCompleted, N Frames = " + Integer.toString(mFrame.FrameCount));
 
             long totalElapsed = mTimestamp.Last - mTimestamp.First;
@@ -336,9 +343,19 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
 
             DataQueue.purge();
             synchronized (this) {
-                while (!DataQueue.isEmpty() || AnalysisController.isBusy()) {
+                while (!DataQueue.isEmpty() || AnalysisController.isBusy() || StorageMedia.isBusy()) {
                     try {
-                        this.wait(3 * CaptureController.getTargetFrameNanos() / 1000 / 1000);
+                        this.wait(5 * CaptureController.getTargetFrameNanos() / 1000 / 1000);
+                        Log.e(Thread.currentThread().getName(), "Waiting for queue: "
+                                + Boolean.toString(!DataQueue.isEmpty()) + ", controller: "
+                                + Boolean.toString(AnalysisController.isBusy()) + ", and media: "
+                                + Boolean.toString(StorageMedia.isBusy()) + " to finish");
+
+                        if (!DataQueue.isEmpty() && !AnalysisController.isBusy() && !StorageMedia.isBusy()) {
+                            Log.e(Thread.currentThread().getName(), "Time code Overriding/clearing queue");
+                            DataQueue.clear();
+                            break;
+                        }
                     }
                     catch (InterruptedException e) {
                         // TODO: error
@@ -346,11 +363,16 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
                 }
             }
 
-            CaptureController.sessionFinished(averageFps, averageDuty);
-
+            if (mState == State.FINISHED) {
+                CaptureController.sessionFinished(averageFps, averageDuty);
+            }
+            else {
+                CaptureController.sessionReset();
+            }
             // TODO: dump mTotalCaptureResult info
 
         }
+
     }
 
 
