@@ -25,102 +25,105 @@
 // Global Variables
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+const float gMax8bitValue  = 255.;
+const float gMax16bitValue = 1023.;
+
+int gIs8bit;
+
 // gNframes.........................................................................................
 // Total number of image frames
 long gNframes;
 
 // gExposureSum.....................................................................................
 // Total pixel exposure time in seconds
-long gExposureSum;
+//long gExposureSum;
 
 // Running Sums.....................................................................................
 // TODO: description
-rs_allocation gExposureValueSum;
-rs_allocation gExposureValue2Sum;
+rs_allocation gValueSum;
+rs_allocation gValue2Sum;
 
 // Statistics.......................................................................................
-// gMeanRate:   average pixel value / seconds exposure
-// gStdDevRate: standard deviation on the mean / seconds exposure
-// gStdErrRate: TODO
-rs_allocation gMeanRate;
-rs_allocation gStdDevRate;
-rs_allocation gStdErrRate;
+// gMean:   average pixel value
+// gStdDev: standard deviation on the mean
+// gStdErr: TODO
+rs_allocation gMean;
+rs_allocation gStdDev;
+rs_allocation gStdErr;
 
 rs_allocation gAnomalousStdDev;
 
 // RenderScript Kernels
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-// getMeanRate......................................................................................
+// getMean......................................................................................
 // TODO: description, comments and logging
 // @param x bla
 // @param y bla
 // @return bla
-float RS_KERNEL getMeanRate(uint32_t x, uint32_t y) {
+float RS_KERNEL getMean(uint32_t x, uint32_t y) {
 
-    // Mean Pixel Rate
+    float maxValue = gMax8bitValue;
+    if (gIs8bit == 0) {
+        maxValue = gMax16bitValue;
+    }
+
+    // Mean Pixel 
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    double exp_val_sum    = rsGetElementAt_double(gExposureValueSum, x, y);
-    double mean_pixel_val = exp_val_sum / (double) gExposureSum;
+    uint val_sum = rsGetElementAt_uint(gValueSum, x, y);
+    double mean_pixel_val = val_sum / (double) gNframes;
 
-    // mean exposure time
-    double mean_exposure = gExposureSum / (double) gNframes;
+    rsSetElementAt_float(gMean, (float) mean_pixel_val / maxValue, x, y);
 
-    // mean pixel value / exposure time (nanoseconds)
-    double mean_val_per_nanos = mean_pixel_val / mean_exposure;
-
-    rsSetElementAt_float(gMeanRate, (float) mean_val_per_nanos, x, y);
-
-    // Standard Deviation Rate
+    // Standard Deviation 
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    double exp_val2_sum = rsGetElementAt_double(gExposureValue2Sum, x, y);
+    uint val2_sum = rsGetElementAt_uint(gValue2Sum, x, y);
 
-    double var = ( exp_val2_sum / (double) gExposureSum ) - ( mean_pixel_val * mean_pixel_val );
+    double var = ( val2_sum / (double) gNframes) - ( mean_pixel_val * mean_pixel_val );
 
-    // standard deviation / exposure time (nanoseconds)
+    // standard deviation
     float stddev_per_nanos;
-    // TODO: figure out what's going on with var
     if (var < 0.) {
         long count = rsGetElementAt_long(gAnomalousStdDev, 0, 0);
         rsSetElementAt_long(gAnomalousStdDev, count + 1, 0, 0);
         stddev_per_nanos = 0.;
     }
     else {
-        stddev_per_nanos = sqrt((float) var) / (float) mean_exposure;
+        stddev_per_nanos = sqrt((float) var) / maxValue;
     }
 
-    rsSetElementAt_float(gStdDevRate, stddev_per_nanos, x, y);
+    rsSetElementAt_float(gStdDev, stddev_per_nanos, x, y);
 
-    // Standard Error Rate
+    // Standard Error 
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    float stderr_per_nanos = stddev_per_nanos / (float) sqrt((float) gNframes);
+    float stderr_per_nanos = stddev_per_nanos / sqrt((float) gNframes);
 
-    rsSetElementAt_float(gStdErrRate, stderr_per_nanos, x, y);
+    rsSetElementAt_float(gStdErr, stderr_per_nanos, x, y);
 
     //----------------------------------------------------------------------------------------------
 
-    return mean_val_per_nanos;
+    return mean_pixel_val / maxValue;
 }
 
-// getStdDevRate....................................................................................
+// getStdDev........................................................................................
 // TODO: description, comments and logging
 // @param x bla
 // @param y bla
 // @return bla
-float RS_KERNEL getStdDevRate(uint32_t x, uint32_t y) {
-    return rsGetElementAt_float(gStdDevRate, x, y);
+float RS_KERNEL getStdDev(uint32_t x, uint32_t y) {
+    return rsGetElementAt_float(gStdDev, x, y);
 }
 
-// getStdErrRate....................................................................................
+// getStdErr........................................................................................
 // TODO: description, comments and logging
 // @param x bla
 // @param y bla
 // @return bla
-float RS_KERNEL getStdErrRate(uint32_t x, uint32_t y) {
-    return rsGetElementAt_float(gStdErrRate, x, y);
+float RS_KERNEL getStdErr(uint32_t x, uint32_t y) {
+    return rsGetElementAt_float(gStdErr, x, y);
 }
 
 long RS_KERNEL getAnomalousStdDev(uint32_t x, uint32_t y) {
