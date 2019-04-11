@@ -19,9 +19,7 @@
 package sci.crayfis.shramp.analysis;
 
 import android.annotation.TargetApi;
-import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
-import android.icu.util.Output;
 import android.os.Handler;
 import android.renderscript.Allocation;
 import android.support.annotation.NonNull;
@@ -111,18 +109,47 @@ abstract public class ImageProcessor {
     // TODO: description
     private abstract static class RunningTotal {
         static long       Nframes;
-        static long       ExposureNanos;
-        static Allocation ExposureValueSum;
-        static Allocation ExposureValue2Sum;
+        //static long       ExposureNanos;
+        static Allocation ValueSum;
+        static Allocation Value2Sum;
     }
 
     // Statistics...................................................................................
     // TODO: description
     private abstract static class Statistics {
-        static Allocation MeanRate;
-        static Allocation StdDevRate;
-        static Allocation StdErrRate;
+        static Allocation Mean;
+        static Allocation StdDev;
+        static Allocation StdErr;
         static float SignificanceThreshold;
+    }
+
+    private abstract static class StopWatches {
+        final static StopWatch ImageProcessing = new StopWatch();
+        final static StopWatch Statistics = new StopWatch();
+
+        static String getMeanString() {
+            String out = " \n";
+            out += "Mean elapsed time: \n";
+            out += "\t" + "ImageProcessing: " + NumToString.number(ImageProcessing.getMean()) + " [ns]\n";
+            out += "\t" + "Statistics:      " + NumToString.number(Statistics.getMean()) + " [ns]\n";
+            return out;
+        }
+
+        static String getLongestString() {
+            String out = " \n";
+            out += "Longest elapsed time: \n";
+            out += "\t" + "ImageProcessing: " + NumToString.number(ImageProcessing.getLongest()) + " [ns]\n";
+            out += "\t" + "Statistics:      " + NumToString.number(Statistics.getLongest()) + " [ns]\n";
+            return out;
+        }
+
+        static String getShortestString() {
+            String out = " \n";
+            out += "Shortest elapsed time: \n";
+            out += "\t" + "ImageProcessing: " + NumToString.number(ImageProcessing.getShortest()) + " [ns]\n";
+            out += "\t" + "Statistics:      " + NumToString.number(Statistics.getShortest()) + " [ns]\n";
+            return out;
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -178,59 +205,59 @@ abstract public class ImageProcessor {
         return mBacklog.get();
     }
 
-    // getMeanRate..................................................................................
+    // getMean......................................................................................
     /**
      * TODO: description, comments and logging
      * @return bla
      */
     @Contract(pure = true)
     @NonNull
-    static Allocation getMeanRate() {
-        return Statistics.MeanRate;
+    static Allocation getMean() {
+        return Statistics.Mean;
     }
 
-    // getStdErrRate................................................................................
+    // getStdErr....................................................................................
     /**
      * TODO: description, comments and logging
      * @return bla
      */
     @Contract(pure = true)
     @NonNull
-    static Allocation getStdErrRate() {
-        return Statistics.StdErrRate;
+    static Allocation getStdErr() {
+        return Statistics.StdErr;
     }
 
-    // getStdDevRate................................................................................
+    // getStdDev....................................................................................
     /**
      * TODO: description, comments and logging
      * @return bla
      */
     @Contract(pure = true)
     @NonNull
-    static Allocation getStdDevRate() {
-        return Statistics.StdDevRate;
+    static Allocation getStdDev() {
+        return Statistics.StdDev;
     }
 
-    // getExposureValueSum..........................................................................
+    // getValueSum..................................................................................
     /**
      * TODO: description, comments and logging
      * @return bla
      */
     @Contract(pure = true)
     @NonNull
-    static Allocation getExposureValueSum() {
-        return RunningTotal.ExposureValueSum;
+    static Allocation getValueSum() {
+        return RunningTotal.ValueSum;
     }
 
-    // getExposureValue2Sum.........................................................................
+    // getValue2Sum.................................................................................
     /**
      * TODO: description, comments and logging
      * @return bla
      */
     @Contract(pure = true)
     @NonNull
-    static Allocation getExposureValue2Sum() {
-        return RunningTotal.ExposureValue2Sum;
+    static Allocation getValue2Sum() {
+        return RunningTotal.Value2Sum;
     }
 
     // getSignificance..............................................................................
@@ -301,16 +328,16 @@ abstract public class ImageProcessor {
     // setStatistics................................................................................
     /**
      * TODO: description, comments and logging
-     * @param meanRate bla
-     * @param stdDevRate bla
-     * @param stdErrRate bla
+     * @param mean bla
+     * @param stdDev bla
+     * @param stdErr bla
      */
-    static void setStatistics(@NonNull Allocation meanRate,
-                              @NonNull Allocation stdDevRate,
-                              @NonNull Allocation stdErrRate) {
-        Statistics.MeanRate   = meanRate;
-        Statistics.StdDevRate = stdDevRate;
-        Statistics.StdErrRate = stdErrRate;
+    static void setStatistics(@NonNull Allocation mean,
+                              @NonNull Allocation stdDev,
+                              @NonNull Allocation stdErr) {
+        Statistics.Mean = mean;
+        Statistics.StdDev = stdDev;
+        Statistics.StdErr = stdErr;
     }
 
     // resetTotals..................................................................................
@@ -324,20 +351,20 @@ abstract public class ImageProcessor {
         mIsFirstFrame.set(true);
 
         RunningTotal.Nframes = 0L;
-        RunningTotal.ExposureNanos = 0L;
+        //RunningTotal.ExposureNanos = 0L;
 
-        if (RunningTotal.ExposureValueSum == null || RunningTotal.ExposureValue2Sum == null) {
-            RunningTotal.ExposureValueSum  = AnalysisController.newDoubleAllocation();
-            RunningTotal.ExposureValue2Sum = AnalysisController.newDoubleAllocation();
+        if (RunningTotal.ValueSum == null || RunningTotal.Value2Sum == null) {
+            RunningTotal.ValueSum  = AnalysisController.newUIntAllocation();
+            RunningTotal.Value2Sum = AnalysisController.newUIntAllocation();
         }
-        mLiveScript.forEach_zeroDoubleAllocation(RunningTotal.ExposureValueSum);
-        mLiveScript.forEach_zeroDoubleAllocation(RunningTotal.ExposureValue2Sum);
+        mLiveScript.forEach_zeroUIntAllocation(RunningTotal.ValueSum);
+        mLiveScript.forEach_zeroUIntAllocation(RunningTotal.Value2Sum);
 
-        mLiveScript.set_gExposureValueSum(RunningTotal.ExposureValueSum);
-        mLiveScript.set_gExposureValue2Sum(RunningTotal.ExposureValue2Sum);
+        mLiveScript.set_gValueSum(RunningTotal.ValueSum);
+        mLiveScript.set_gValue2Sum(RunningTotal.Value2Sum);
 
-        //mLiveScript.set_gMeanRate(Statistics.MeanRate);
-        //mLiveScript.set_gStdDevRate(Statistics.StdDevRate);
+        mLiveScript.set_gMean(Statistics.Mean);
+        mLiveScript.set_gStdDev(Statistics.StdDev);
 
         mLiveScript.set_gSignificance(mSignificance);
         mLiveScript.set_gCountAboveThreshold(mCountAboveThreshold);
@@ -357,8 +384,6 @@ abstract public class ImageProcessor {
             return;
         }
 
-        StopWatch stopWatch = new StopWatch();
-
         // TODO: description
         class Processor implements Runnable {
 
@@ -371,22 +396,9 @@ abstract public class ImageProcessor {
             }
 
             public void run() {
-                StopWatch stopWatch = new StopWatch();
-                Long exposureTime = Result.get(CaptureResult.SENSOR_EXPOSURE_TIME);
-                assert exposureTime != null;
+                StopWatches.ImageProcessing.start();
 
-                // assert isn't reliable :-(
-                if (exposureTime == null) {
-                    // turn exposureTime into frame count
-                    exposureTime = 1L;
-                }
-                RunningTotal.ExposureNanos += exposureTime;
                 RunningTotal.Nframes += 1;
-
-                StopWatch setupWatch = new StopWatch();
-                mLiveScript.set_gExposureTime(exposureTime);
-                Log.e(Thread.currentThread().getName(), "<renderscript set_> time: " + NumToString.number(setupWatch.stop()) + " [ns]");
-
                 mCountAboveThresholdArray[0] = 0L;
                 mCountAboveThreshold.copyFrom(mCountAboveThresholdArray);
                 mLiveScript.set_gCountAboveThreshold(mCountAboveThreshold);
@@ -395,16 +407,15 @@ abstract public class ImageProcessor {
                     mImage.copyFrom(Wrapper.get8bitData());
                     mLiveScript.forEach_process8bitData(mImage);
                 }
-                else if (ImageWrapper.is16bitData()) {
+                else { // ImageWrapper.is16bitData()
                     mImage.copyFrom(Wrapper.get16bitData());
                     mLiveScript.forEach_process16bitData(mImage);
                 }
-                else {
-                    // TODO: error
-                }
 
-                //String filename = String.format(Locale.US,"%05d", mFileCount.getAndIncrement());
-                //filename += "_" + Long.toString(TimeManager.getElapsedNanos(imageWrapper.getTimestamp())) + ".data";
+                String filename2 = String.format(Locale.US,"%05d", 0);//mFileCount.getAndIncrement());
+                filename2 += "_" + Long.toString(TimeManager.getElapsedNanos(Wrapper.getTimestamp())) + ".data";
+                DataQueue.add(new OutputWrapper(filename2, Wrapper, 1L));
+
 
                 if (mEnableSignificance == ENABLED) {
                     if (GlobalSettings.DEBUG_SAVE_SIGNIFICANCE && RunningTotal.Nframes % 10 == 0) {
@@ -427,12 +438,11 @@ abstract public class ImageProcessor {
                         }
                     }
                 }
-                Log.e(Thread.currentThread().getName(), "<renderscript run()> time: " + NumToString.number(stopWatch.stop()) + " [ns]");
+                StopWatches.ImageProcessing.addTime( StopWatches.ImageProcessing.stop() );
                 mBacklog.decrementAndGet();
                 Log.e(Thread.currentThread().getName(), "Processor Backlog: " + NumToString.number(mBacklog.get()));
             }
         }
-        Log.e(Thread.currentThread().getName(), "<process(result, wrapper)> time: " + NumToString.number(stopWatch.stop()) + " [ns]");
 
         mBacklog.incrementAndGet();
         mHandler.post(new Processor(result, wrapper));
@@ -442,55 +452,74 @@ abstract public class ImageProcessor {
     /**
      * TODO: description, comments and logging
      */
-    static void runStatistics() {
+    static void runStatistics(String filename) {
         mBacklog.incrementAndGet();
 
-        mHandler.post(new Runnable() {
+        class RunStatistics implements Runnable {
+            private String mFilename;
+
+            private RunStatistics(String filename) {
+                mFilename = filename;
+            }
+
             @Override
             public void run() {
 
-                mLiveScript.forEach_getExposureValueSum(RunningTotal.ExposureValueSum);
-                mPostScript.set_gExposureValueSum(RunningTotal.ExposureValueSum);
+                StopWatches.Statistics.start();
 
-                mLiveScript.forEach_getExposureValue2Sum(RunningTotal.ExposureValue2Sum);
-                mPostScript.set_gExposureValue2Sum(RunningTotal.ExposureValue2Sum);
+                if (ImageWrapper.is8bitData()) {
+                    mPostScript.set_gIs8bit(1);
+                }
+                else {
+                    mPostScript.set_gIs8bit(0);
+                }
+
+                mLiveScript.forEach_getValueSum(RunningTotal.ValueSum);
+                mPostScript.set_gValueSum(RunningTotal.ValueSum);
+
+                mLiveScript.forEach_getValue2Sum(RunningTotal.Value2Sum);
+                mPostScript.set_gValue2Sum(RunningTotal.Value2Sum);
 
                 mAnomalousStdDevArray[0] = 0L;
                 mAnomalousStdDev.copyFrom(mAnomalousStdDevArray);
                 mPostScript.set_gAnomalousStdDev(mAnomalousStdDev);
 
                 mPostScript.set_gNframes(RunningTotal.Nframes);
-                mPostScript.set_gExposureSum(RunningTotal.ExposureNanos);
-                mPostScript.set_gMeanRate(Statistics.MeanRate);
-                mPostScript.set_gStdDevRate(Statistics.StdDevRate);
-                mPostScript.set_gStdErrRate(Statistics.StdErrRate);
+                mPostScript.set_gMean(Statistics.Mean);
+                mPostScript.set_gStdDev(Statistics.StdDev);
+                mPostScript.set_gStdErr(Statistics.StdErr);
 
-                mPostScript.forEach_getMeanRate(Statistics.MeanRate);
-                mPostScript.forEach_getStdDevRate(Statistics.StdDevRate);
-                mPostScript.forEach_getStdErrRate(Statistics.StdErrRate);
+                mPostScript.forEach_getMean(Statistics.Mean);
+                mPostScript.forEach_getStdDev(Statistics.StdDev);
+                mPostScript.forEach_getStdErr(Statistics.StdErr);
 
-                mLiveScript.set_gMeanRate(Statistics.MeanRate);
-                mLiveScript.set_gStdDevRate(Statistics.StdDevRate);
+                mLiveScript.set_gMean(Statistics.Mean);
+                mLiveScript.set_gStdDev(Statistics.StdDev);
 
                 mPostScript.forEach_getAnomalousStdDev(mAnomalousStdDev);
                 mAnomalousStdDev.copyTo(mAnomalousStdDevArray);
                 Log.e(Thread.currentThread().getName(), "________Anomalous Std Dev: "
-                + NumToString.number(mAnomalousStdDevArray[0]));
+                        + NumToString.number(mAnomalousStdDevArray[0]));
+
+                StopWatches.Statistics.addTime( StopWatches.Statistics.stop() );
 
                 if (GlobalSettings.DEBUG_SAVE_MEAN) {
-                    String filename = String.format(Locale.US, "%015d", TimeManager.getElapsedSystemNanos())
-                            + ".mean";
-                    DataQueue.add(new OutputWrapper(filename, Statistics.MeanRate, RunningTotal.Nframes));
+                    DataQueue.add(new OutputWrapper(mFilename + ".mean", Statistics.Mean, RunningTotal.Nframes));
                 }
                 if (GlobalSettings.DEBUG_SAVE_STDDEV) {
-                    String filename = String.format(Locale.US, "%015d", TimeManager.getElapsedSystemNanos())
-                            + ".stddev";
-                    DataQueue.add(new OutputWrapper(filename, Statistics.StdDevRate, RunningTotal.Nframes));
+                    DataQueue.add(new OutputWrapper(mFilename + ".stddev", Statistics.StdDev, RunningTotal.Nframes));
                 }
+
+                PrintAndSave.printMaxMin();
+
+                Log.e(Thread.currentThread().getName(), " \n" + StopWatches.getMeanString()
+                        + StopWatches.getLongestString() + StopWatches.getShortestString());
 
                 mBacklog.decrementAndGet();
             }
-        });
+        }
+
+        mHandler.post(new RunStatistics(filename));
     }
 
 }

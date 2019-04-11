@@ -22,6 +22,7 @@ import android.annotation.TargetApi;
 import android.os.Process;
 import android.renderscript.RenderScript;
 
+import sci.crayfis.shramp.battery.BatteryController;
 import sci.crayfis.shramp.camera2.CameraController;
 
 /**
@@ -35,23 +36,33 @@ public abstract class GlobalSettings {
 
     // TODO: description
     public static final Integer FPS_LOCK_N_FRAMES    = 0;
-    public static final Integer CALIBRATION_N_FRAMES = 1000;
-    public static final Integer DATARUN_N_FRAMES     = 0;
+    public static final Integer CALIBRATION_N_FRAMES = 0;
+    public static final Integer DATARUN_N_FRAMES     = 10;
 
     // TODO: description
     public static final Double  DUTY_THRESHOLD     = 0.98;
     public static final Integer FPS_ATTEMPT_LIMIT  = 0;
-    public static final Integer DATA_ATTEMPT_LIMIT = 0;//10;
+    public static final Integer DATA_ATTEMPT_LIMIT = 1;//10;
 
     // TODO: description
-    private static final Long FPS_30 =   33333333L;
-    private static final Long FPS_20 =   50000000L;
-    private static final Long FPS_15 =   66666666L;
-    private static final Long FPS_10 =  100000000L;
-    private static final Long FPS_05 =  200000000L;
-    private static final Long FPS_01 = 1000000000L;
-    public  static final Long DEFAULT_FRAME_EXPOSURE_NANOS = FPS_05;
-    public  static final Boolean CONSTANT_FPS = true;
+    public static final Long FPS_30 =   33333333L;
+    public static final Long FPS_20 =   50000000L;
+    public static final Long FPS_15 =   66666666L;
+    public static final Long FPS_10 =  100000000L;
+    public static final Long FPS_05 =  200000000L;
+    public static final Long FPS_01 = 1000000000L;
+    public static final Long DEFAULT_EXPOSURE_NANOS = FPS_20;
+    public static final Long DEFAULT_SLOW_FPS = FPS_05;
+    public static final Long DEFAULT_FAST_FPS = FPS_30;
+    public static final Long DEFAULT_WAIT_MS = FPS_05 / 1000000;
+    public static final Long DEFAULT_LONG_WAIT = 20 * 1000L;
+    public static final Boolean CONSTANT_FPS = true;
+
+    public static final Double TEMPERATURE_LOW    = 20.; // C
+    public static final Double TEMPERATURE_GOAL   = 30.; // C
+    public static final Double TEMPERATURE_HIGH   = 40.; // C
+    public static final Double OVER_TEMPERATURE   = 10.; // C
+    public static       Double TEMPERATURE_START;
 
     // TODO: description
     public static final Integer MAX_FRAMES_ABOVE_THRESHOLD = Math.min(
@@ -68,7 +79,7 @@ public abstract class GlobalSettings {
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // TODO: description
-    public static final Boolean DISABLE_RAW_OUTPUT      = false;
+    public static final Boolean DISABLE_RAW_OUTPUT      = true;
     public static final Boolean FORCE_CONTROL_MODE_AUTO = false;
 
     // Surface Use
@@ -115,11 +126,12 @@ public abstract class GlobalSettings {
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // TODO: description
-    public static final Boolean DEBUG_DISABLE_QUEUE      = false;
-    public static final Boolean DEBUG_DISABLE_PROCESSING = false;
-    public static final Boolean DEBUG_DISABLE_SAVING     = false;
-    public static final Boolean DEBUG_SAVE_SIGNIFICANCE  = false;
-    public static final Boolean DEBUG_SAVE_MEAN          = true;
-    public static final Boolean DEBUG_SAVE_STDDEV        = true;
+    public static final Boolean DEBUG_DISABLE_CALIBRATION = true;
+    public static final Boolean DEBUG_DISABLE_QUEUE       = false;
+    public static final Boolean DEBUG_DISABLE_PROCESSING  = false;
+    public static final Boolean DEBUG_DISABLE_SAVING      = false;
+    public static final Boolean DEBUG_SAVE_SIGNIFICANCE   = false;
+    public static final Boolean DEBUG_SAVE_MEAN           = false;
+    public static final Boolean DEBUG_SAVE_STDDEV         = false;
 
 }

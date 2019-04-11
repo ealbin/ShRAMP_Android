@@ -1,13 +1,11 @@
 package sci.crayfis.shramp.analysis;
 
 import android.annotation.TargetApi;
-import android.renderscript.Allocation;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
 import sci.crayfis.shramp.util.HeapMemory;
 import sci.crayfis.shramp.util.NumToString;
-import sci.crayfis.shramp.util.StorageMedia;
 
 /**
  * TODO: description, comments and logging
@@ -62,7 +60,7 @@ abstract public class PrintAndSave {
         double[] doubleData = new double[mNpixels];
 
         // TODO: THIS WONT WORK NOW
-        ImageProcessor.getExposureValueSum().copyTo(doubleData);
+        ImageProcessor.getValueSum().copyTo(doubleData);
         String[] values = new String[PEEK_SIZE];
         for (int i = 0; i < PEEK_SIZE; i++) {
             values[i] = NumToString.sci(doubleData[i]);
@@ -91,7 +89,7 @@ abstract public class PrintAndSave {
         double[] doubleData = new double[mNpixels];
 
         // TODO: THIS WONT WORK NOW
-        ImageProcessor.getExposureValue2Sum().copyTo(doubleData);
+        ImageProcessor.getValue2Sum().copyTo(doubleData);
         String[] values = new String[PEEK_SIZE];
         for (int i = 0; i < PEEK_SIZE; i++) {
             values[i] = NumToString.sci(doubleData[i]);
@@ -108,6 +106,53 @@ abstract public class PrintAndSave {
         System.gc();
     }
 
+    public static void printMaxMin() {
+        ImageProcessor.getMean().copyTo(mFloatData);
+        float meanMax = -1.f;
+        float meanMin = -1.f;
+        for (float val : mFloatData) {
+            if (meanMax < 0.f) {
+                meanMax = val;
+                meanMin = val;
+                continue;
+            }
+
+            if (val > meanMax) {
+                meanMax = val;
+            }
+
+            if (val < meanMin) {
+                meanMin = val;
+            }
+        }
+
+        ImageProcessor.getStdDev().copyTo(mFloatData);
+        float stdMax = -1.f;
+        float stdMin = -1.f;
+        for (float val : mFloatData) {
+            if (stdMax < 0.f) {
+                stdMax = val;
+                stdMin = val;
+                continue;
+            }
+
+            if (val > stdMax) {
+                stdMax = val;
+            }
+
+            if (val < stdMin) {
+                stdMin = val;
+            }
+        }
+
+        String out = " \n";
+        out += "\t" + "Mean Max: " + NumToString.number(meanMax) + "\n";
+        out += "\t" + "Std  Max: " + NumToString.number(stdMax) + "\n";
+        out += "\t" + "Mean Min: " + NumToString.number(meanMin) + "\n";
+        out += "\t" + "Std  Min: " + NumToString.number(stdMin) + "\n";
+        Log.e(Thread.currentThread().getName(), out);
+    }
+
 
     // printMeanAndErr...............................................................................
     /**
@@ -115,13 +160,13 @@ abstract public class PrintAndSave {
      */
     public static void printMeanAndErr() {
         
-        ImageProcessor.getMeanRate().copyTo(mFloatData);
+        ImageProcessor.getMean().copyTo(mFloatData);
         String[] mean = new String[PEEK_SIZE];
         for (int i = 0; i < PEEK_SIZE; i++) {
             mean[i] = NumToString.sci(mFloatData[i]);
         }
 
-        ImageProcessor.getStdErrRate().copyTo(mFloatData);
+        ImageProcessor.getStdErr().copyTo(mFloatData);
         String[] err = new String[PEEK_SIZE];
         for (int i = 0; i < PEEK_SIZE; i++) {
             err[i] = NumToString.sci(mFloatData[i]);
@@ -171,7 +216,7 @@ abstract public class PrintAndSave {
      */
     public static void printStdDev() {
 
-        ImageProcessor.getStdDevRate().copyTo(mFloatData);
+        ImageProcessor.getStdDev().copyTo(mFloatData);
         String[] values = new String[PEEK_SIZE];
         for (int i = 0; i < PEEK_SIZE; i++) {
             values[i] = NumToString.sci(mFloatData[i]);

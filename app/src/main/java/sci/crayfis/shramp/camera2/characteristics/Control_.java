@@ -41,6 +41,7 @@ import sci.crayfis.shramp.util.ArrayToList;
  * TODO: description, comments and logging
  */
 @TargetApi(21)
+@SuppressWarnings("unchecked")
 abstract class Control_ extends Color_ {
 
     // Private Class Constants

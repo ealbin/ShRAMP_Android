@@ -135,7 +135,7 @@ public final class ImageReaderListener implements ImageReader.OnImageAvailableLi
                 HeapMemory.logAvailableMiB();
 
                 try {
-                    LOCK.wait(3 * CaptureController.getTargetFrameNanos() / 1000 / 1000);
+                    LOCK.wait(GlobalSettings.DEFAULT_WAIT_MS);
                 } catch (InterruptedException e) {
                 }
                 System.gc();

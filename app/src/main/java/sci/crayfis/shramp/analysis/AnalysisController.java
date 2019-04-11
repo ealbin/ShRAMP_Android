@@ -60,13 +60,17 @@ public abstract class AnalysisController {
     // TODO: description
     private static RenderScript mRS;
 
-    // mShortType...................................................................................
+    // mUCharType...................................................................................
     // TODO: description
-    private static Type mCharType;
+    private static Type mUCharType;
 
-    // mShortType...................................................................................
+    // mUShortType..................................................................................
     // TODO: description
-    private static Type mShortType;
+    private static Type mUShortType;
+
+    // mUIntType....................................................................................
+    // TODO: description
+    private static Type mUIntType;
 
     // mFloatType...................................................................................
     // TODO: description
@@ -83,6 +87,8 @@ public abstract class AnalysisController {
     // mNpixels.....................................................................................
     // TODO: description
     private static int mNpixels;
+
+    private static boolean mNeedsCalibration;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -105,8 +111,9 @@ public abstract class AnalysisController {
         ImageProcessor.setLiveProcessor(new ScriptC_LiveProcessing(mRS));
         ImageProcessor.setPostProcessor(new ScriptC_PostProcessing(mRS));
 
-        Element charElement   = Element.U8(mRS);
-        Element shortElement  = Element.U16(mRS);
+        Element ucharElement  = Element.U8(mRS);
+        Element ushortElement = Element.U16(mRS);
+        Element uintElement   = Element.U32(mRS);
         Element floatElement  = Element.F32(mRS);
         Element doubleElement = Element.F64(mRS);
 
@@ -121,9 +128,10 @@ public abstract class AnalysisController {
         ImageWrapper.setNpixels(height, width);
         PrintAndSave.setNpixels(mNpixels);
 
-        mCharType   = new Type.Builder(mRS, charElement ).setX(width).setY(height).create();
-        mShortType  = new Type.Builder(mRS, shortElement).setX(width).setY(height).create();
-        mFloatType  = new Type.Builder(mRS, floatElement).setX(width).setY(height).create();
+        mUCharType  = new Type.Builder(mRS, ucharElement ).setX(width).setY(height).create();
+        mUShortType = new Type.Builder(mRS, ushortElement).setX(width).setY(height).create();
+        mUIntType   = new Type.Builder(mRS, uintElement  ).setX(width).setY(height).create();
+        mFloatType  = new Type.Builder(mRS, floatElement ).setX(width).setY(height).create();
         mDoubleType = new Type.Builder(mRS, doubleElement).setX(width).setY(height).create();
 
         mSimpleLongType = new Type.Builder(mRS, simpleLongElement).setX(1).setY(1).create();
@@ -133,12 +141,12 @@ public abstract class AnalysisController {
         switch (outputFormat) {
             case (ImageFormat.YUV_420_888): {
                 ImageWrapper.setAs8bitData();
-                ImageProcessor.setImageAllocation(newCharAllocation());
+                ImageProcessor.setImageAllocation(newUCharAllocation());
                 break;
             }
             case (ImageFormat.RAW_SENSOR): {
                 ImageWrapper.setAs16bitData();
-                ImageProcessor.setImageAllocation(newShortAllocation());
+                ImageProcessor.setImageAllocation(newUShortAllocation());
                 break;
             }
 
@@ -150,12 +158,20 @@ public abstract class AnalysisController {
         // Must happen after ImageWrapper is set up (above)
         OutputWrapper.configure();
 
+        // Check for existing calibrations
+        // if none, set need calibration flag
+        mNeedsCalibration = true;
         ImageProcessor.setStatistics(newFloatAllocation(), newFloatAllocation(), newFloatAllocation());
+
         ImageProcessor.setSignificanceAllocation(newFloatAllocation());
         ImageProcessor.setCountAboveThresholdAllocation(newSimpleLongAllocation());
         ImageProcessor.setAnomalousStdDevAllocation(newSimpleLongAllocation());
         ImageProcessor.disableSignificance();
         ImageProcessor.resetTotals();
+    }
+
+    public static boolean needsCalibration() {
+        return mNeedsCalibration;
     }
 
     // enableSignificance...........................................................................
@@ -230,25 +246,26 @@ public abstract class AnalysisController {
     /**
      * TODO: description, comments and logging
      */
-    public static void runStatistics() {
+    public static void runStatistics(String filename) {
         synchronized (WAIT) {
 
             DataQueue.purge();
             while (!DataQueue.isEmpty() || ImageProcessor.isBusy()) {
                 try {
-                    WAIT.wait(3 * CaptureController.getTargetFrameNanos() / 1000 / 1000);
+                    WAIT.wait(GlobalSettings.DEFAULT_WAIT_MS);
                     Log.e(Thread.currentThread().getName(), "Waiting for queue to empty/processor to finish");
+                    DataQueue.purge();
                 }
                 catch (InterruptedException e) {
                     // TODO: error
                 }
             }
 
-            ImageProcessor.runStatistics();
+            ImageProcessor.runStatistics(filename);
 
             while (ImageProcessor.isBusy()) {
                 try {
-                    WAIT.wait(3 * CaptureController.getTargetFrameNanos() / 1000 / 1000);
+                    WAIT.wait(GlobalSettings.DEFAULT_WAIT_MS);
                     Log.e(Thread.currentThread().getName(), "Waiting for processor to finish with statistics");
                 }
                 catch (InterruptedException e) {
@@ -261,24 +278,33 @@ public abstract class AnalysisController {
     // Package-private Class Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    // newCharAllocation............................................................................
+    // newUCharAllocation...........................................................................
     /**
      * TODO: description, comments and logging
      * @return bla
      */
     @NonNull
-    static Allocation newCharAllocation() {
-        return Allocation.createTyped(mRS, mCharType, Allocation.USAGE_SCRIPT);
+    static Allocation newUCharAllocation() {
+        return Allocation.createTyped(mRS, mUCharType, Allocation.USAGE_SCRIPT);
     }
 
-    // newShortAllocation...........................................................................
+    // newUShortAllocation..........................................................................
     /**
      * TODO: description, comments and logging
      * @return bla
      */
     @NonNull
-    static Allocation newShortAllocation() {
-        return Allocation.createTyped(mRS, mShortType, Allocation.USAGE_SCRIPT);
+    static Allocation newUShortAllocation() {
+        return Allocation.createTyped(mRS, mUShortType, Allocation.USAGE_SCRIPT);
+    }
+
+    // newUIntAllocation............................................................................
+    /**
+     * TODO: description, comments and logging
+     * @return bla
+     */
+    static Allocation newUIntAllocation() {
+        return Allocation.createTyped(mRS, mUIntType, Allocation.USAGE_SCRIPT);
     }
 
     // newFloatAllocation...........................................................................

@@ -83,11 +83,12 @@ abstract public class StorageMedia {
 
     private static final AtomicInteger mBacklog = new AtomicInteger();
 
-    private static String mTransmittablePath;
-
-    private static String mWorkInProgressPath;
-
-    private static String mCurrentPath;
+    abstract private static class Path {
+        static String Transmittable;
+        static String InProgress;
+        static String Calibrations;
+        static String WorkingDirectory;
+    }
 
     /**
      * Check if ShRAMP data directory exists, if not initialize it
@@ -96,9 +97,9 @@ abstract public class StorageMedia {
     public static void setUpShrampDirectory() {
         // TODO: consider using SD-card memory in addition to onboard memory
         createDirectory(null);
-        mTransmittablePath  = createDirectory("Transmittable");
-        mWorkInProgressPath = createDirectory("WorkInProgress");
-        mCurrentPath = mWorkInProgressPath;
+        Path.Transmittable  = createDirectory("Transmittable");
+        Path.InProgress = createDirectory("WorkInProgress");
+        Path.Calibrations = createDirectory("Calibrations");
     }
 
     /**
@@ -172,19 +173,20 @@ abstract public class StorageMedia {
             return;
         }
 
-        try {
-            FileUtils.cleanDirectory(directoryToClean);
-        }
-        catch (IOException e) {
+        //try {
+            // TODO: doesn't exist in S6 or hwaiwai
+        //    FileUtils.cleanDirectory(directoryToClean);
+        //}
+        //catch (IOException e) {
             // TODO: failed to delete
-            Log.e(Thread.currentThread().getName(),"ERROR: IO Exception");
-        }
+        //    Log.e(Thread.currentThread().getName(),"ERROR: IO Exception");
+        //}
     }
 
     // TODO: error if cannot create
     public static void newWorkInProgress() {
         TimeManager.resetStartDate();
-        mCurrentPath = createDirectory(TimeManager.getStartDate());
+        Path.WorkingDirectory = createDirectory(Path.InProgress + "/" + TimeManager.getStartDate());
     }
 
     public static boolean isBusy() {
@@ -195,9 +197,18 @@ abstract public class StorageMedia {
         return mBacklog.get();
     }
 
-    public static void write(@NonNull OutputWrapper wrapper) {
+    public static void writeWorkingDirectory(@NonNull OutputWrapper wrapper, @Nullable String subpath) {
         mBacklog.incrementAndGet();
-        mHandler.post(new DataSaver(mCurrentPath, wrapper));
+        String path = Path.InProgress;//Path.WorkingDirectory;
+        if (subpath != null) {
+            path = createDirectory(Path.WorkingDirectory + "/" + subpath);
+        }
+        mHandler.post(new DataSaver(path, wrapper));
+    }
+
+    public static void writeCalibration(@NonNull OutputWrapper wrapper) {
+        mBacklog.incrementAndGet();
+        mHandler.post(new DataSaver(Path.Calibrations, wrapper));
     }
 
     /**

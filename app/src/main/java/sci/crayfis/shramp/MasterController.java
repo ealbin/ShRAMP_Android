@@ -112,6 +112,7 @@ public final class MasterController extends Activity {
 
         Log.e(Thread.currentThread().getName(), "Battery Info:");
         BatteryController.initialize(mInstance);
+        GlobalSettings.TEMPERATURE_START = BatteryController.getCurrentTemperature();
         Log.e(Thread.currentThread().getName(), " \n" + BatteryController.getString() + " \n");
 
         // Get system camera manager
@@ -162,8 +163,12 @@ public final class MasterController extends Activity {
 
         Log.e(Thread.currentThread().getName(), ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
         HeapMemory.logAvailableMiB();
+
         CaptureController.startCaptureSession();
     }
+
+
+
 
     // quitSafely...................................................................................
     /**

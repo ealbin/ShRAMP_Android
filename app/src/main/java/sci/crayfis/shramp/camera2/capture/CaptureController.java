@@ -30,8 +30,6 @@ import android.util.Log;
 import android.util.Range;
 import android.view.Surface;
 
-import org.jetbrains.annotations.Contract;
-
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -40,6 +38,7 @@ import sci.crayfis.shramp.GlobalSettings;
 import sci.crayfis.shramp.analysis.AnalysisController;
 import sci.crayfis.shramp.analysis.DataQueue;
 import sci.crayfis.shramp.analysis.PrintAndSave;
+import sci.crayfis.shramp.battery.BatteryController;
 import sci.crayfis.shramp.camera2.CameraController;
 import sci.crayfis.shramp.camera2.requests.RequestMaker;
 import sci.crayfis.shramp.camera2.util.Parameter;
@@ -61,7 +60,15 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
 
     // Mode.........................................................................................
     // TODO: description
-    private enum Mode {FPS_LOCK, CALIBRATION, DATA}
+    private enum Mode {
+        WARMUP,
+        COOLDOWN,
+        CALIBRATION_COLD_FAST,
+        CALIBRATION_COLD_SLOW,
+        CALIBRATION_HOT_FAST,
+        CALIBRATION_HOT_SLOW,
+        DATA
+    }
 
     // THREAD_NAME..................................................................................
     // TODO: description
@@ -83,9 +90,11 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
     // TODO: description
     private static int mFpsLockAttempts;
 
-    // mMode........................................................................................
+    // mRunMode........................................................................................
     // TODO: description
-    private static Mode mMode;
+    private static Mode mRunMode;
+
+    private static Mode mNextMode;
 
     // mDataRunAttempts.............................................................................
     // TODO: description
@@ -96,15 +105,17 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
     abstract private static class mTarget {
 
         // TODO: description
-        static long FrameExposureNanos;
-        static int  TotalFrames;
+        static long ExposureNanos;
+        static int FrameLimit;
+        static double HighTemperatureLimit;
 
         /**
          * TODO: description, comments and logging
          */
         static void reset() {
-            FrameExposureNanos = GlobalSettings.DEFAULT_FRAME_EXPOSURE_NANOS;
-            TotalFrames        = GlobalSettings.FPS_LOCK_N_FRAMES;
+            ExposureNanos = GlobalSettings.DEFAULT_EXPOSURE_NANOS;
+            FrameLimit = GlobalSettings.FPS_LOCK_N_FRAMES;
+            HighTemperatureLimit = GlobalSettings.TEMPERATURE_HIGH;
         }
     }
 
@@ -138,7 +149,7 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
          */
         static void renewSession() {
             captureRequest = buildCaptureRequest();
-            captureStream  = new CaptureStream(mTarget.TotalFrames);
+            captureStream  = new CaptureStream(mTarget.FrameLimit, mTarget.HighTemperatureLimit);
             state          = State.OPEN;
         }
 
@@ -253,20 +264,66 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
      */
     public static void startCaptureSession() {
         Log.e(Thread.currentThread().getName(), "CaptureController startCaptureSession");
-        mMode = Mode.FPS_LOCK;
+
         mCurrentSession.reset();
         AnalysisController.resetRunningTotals();
 
+        // ask if calibration needed
+        // if not, start data
+        if (AnalysisController.needsCalibration() && !GlobalSettings.DEBUG_DISABLE_CALIBRATION) {
+            mRunMode = Mode.CALIBRATION_COLD_FAST;
+            mTarget.FrameLimit = GlobalSettings.CALIBRATION_N_FRAMES;
+            mTarget.ExposureNanos = GlobalSettings.DEFAULT_FAST_FPS;
+        }
+        else {
+            // check temperature and decide if warm up, cool down, or data
+            mRunMode = Mode.DATA;
+            mTarget.FrameLimit = GlobalSettings.DATARUN_N_FRAMES;
+            mTarget.ExposureNanos = GlobalSettings.DEFAULT_EXPOSURE_NANOS;
+
+            // for now,
+            //MasterController.quitSafely();
+        }
         // execution continues in onConfigured
         CameraController.createCaptureSession(mCurrentSession.surfaceList, mInstance, mHandler);
     }
 
-    // pauseCaptureSession..........................................................................
+    // onConfigured.................................................................................
     /**
-     * TODO: description, comments and logging
+     * This method is called when the camera device has finished configuring itself,
+     * and the session can start processing capture requests.
+     * (Required)
+     *  TODO: documentation, comments and logging
+     * @param session bla
      */
-    static void pauseCaptureSession() {
-        mCurrentSession.pause();
+    @Override
+    public void onConfigured(@NonNull CameraCaptureSession session) {
+        //super.onConfigured(session); is abstract
+        Log.e(Thread.currentThread().getName(), "CaptureController onConfigured");
+        mCurrentSession.newSession(session);
+        restartCaptureSession();
+    }
+
+    static void coolDown() {
+        synchronized (mInstance) {
+            Double temperature = BatteryController.getCurrentTemperature();
+            if (temperature == null) {
+                Log.e(Thread.currentThread().getName(), "Temperature is unknown, shutting down for safety");
+                MasterController.quitSafely();
+                return;
+            }
+
+            while (temperature > mTarget.HighTemperatureLimit) {
+                try {
+                    Log.e(Thread.currentThread().getName(), "Cooling down: " + NumToString.number(temperature)
+                    + " > " + NumToString.number(mTarget.HighTemperatureLimit) + " [Celsius]");
+                    mInstance.wait(GlobalSettings.DEFAULT_LONG_WAIT);
+                }
+                catch (InterruptedException e) {
+                    // TODO: err
+                }
+            }
+        }
     }
 
     // restartCaptureSession........................................................................
@@ -277,8 +334,8 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
         synchronized (mInstance) {
             while (!mCurrentSession.restart()) {
                 try {
-                    mInstance.wait(3 * mTarget.FrameExposureNanos / 1000 / 1000);
                     Log.e(Thread.currentThread().getName(), "Waiting to restart capture session");
+                    mInstance.wait(GlobalSettings.DEFAULT_WAIT_MS);
                 }
                 catch (InterruptedException e) {
                     // TODO: error
@@ -289,25 +346,23 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
         Log.e(Thread.currentThread().getName(), "STARTING CAPTURE - STARTING CAPTURE - STARTING CAPTURE - STARTING CAPTURE - STARTING CAPTURE - STARTING CAPTURE");
     }
 
+    // pauseCaptureSession..........................................................................
+    /**
+     * TODO: description, comments and logging
+     */
+    static void pauseCaptureSession() {
+        mCurrentSession.pause();
+    }
+
     public static void resetCaptureSession() {
         pauseCaptureSession();
     }
 
     static void sessionReset() {
         AnalysisController.resetRunningTotals();
-        AnalysisController.setSignificanceThreshold(mTarget.TotalFrames);
+        AnalysisController.setSignificanceThreshold(mTarget.FrameLimit);
         mCurrentSession.renewSession();
         restartCaptureSession();
-    }
-
-    // getTargetFrameNanos..........................................................................
-    /**
-     * TODO: description, comments and logging
-     * @return bla
-     */
-    @Contract(pure = true)
-    public static long getTargetFrameNanos() {
-        return mTarget.FrameExposureNanos;
     }
 
     // Package-private Class Methods
@@ -324,67 +379,104 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
 
         String string = " \n";
         string += "Session performance: \n";
-        string += "\t Average FPS:  " + NumToString.decimal(averageFps) + " [frames / sec] \n";
-        string += "\t Average Duty: " + NumToString.decimal(averageDuty * 100.) + " % \n";
+        string += "\t Session Average FPS:  " + NumToString.decimal(averageFps) + " [frames / sec] \n";
+        string += "\t Session Average Duty: " + NumToString.decimal(averageDuty * 100.) + " % \n";
         Log.e(Thread.currentThread().getName(), string);
 
         if (!GlobalSettings.CONSTANT_FPS) {
-            mTarget.FrameExposureNanos = (long) (Math.floor(1e9 / averageFps));
+            mTarget.ExposureNanos = (long) (Math.floor(1e9 / averageFps));
         }
         Log.e(Thread.currentThread().getName(), "Start next session with frame rate target: "
-                + NumToString.decimal(1. / ( mTarget.FrameExposureNanos * 1e-9) )
+                + NumToString.decimal(1. / ( mTarget.ExposureNanos * 1e-9) )
                 + " [frames / sec]");
 
-        switch (mMode) {
+        switch (mRunMode) {
 
-            case FPS_LOCK: {
-                mFpsLockAttempts += 1;
+            case CALIBRATION_COLD_FAST: {
+                AnalysisController.runStatistics("cold_fast");
+                PrintAndSave.printMeanAndErr();
 
-                CaptureRequest.Builder builder = CameraController.getCaptureRequestBuilder();
-                assert builder != null;
-
-                Integer mode = builder.get(CaptureRequest.CONTROL_AE_MODE);
-                assert mode != null;
-
-                if (averageDuty >= GlobalSettings.DUTY_THRESHOLD
-                                    || mFpsLockAttempts >= GlobalSettings.FPS_ATTEMPT_LIMIT
-                                    || mode == CameraMetadata.CONTROL_AE_MODE_ON) {
-
-                    if (GlobalSettings.CALIBRATION_N_FRAMES > 0) {
-                        mMode = Mode.CALIBRATION;
-                        mTarget.TotalFrames = GlobalSettings.CALIBRATION_N_FRAMES;
-                    }
-                    else if (GlobalSettings.DATARUN_N_FRAMES > 0 && GlobalSettings.DATA_ATTEMPT_LIMIT > 0){
-                        mMode = Mode.DATA;
-                        mTarget.TotalFrames = GlobalSettings.DATARUN_N_FRAMES;
-                    }
-                    else {
-                        reset();
-                        MasterController.quitSafely();
-                        return;
-                    }
+                if (false) {
+                    MasterController.quitSafely();
+                    return;
                 }
+
+                mRunMode = Mode.CALIBRATION_COLD_SLOW;
+                mTarget.ExposureNanos = GlobalSettings.DEFAULT_SLOW_FPS;
                 sessionReset();
                 break;
             }
 
-            case CALIBRATION: {
-                Log.e(Thread.currentThread().getName(), "FINISHED WITH CALIBRATION");
-
-                AnalysisController.runStatistics();
+            case CALIBRATION_COLD_SLOW: {
+                AnalysisController.runStatistics("cold_slow");
                 PrintAndSave.printMeanAndErr();
-                AnalysisController.enableSignificance();
 
-                if (GlobalSettings.DATARUN_N_FRAMES > 0 && GlobalSettings.DATA_ATTEMPT_LIMIT > 0) {
-                    mMode = Mode.DATA;
-                    mTarget.TotalFrames = GlobalSettings.DATARUN_N_FRAMES;
-                    sessionReset();
-                }
-                else {
-                    reset();
+                mRunMode = Mode.WARMUP;
+                mNextMode = Mode.CALIBRATION_HOT_FAST;
+                mTarget.ExposureNanos = GlobalSettings.DEFAULT_FAST_FPS;
+                mTarget.HighTemperatureLimit = GlobalSettings.TEMPERATURE_HIGH;
+                sessionReset();
+                break;
+            }
+
+            case WARMUP: {
+                if (mNextMode == null) {
+                    Log.e(Thread.currentThread().getName(), "Crap, I don't know what to do now, quitting");
                     MasterController.quitSafely();
                     return;
                 }
+
+                Double temperature = BatteryController.getCurrentTemperature();
+                if (temperature == null) {
+                    Log.e(Thread.currentThread().getName(), "Temperature is unknown, shutting down for safety");
+                    MasterController.quitSafely();
+                    return;
+                }
+
+                if (temperature < mTarget.HighTemperatureLimit) {
+                    sessionReset();
+                    return;
+                }
+
+                switch (mNextMode) {
+                    case CALIBRATION_HOT_FAST: {
+                        mRunMode  = Mode.CALIBRATION_HOT_FAST;
+                        mNextMode = null;
+                        mTarget.ExposureNanos = GlobalSettings.DEFAULT_FAST_FPS;
+                        mTarget.HighTemperatureLimit = temperature + GlobalSettings.OVER_TEMPERATURE;
+                        sessionReset();
+                        break;
+                    }
+                    // TODO: Data
+                }
+                break;
+            }
+
+            case CALIBRATION_HOT_FAST: {
+                AnalysisController.runStatistics("hot_fast");
+                PrintAndSave.printMeanAndErr();
+
+                mRunMode = Mode.CALIBRATION_HOT_SLOW;
+                mTarget.ExposureNanos = GlobalSettings.DEFAULT_SLOW_FPS;
+                sessionReset();
+                break;
+            }
+
+            case CALIBRATION_HOT_SLOW: {
+                AnalysisController.runStatistics("hot_slow");
+                PrintAndSave.printMeanAndErr();
+
+                mRunMode = Mode.COOLDOWN;
+                coolDown();
+
+                // AnalysisController.quality cut? filter pixels? whatever we'll call it
+                // then take data
+                mRunMode = Mode.DATA;
+                mTarget.ExposureNanos = GlobalSettings.DEFAULT_EXPOSURE_NANOS;
+                //sessionReset();
+
+                // quit for now
+                MasterController.quitSafely();
                 break;
             }
 
@@ -402,6 +494,55 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
             }
         }
     }
+
+
+            /*
+
+                mFpsLockAttempts += 1;
+
+                CaptureRequest.Builder builder = CameraController.getCaptureRequestBuilder();
+                assert builder != null;
+
+                Integer mode = builder.get(CaptureRequest.CONTROL_AE_MODE);
+                assert mode != null;
+
+                if (averageDuty >= GlobalSettings.DUTY_THRESHOLD
+                                    || mFpsLockAttempts >= GlobalSettings.FPS_ATTEMPT_LIMIT
+                                    || mode == CameraMetadata.CONTROL_AE_MODE_ON) {
+
+                    if (GlobalSettings.CALIBRATION_N_FRAMES > 0) {
+                        mRunMode = Mode.CALIBRATION;
+                        mTarget.FrameLimit = GlobalSettings.CALIBRATION_N_FRAMES;
+                    }
+                    else if (GlobalSettings.DATARUN_N_FRAMES > 0 && GlobalSettings.DATA_ATTEMPT_LIMIT > 0){
+                        mRunMode = Mode.DATA;
+                        mTarget.FrameLimit = GlobalSettings.DATARUN_N_FRAMES;
+                    }
+                    else {
+                        reset();
+                        MasterController.quitSafely();
+                        return;
+                    }
+                }
+                sessionReset();
+             */
+
+                /*
+                AnalysisController.enableSignificance();
+
+                if (GlobalSettings.DATARUN_N_FRAMES > 0 && GlobalSettings.DATA_ATTEMPT_LIMIT > 0) {
+                    mRunMode = Mode.DATA;
+                    mTarget.FrameLimit = GlobalSettings.DATARUN_N_FRAMES;
+                    sessionReset();
+                }
+                else {
+                    reset();
+                    MasterController.quitSafely();
+                    return;
+                }
+                break;
+            }*/
+
 
     // Private Class Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -431,8 +572,8 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
             builder.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, getAeTargetFpsRange());
         }
         else {
-            builder.set(CaptureRequest.SENSOR_FRAME_DURATION, mTarget.FrameExposureNanos);
-            builder.set(CaptureRequest.SENSOR_EXPOSURE_TIME,  mTarget.FrameExposureNanos);
+            builder.set(CaptureRequest.SENSOR_FRAME_DURATION, mTarget.ExposureNanos);
+            builder.set(CaptureRequest.SENSOR_EXPOSURE_TIME,  mTarget.ExposureNanos);
         }
         CameraController.setCaptureRequestBuilder(builder);
         CameraController.writeFPS();
@@ -465,7 +606,7 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
         Range<Integer>[] ranges = property.getValue();
         assert ranges != null;
 
-        int target = (int) Math.round(1e9 / mTarget.FrameExposureNanos);
+        int target = (int) Math.round(1e9 / mTarget.ExposureNanos);
         Range<Integer> closest = null;
         for (Range<Integer> range : ranges) {
             if (closest == null) {
@@ -503,21 +644,6 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
     // Public Overriding Instance Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    // onConfigured.................................................................................
-    /**
-     * This method is called when the camera device has finished configuring itself,
-     * and the session can start processing capture requests.
-     * (Required)
-     *  TODO: documentation, comments and logging
-     * @param session bla
-     */
-    @Override
-    public void onConfigured(@NonNull CameraCaptureSession session) {
-        //super.onConfigured(session); is abstract
-        Log.e(Thread.currentThread().getName(), "CaptureController onConfigured");
-        mCurrentSession.newSession(session);
-        restartCaptureSession();
-    }
 
     // onClosed.....................................................................................
     /**

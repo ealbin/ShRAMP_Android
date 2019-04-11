@@ -28,6 +28,7 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.Surface;
 
+import sci.crayfis.shramp.GlobalSettings;
 import sci.crayfis.shramp.analysis.AnalysisController;
 import sci.crayfis.shramp.analysis.DataQueue;
 import sci.crayfis.shramp.battery.BatteryController;
@@ -89,12 +90,84 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
 
 
             if (FrameCount >= FrameLimit) {
+                Log.e(Thread.currentThread().getName(), "Frame count met, ending capture");
                 mState = State.FINISHED;
                 CaptureController.pauseCaptureSession();
             }
         }
     }
     private final mFrame mFrame = new mFrame();
+
+    class mTemperature {
+        Double First;
+        Double Last;
+        Double Max;
+        Double Min;
+        Double Sum;
+        Long   Count;
+        Double Limit;
+
+        void logTemperature() {
+            Last = BatteryController.getCurrentTemperature();
+            if (Last == null) {
+                return;
+            }
+
+            if (First == null) {
+                First = Last;
+                Max   = Last;
+                Min   = Last;
+                Sum   = 0.;
+                Count = 0L;
+            }
+
+            if (Max < Last) {
+                Max = Last;
+            }
+            if (Min > Last) {
+                Min = Last;
+            }
+
+            Sum   += Last;
+            Count += 1;
+
+            if (Last >= Limit) {
+                Log.e(Thread.currentThread().getName(), "Temperature limit met, ending capture");
+                mState = State.FINISHED;
+                CaptureController.pauseCaptureSession();
+            }
+        }
+
+        void setLimit(double temperatureLimit) {
+            Limit = temperatureLimit;
+        }
+
+        Double getMean() {
+            if (Sum == null) {
+                return null;
+            }
+            return Sum / (double) Count;
+        }
+
+        String getLastString() {
+            if (Last == null) {
+                return null;
+            }
+            return NumToString.number(Last) + " [Celsius]";
+        }
+
+        String getString() {
+            String out = " \n";
+            out += "Temperature [Celsius] \n";
+            out += "\t" + "Start: " + NumToString.number(First) + "\n";
+            out += "\t" + "Last:  " + NumToString.number(Last) + "\n";
+            out += "\t" + "Low:   " + NumToString.number(Min) + "\n";
+            out += "\t" + "High:  " + NumToString.number(Max) + "\n";
+            out += "\t" + "Mean:  " + NumToString.number(getMean()) + "\n";
+            return out;
+        }
+    }
+    private final mTemperature mTemperature = new mTemperature();
 
     // mTimestamp...................................................................................
     // TODO: description
@@ -126,6 +199,45 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
     }
     private final mTimestamp mTimestamp = new mTimestamp();
 
+    class mDeadtime {
+        long Sum = 0L;
+        long Min = -1L;
+        long Max = -1L;
+        long Count = 0;
+
+        void add(long deadtime) {
+            if (Min == -1L) {
+                Min = deadtime;
+            }
+            if (Max == -1L) {
+                Max = deadtime;
+            }
+            if (Min > deadtime) {
+                Min = deadtime;
+            }
+            if (Max < deadtime) {
+                Max = deadtime;
+            }
+            Sum   += deadtime;
+            Count += 1;
+        }
+
+        double getMean() {
+            return Sum / (double) Count;
+        }
+
+        String getString() {
+            String out = " \n";
+            out += "Deadtime [ns] \n";
+            out += "\t" + "Min:   " + NumToString.number(Min) + "\n";
+            out += "\t" + "Max:   " + NumToString.number(Max) + "\n";
+            out += "\t" + "Total: " + NumToString.number(Sum) + "\n";
+            out += "\t" + "Mean:  " + NumToString.number(getMean()) + "\n";
+            return out;
+        }
+    }
+    private final mDeadtime mDeadtime = new mDeadtime();
+
     // mExposure....................................................................................
     // TODO: description
     class mExposure {
@@ -133,6 +245,9 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
         // TODO: description
         long Total = 0L;
         long Last  = 0L;
+        long Min   = -1L;
+        long Max   = -1L;
+        long Count = 0;
 
         // add......................................................................................
         /**
@@ -152,6 +267,33 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
                 Last = exposure;
             }
             Total += Last;
+            Count += 1;
+
+            if (Count == 1) {
+                Min = Last;
+                Max = Last;
+            }
+
+            if (Min > Last) {
+                Min = Last;
+            }
+            if (Max < Last) {
+                Max = Last;
+            }
+        }
+
+        double getMean() {
+            return Total / (double) Count;
+        }
+
+        String getString() {
+            String out = " \n";
+            out += "Exposure [ns] \n";
+            out += "\t" + "Min:   " + NumToString.number(Min) + "\n";
+            out += "\t" + "Max:   " + NumToString.number(Max) + "\n";
+            out += "\t" + "Total: " + NumToString.number(Total) + "\n";
+            out += "\t" + "Mean:  " + NumToString.number(getMean()) + "\n";
+            return out;
         }
     }
     private final mExposure mExposure = new mExposure();
@@ -176,10 +318,11 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
      * TODO: description, comments and logging
      * @param frameLimit bla
      */
-    CaptureStream(int frameLimit) {
+    CaptureStream(int frameLimit, double temperatureLimit) {
         this();
         mState = State.ACTIVE;
         mFrame.setLimit(frameLimit);
+        mTemperature.setLimit(temperatureLimit);
         Log.e(Thread.currentThread().getName(), "captureStream captureStream frameLimit: " + Integer.toString(frameLimit));
     }
 
@@ -215,21 +358,36 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
 
         // assert isn't reliable :-(
         if (duration == null) {
-            // turn duration into frame count
-            duration = 1L;
+            duration = -1L;
         }
-        Log.e(Thread.currentThread().getName(), "Frame duration: " + Long.toString(duration)
-                + ",  Exposure: " + Long.toString(mExposure.Last));
-
 
         double fps      = 1. / (mTimestamp.Elapsed * 1e-9);
         double duty     = 100. * mExposure.Last / (double) duration;
         long   deadTime = mTimestamp.Elapsed - duration;
 
-        Log.e(Thread.currentThread().getName(), "Capture FPS: " + NumToString.decimal(fps)
-                + ", Duty: " + NumToString.decimal(duty) + "%"
-                + ", Dead time: "    + NumToString.number(deadTime)   + " [ns]");
+        mDeadtime.add(deadTime);
 
+        Log.e(Thread.currentThread().getName(), "Frame FPS: " + NumToString.decimal(1. / (duration * 1e-9))
+                + ", Frame Exposure: " + Long.toString(mExposure.Last) + " [ns]"
+                + ", Frame Duty: " + NumToString.decimal(duty) + "%"
+                + ", Frame Dead time: " + NumToString.number(deadTime) + " [ns]");
+
+        String tempString = mTemperature.getLastString();
+        if (tempString == null) {
+            tempString = "UNAVAILABLE";
+        }
+
+        Double power = BatteryController.getInstantaneousPower();
+        String powerString;
+        if (power == null) {
+            powerString = "UNAVAILABLE";
+        }
+        else {
+            powerString = NumToString.number(power) + " [mW]";
+        }
+
+        Log.e(Thread.currentThread().getName(), "Inter-frame FPS: " + NumToString.decimal(fps)
+                + "Frame Temperature: " + tempString + ", Power: " + powerString);
     }
 
     // Public Overriding Methods
@@ -249,15 +407,13 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
                                     @NonNull CaptureRequest request,
                                     @NonNull CaptureResult partialResult) {
         super.onCaptureProgressed(session, request, partialResult);
-        StopWatch stopWatch = new StopWatch();
         progressedNotification(partialResult);
         if (HeapMemory.isMemoryLow()) {
-            Log.e("DANGER LOW MEMORY", "DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER DANGER");
+            Log.e("DANGER LOW MEMORY", "REQUESTING PAUSE");
             HeapMemory.logAvailableMiB();
             mState = State.PAUSED;
             CaptureController.pauseCaptureSession();
         }
-        Log.e(Thread.currentThread().getName(), "<onCaptureProgressed()> time: " + NumToString.number(stopWatch.stop()) + " [ns]");
     }
 
     // onCaptureCompleted...........................................................................
@@ -274,7 +430,6 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
                                    @NonNull CaptureRequest request,
                                    @NonNull TotalCaptureResult result) {
         super.onCaptureCompleted(session, request, result);
-        StopWatch stopWatch = new StopWatch();
 
         Long time = result.get(CaptureResult.SENSOR_TIMESTAMP);
         assert time != null;
@@ -283,30 +438,10 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
         DataQueue.add(result);
         mTimestamp.add(result);
         mExposure.add(result);
-        completedNotification(result);
+        mTemperature.logTemperature();
         mFrame.raiseFrameCount();
-        Log.e(Thread.currentThread().getName(), "<onCaptureCompleted()> time: " + NumToString.number(stopWatch.stop()) + " [ns]");
 
-        Double temperature = BatteryController.getCurrentTemperature();
-        String tempString;
-        if (temperature == null) {
-            tempString = "UNAVAILABLE";
-        }
-        else {
-            tempString = NumToString.number(temperature) + " [Celsius]";
-        }
-
-        Double power = BatteryController.getInstantaneousPower();
-        String powerString;
-        if (power == null) {
-            powerString = "UNAVAILABLE";
-        }
-        else {
-            powerString = NumToString.number(power) + " [mW]";
-        }
-
-        Log.e(Thread.currentThread().getName(), "________(frame) Temperature: " + tempString);
-        Log.e(Thread.currentThread().getName(), "________Power:       " + powerString);
+        completedNotification(result);
     }
 
     // onCaptureSequenceCompleted...................................................................
@@ -324,38 +459,43 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
                                            int sequenceId,
                                            long frameNumber) {
         super.onCaptureSequenceCompleted(session, sequenceId, frameNumber);
-        StopWatch stopWatch = new StopWatch();
 
         if (mState == State.PAUSED) {
-            Log.e(Thread.currentThread().getName(), "captureStream *** pause *** pause *** pause *** pause *** pause *** pause *** pause *** pause *** pause *** pause *** pause *** pause");
+            Log.e(Thread.currentThread().getName(), "*** Capture Stream has Paused ***");
             CaptureController.restartCaptureSession();
-            Log.e(Thread.currentThread().getName(), "<onCaptureSequenceCompleted()> time: " + NumToString.number(stopWatch.stop()) + " [ns]");
             return;
         }
         else {
-            Log.e(Thread.currentThread().getName(), "captureStream onCaptureSequenceCompleted, N Frames = " + Integer.toString(mFrame.FrameCount));
+            Log.e(Thread.currentThread().getName(), "Capture Sequence Completed, N Frames = " + Integer.toString(mFrame.FrameCount));
 
             long totalElapsed = mTimestamp.Last - mTimestamp.First;
             double averageFps = mFrame.FrameCount / (totalElapsed * 1e-9);
             double averageDuty = mExposure.Total/ (double) totalElapsed;
 
-            Log.e(Thread.currentThread().getName(), "<onCaptureSequenceCompleted()> time: " + NumToString.number(stopWatch.stop()) + " [ns]");
-
             DataQueue.purge();
             synchronized (this) {
                 while (!DataQueue.isEmpty() || AnalysisController.isBusy() || StorageMedia.isBusy()) {
                     try {
-                        this.wait(5 * CaptureController.getTargetFrameNanos() / 1000 / 1000);
-                        Log.e(Thread.currentThread().getName(), "Waiting for queue: "
-                                + Boolean.toString(!DataQueue.isEmpty()) + ", controller: "
-                                + Boolean.toString(AnalysisController.isBusy()) + ", and media: "
-                                + Boolean.toString(StorageMedia.isBusy()) + " to finish");
+                        String waitingOn = "";
+                        if (!DataQueue.isEmpty()) {
+                            waitingOn += " Data Queue is not empty";
+                        }
+                        if (AnalysisController.isBusy()) {
+                            waitingOn += " Analysis Controller is busy";
+                        }
+                        if (StorageMedia.isBusy()) {
+                            waitingOn += " Storage Media is busy";
+                        }
+                        if (!waitingOn.equals("")) {
+                            Log.e(Thread.currentThread().getName(), "Waiting on: " + waitingOn);
+                        }
 
                         if (!DataQueue.isEmpty() && !AnalysisController.isBusy() && !StorageMedia.isBusy()) {
-                            Log.e(Thread.currentThread().getName(), "Time code Overriding/clearing queue");
+                            Log.e(Thread.currentThread().getName(), "Anomaly, clearing queue");
                             DataQueue.clear();
-                            break;
                         }
+
+                        this.wait(GlobalSettings.DEFAULT_WAIT_MS);
                     }
                     catch (InterruptedException e) {
                         // TODO: error
@@ -364,13 +504,15 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
             }
 
             if (mState == State.FINISHED) {
+                Log.e(Thread.currentThread().getName(), mExposure.getString());
+                Log.e(Thread.currentThread().getName(), mDeadtime.getString());
+                Log.e(Thread.currentThread().getName(), mTemperature.getString());
                 CaptureController.sessionFinished(averageFps, averageDuty);
             }
             else {
                 CaptureController.sessionReset();
             }
             // TODO: dump mTotalCaptureResult info
-
         }
 
     }
