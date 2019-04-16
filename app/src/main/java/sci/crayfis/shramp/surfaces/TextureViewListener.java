@@ -1,20 +1,18 @@
-/*******************************************************************************
- *                                                                             *
- * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones     *
- * @version: ShRAMP v0.0                                                       *
- *                                                                             *
- * @objective: To detect extensive air shower radiation using smartphones      *
- *             for the scientific study of ultra-high energy cosmic rays       *
- *                                                                             *
- * @institution: University of California, Irvine                              *
- * @department:  Physics and Astronomy                                         *
- *                                                                             *
- * @author: Eric Albin                                                         *
- * @email:  Eric.K.Albin@gmail.com                                             *
- *                                                                             *
- * @updated: 25 March 2019                                                     *
- *                                                                             *
- ******************************************************************************/
+/*
+ * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones
+ * @version: ShRAMP v0.0
+ *
+ * @objective: To detect extensive air shower radiation using smartphones
+ *             for the scientific study of ultra-high energy cosmic rays
+ *
+ * @institution: University of California, Irvine
+ * @department:  Physics and Astronomy
+ *
+ * @author: Eric Albin
+ * @email:  Eric.K.Albin@gmail.com
+ *
+ * @updated: 15 April 2019
+ */
 
 package sci.crayfis.shramp.surfaces;
 
@@ -27,7 +25,9 @@ import android.view.Surface;
 import android.view.TextureView;
 
 /**
- * TODO: description, comments and logging
+ * A TextureView is useful for displaying text or a live camera feed.
+ * The purpose of this class is to handle the creation and change of a TextureView surface.
+ * TextureView implicitly runs on the main thread.
  */
 @TargetApi(21)
 final class TextureViewListener implements TextureView.SurfaceTextureListener {
@@ -36,19 +36,19 @@ final class TextureViewListener implements TextureView.SurfaceTextureListener {
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // mSurface.....................................................................................
-    // TODO: description
+    // Active TextureView surface
     private Surface mSurface;
 
     // mSurfaceHeight......................................................................................
-    // TODO: description
+    // Height dimension in pixels
     private Integer mSurfaceHeight;
 
     // mSurfaceWidth.......................................................................................
-    // TODO: description
+    // Width dimension in pixels
     private Integer mSurfaceWidth;
 
     // mTextureView.................................................................................
-    // TODO: description
+    // Active TextureView object (good for displaying text or live camera images)
     private TextureView mTextureView;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -60,7 +60,7 @@ final class TextureViewListener implements TextureView.SurfaceTextureListener {
 
     // TextureViewListener..........................................................................
     /**
-     * TODO: description, comments and logging
+     * Nothing special, just make it
      */
     TextureViewListener() {
         super();
@@ -71,15 +71,14 @@ final class TextureViewListener implements TextureView.SurfaceTextureListener {
 
     // openSurface..................................................................................
     /**
-     * Create surface
-     * @param activity bla
+     * Build/open a new TextureView surface
+     * @param activity Activity in control of the app
      */
     void openSurface(@NonNull Activity activity) {
-        Log.e(Thread.currentThread().getName(), "TextureViewListener openSurface");
         mTextureView = new TextureView(activity);
         mTextureView.setSurfaceTextureListener(this);
 
-        // program continues with onSurfaceTextureAvailable listener below
+        // execution continues with onSurfaceTextureAvailable() listener below
         activity.setContentView(mTextureView);
     }
 
@@ -88,38 +87,51 @@ final class TextureViewListener implements TextureView.SurfaceTextureListener {
 
     // onSurfaceTextureAvailable....................................................................
     /**
-     * TODO: description, comments and logging
-     * @param texture bla
-     * @param width bla
-     * @param height bla
+     * Called once the system asynchronously configures a new TextureView surface.
+     * @param texture Reference to the new surface
+     * @param width Width (in pixels) of the surface
+     * @param height Height (in pixels) of the surface
      */
     @Override
     public void onSurfaceTextureAvailable(@NonNull SurfaceTexture texture, int width, int height) {
-        Log.e(Thread.currentThread().getName(), "TextureViewListener onSurfaceTextureAvailable");
         mSurfaceWidth  = width;
         mSurfaceHeight = height;
         mSurface = new Surface(texture);
+
+        // return execution control to SurfaceController
         SurfaceController.surfaceHasOpened(mSurface, TextureViewListener.class);
+    }
+
+    // onSurfaceTextureUpdated......................................................................
+    /**
+     * Called by the system every time something is written to the surface, so it's best to
+     * keep this minimal if anything needs to be done.
+     * @param texture Reference to the TextureView surface
+     */
+    @Override
+    public void onSurfaceTextureUpdated(@NonNull SurfaceTexture texture) {
+        // do nothing
     }
 
     // onSurfaceTextureDestroyed....................................................................
     /**
-     * TODO: description, comments and logging
-     * @param texture bla
-     * @return bla
+     * Called by the system when the surface is destroyed
+     * @param texture Reference to the TextureView surface
+     * @return If returns true, no rendering should happen inside the surface texture after this
+     * method is invoked. If returns false, the client needs to call SurfaceTexture.release().
+     * Most applications should return true.
      */
     @Override
     public boolean onSurfaceTextureDestroyed(@NonNull SurfaceTexture texture) {
-        Log.e(Thread.currentThread().getName(), "TextureViewListener onSurfaceTextureDestroyed");
-        return false;
+        return true;
     }
 
     // onSurfaceTextureSizeChanged..................................................................
     /**
-     * TODO: description, comments and logging
-     * @param texture bla
-     * @param width bla
-     * @param height bla
+     * Called by the system when the surface dimensions are changed
+     * @param texture Reference to the TextureView surface
+     * @param width New surface width (in pixels)
+     * @param height New surface height (in pixels)
      */
     @Override
     public void onSurfaceTextureSizeChanged(@NonNull SurfaceTexture texture, int width, int height) {
@@ -127,16 +139,6 @@ final class TextureViewListener implements TextureView.SurfaceTextureListener {
         + Integer.toString(width) + " x " + Integer.toString(height) + " pixels");
         mSurfaceWidth = width;
         mSurfaceHeight = height;
-    }
-
-    // onSurfaceTextureUpdated......................................................................
-    /**
-     * TODO: description, comments and logging
-     * @param texture bla
-     */
-    @Override
-    public void onSurfaceTextureUpdated(@NonNull SurfaceTexture texture) {
-        //Log.e(Thread.currentThread().getName(), "TextureViewListener onSurfaceTextureUpdated");
     }
 
 }

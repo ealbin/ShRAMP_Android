@@ -1,20 +1,18 @@
-/*******************************************************************************
- *                                                                             *
- * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones     *
- * @version: ShRAMP v0.0                                                       *
- *                                                                             *
- * @objective: To detect extensive air shower radiation using smartphones      *
- *             for the scientific study of ultra-high energy cosmic rays       *
- *                                                                             *
- * @institution: University of California, Irvine                              *
- * @department:  Physics and Astronomy                                         *
- *                                                                             *
- * @author: Eric Albin                                                         *
- * @email:  Eric.K.Albin@gmail.com                                             *
- *                                                                             *
- * @updated: 25 March 2019                                                     *
- *                                                                             *
- ******************************************************************************/
+/*
+ * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones
+ * @version: ShRAMP v0.0
+ *
+ * @objective: To detect extensive air shower radiation using smartphones
+ *             for the scientific study of ultra-high energy cosmic rays
+ *
+ * @institution: University of California, Irvine
+ * @department:  Physics and Astronomy
+ *
+ * @author: Eric Albin
+ * @email:  Eric.K.Albin@gmail.com
+ *
+ * @updated: 15 April 2019
+ */
 
 package sci.crayfis.shramp.util;
 
@@ -22,6 +20,8 @@ import android.annotation.TargetApi;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Size;
+
+import org.jetbrains.annotations.Contract;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,7 +32,8 @@ import java.util.List;
 import java.util.SortedSet;
 
 /**
- * TODO: description, comments and logging
+ * Helper set to sort Size objects describing output surface resolutions.
+ * List sorts unique resolutions by area (smallest to biggest).
  */
 @TargetApi(21)
 public final class SizeSortedSet implements SortedSet<Size> {
@@ -41,29 +42,24 @@ public final class SizeSortedSet implements SortedSet<Size> {
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // mSortedSet...................................................................................
-    // TODO: description
+    // Container of Sizes
     private List<Size> mSortedSet = new ArrayList<>();
 
     // mSorter......................................................................................
-    // TODO: description
+    // Sort algorithm
     private Sorter mSorter = new Sorter();
 
-    //**********************************************************************************************
     // Private Inner Classes
-    //----------------------
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // SortByArea...................................................................................
     /**
-     * Sort sizes by area from smallest to biggest
+     * Sort sizes by area from smallest to biggest, primary sorting method
      */
     private class SortByArea implements Comparator<Size> {
 
-        // Public Overriding Instance Methods
-        //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
         // compare..................................................................................
         /**
-         * TODO: description, comments and logging
          * @param s1 first Size to be compared
          * @param s2 second Size to be compared
          * @return a negative integer, zero, or a positive integer as the first argument is less
@@ -79,19 +75,17 @@ public final class SizeSortedSet implements SortedSet<Size> {
 
     // SortByLongestSide............................................................................
     /**
-     * Sort sizes by longest side: shortest to longest
+     * Sort sizes by longest side from shortest to longest, if SortByArea ends in a tie, this is the
+     * tie breaker
      */
     private class SortByLongestSide implements Comparator<Size> {
 
-        // Public Overriding Instance Methods
-        //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
         // compare..................................................................................
         /**
-         * TODO: description, comments and logging
-         * @param s1 bla
-         * @param s2 bla
-         * @return bla
+         * @param s1 first Size to be compared
+         * @param s2 second Size to be compared
+         * @return a negative integer, zero, or a positive integer as the first argument is less
+         * than, equal to, or greater than the second
          */
         @Override
         public int compare(@NonNull Size s1, @NonNull Size s2) {
@@ -103,19 +97,16 @@ public final class SizeSortedSet implements SortedSet<Size> {
 
     // Sorter.......................................................................................
     /**
-     * Master sorter
+     * Master sorter, calls on SortByArea and SortByLongestSide as needed
      */
     private class Sorter implements Comparator<Size> {
 
-        // Public Overriding Instance Methods
-        //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
         // compare..................................................................................
         /**
-         * TODO: description, comments and logging
-         * @param s1 bla
-         * @param s2 bla
-         * @return bla
+         * @param s1 first Size to be compared
+         * @param s2 second Size to be compared
+         * @return a negative integer, zero, or a positive integer as the first argument is less
+         * than, equal to, or greater than the second
          */
         @Override
         public int compare(@NonNull Size s1, @NonNull Size s2) {
@@ -139,7 +130,7 @@ public final class SizeSortedSet implements SortedSet<Size> {
 
     // SizeSortedSet................................................................................
     /**
-     * TODO: description, comments and logging
+     * Create a new SizeSortedSet
      */
     public SizeSortedSet() { super(); }
 
@@ -148,9 +139,9 @@ public final class SizeSortedSet implements SortedSet<Size> {
 
     // add..........................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param size bla
-     * @return bla
+     * Add an element to the set (only unique Sizes are kept)
+     * @param size Size object to add
+     * @return true if added to the set, false if a Size like size is already contained in the set
      */
     @Override
     public boolean add(Size size) {
@@ -164,9 +155,9 @@ public final class SizeSortedSet implements SortedSet<Size> {
 
     // addAll.......................................................................................
     /**
-     * TODO: description, coments and logging
-     * @param c bla
-     * @return bla
+     * Adds a collection to the set (keeping only unique Sizes)
+     * @param c Any collection that is a Size object or a subclass
+     * @return true if at least one element has been added, false if at least one element hasn't
      */
     @Override
     public boolean addAll(@NonNull Collection<? extends Size> c) {
@@ -184,7 +175,7 @@ public final class SizeSortedSet implements SortedSet<Size> {
 
     // clear........................................................................................
     /**
-     * TODO: description, comments and logging
+     * Clear the set and start over from scratch
      */
     @Override
     public void clear() {
@@ -193,31 +184,30 @@ public final class SizeSortedSet implements SortedSet<Size> {
 
     // comparator...................................................................................
     /**
-     * TODO: description, comments and longging
-     * @return bla
+     * @return Comparator used in sorting
      */
     @NonNull
     @Override
+    @Contract(pure = true)
     public Comparator<? super Size> comparator() {
         return mSorter;
     }
 
     // contains.....................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param o bla
-     * @return bla
+     * @param o Object under test if it is contained in the set
+     * @return true if Size object already in the set, false if not
      */
     @Override
+    @Contract(pure = true)
     public boolean contains(@Nullable Object o) {
         return mSortedSet.contains(o);
     }
 
     // containsAll..................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param c bla
-     * @return bla
+     * @param c A collection of objects under test if they are contained in the set
+     * @return true if all objects in the collection are also in the set, false otherwise
      */
     @Override
     public boolean containsAll(@NonNull Collection<?> c) {
@@ -226,10 +216,11 @@ public final class SizeSortedSet implements SortedSet<Size> {
 
     // first........................................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return first element in the set (null if set is empty)
      */
+    @Nullable
     @Override
+    @Contract(pure = true)
     public Size first() {
         if (mSortedSet.size() > 0) {
             return mSortedSet.get(0);
@@ -239,9 +230,8 @@ public final class SizeSortedSet implements SortedSet<Size> {
 
     // headSet......................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param toElement bla
-     * @return bla
+     * @param toElement Reference Size
+     * @return a set of all Sizes less than (not including) the reference Size
      */
     @NonNull
     @Override
@@ -258,18 +248,17 @@ public final class SizeSortedSet implements SortedSet<Size> {
 
     // isEmpty......................................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return true if set is empty, false if set has elements
      */
     @Override
+    @Contract(pure = true)
     public boolean isEmpty() {
         return mSortedSet.size() == 0;
     }
 
     // iterator.....................................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return Set iterator
      */
     @NonNull
     @Override
@@ -279,20 +268,22 @@ public final class SizeSortedSet implements SortedSet<Size> {
 
     // last.........................................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return last Size in set (null if empty)
      */
-    @NonNull
+    @Nullable
     @Override
+    @Contract(pure = true)
     public Size last() {
+        if(isEmpty()) {
+            return null;
+        }
         return mSortedSet.get(mSortedSet.size() - 1);
     }
 
     // remove.......................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param o bla
-     * @return bla
+     * @param o Size element to remove from set
+     * @return true if successfully removed, false if wasn't found / removed
      */
     @Override
     public boolean remove(@Nullable Object o) {
@@ -301,9 +292,8 @@ public final class SizeSortedSet implements SortedSet<Size> {
 
     // removeAll....................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param c bla
-     * @return bla
+     * @param c Collection of Size (or subclass) objects to remove from set
+     * @return true if all were removed, false if not all were removed
      */
     @Override
     public boolean removeAll(@NonNull Collection<?> c) {
@@ -312,9 +302,8 @@ public final class SizeSortedSet implements SortedSet<Size> {
 
     // retainAll....................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param c bla
-     * @return bla
+     * @param c Collection of Size objects to retain if present, discarding all the rest
+     * @return true if at least one object has been retained
      */
     @Override
     public boolean retainAll(@NonNull Collection<?> c) {
@@ -323,8 +312,7 @@ public final class SizeSortedSet implements SortedSet<Size> {
 
     // size.........................................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return Get the size (length) of the set of Size objects
      */
     @Override
     public int size() {
@@ -333,10 +321,9 @@ public final class SizeSortedSet implements SortedSet<Size> {
 
     // subSet.......................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param fromElement bla
-     * @param toElement bla
-     * @return bla
+     * @param fromElement Non-inclusive start Size
+     * @param toElement Non-inclusive stop Size
+     * @return All Size objects between from and to
      */
     @NonNull
     @Override
@@ -354,9 +341,8 @@ public final class SizeSortedSet implements SortedSet<Size> {
 
     // tailSet......................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param fromElement bla
-     * @return bla
+     * @param fromElement Reference Size
+     * @return the set of elements greater than (not including) the reference Size
      */
     @NonNull
     @Override
@@ -373,8 +359,7 @@ public final class SizeSortedSet implements SortedSet<Size> {
 
     // toArray......................................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return The sorted Size set as an Object[] array
      */
     @Nullable
     @Override
@@ -384,10 +369,9 @@ public final class SizeSortedSet implements SortedSet<Size> {
 
     // toArray......................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param a bla
-     * @param <T> bla
-     * @return bla
+     * @param a Array object to populate
+     * @param <T> Object type for the return array
+     * @return Sorted Size set as a T[] array
      */
     @Nullable
     @Override

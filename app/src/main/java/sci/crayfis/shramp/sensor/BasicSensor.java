@@ -1,3 +1,19 @@
+/*
+ * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones
+ * @version: ShRAMP v0.0
+ *
+ * @objective: To detect extensive air shower radiation using smartphones
+ *             for the scientific study of ultra-high energy cosmic rays
+ *
+ * @institution: University of California, Irvine
+ * @department:  Physics and Astronomy
+ *
+ * @author: Eric Albin
+ * @email:  Eric.K.Albin@gmail.com
+ *
+ * @updated: 15 April 2019
+ */
+
 package sci.crayfis.shramp.sensor;
 
 import android.annotation.TargetApi;
@@ -16,8 +32,13 @@ import java.util.List;
 
 import sci.crayfis.shramp.util.NumToString;
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//                         (TODO)      UNDER CONSTRUCTION      (TODO)
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Low priority
+
 /**
- * TODO: description, comments and logging
+ * Basic functionality common to all sensors (sub-classes)
  */
 @TargetApi(21)
 abstract class BasicSensor implements SensorEventListener {
@@ -26,25 +47,23 @@ abstract class BasicSensor implements SensorEventListener {
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // Accuracy.....................................................................................
-    // TODO: description
+    // Sensor accuracy level
     protected enum Accuracy {LOW, MEDIUM, HIGH, UNRELIABLE}
 
     // ReportingMode................................................................................
-    // TODO: description
     protected enum ReportingMode {CONTINUOUS, ON_CHANGE, ONE_SHOT, SPECIAL_TRIGGER}
 
     // Protected Instance Fields
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // mMetaData....................................................................................
-    // TODO: description
     protected class MetaData {
         Integer id;
         String  name;
         String  type;
         String  vendor;
         Integer version;
-        Float   current; // mA
+        Float   current; // usage in [mA]
         String  description;
 
         ReportingMode reportingMode;
@@ -62,38 +81,47 @@ abstract class BasicSensor implements SensorEventListener {
     protected final MetaData mMetaData = new MetaData();
 
     // mSensor......................................................................................
-    // TODO: description
+    // Reference to system hardware
     protected Sensor mSensor;
 
     // mHistory.....................................................................................
-    // TODO: description
+    // History of recorded values from sensor (optional)
     protected final List<SensorEvent> mHistory = new ArrayList<>();
 
     // mSaveHistory.................................................................................
-    // TODO: description
+    // True to record history into mHistory, false to disable
     protected boolean mSaveHistory;
 
+    // Private Class Fields (TODO: ...I don't remember why I made these private)
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+    // mUnits.......................................................................................
     private static String mUnits;
+
+    // mDimensions..................................................................................
     private static Integer mDimensions;
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Constructors
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // BasicSensor..................................................................................
     /**
-     * TODO: description, comments and logging
+     * Disable default constructor
      */
     private BasicSensor() {}
 
     // BasicSensor..................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param sensor bla
-     * @param description bla
-     * @param units bla
-     * @param dimensions bla
-     * @param saveHistory bla
+     * Create a new sensor
+     * @param sensor Reference to system hardware
+     * @param description Optional description of sensor
+     * @param units Sensor units
+     * @param dimensions Dimensionality returned by system hardware (e.g. a scalar, a vector, etc)
+     * @param saveHistory True to enable saving history, false to disable
      */
     BasicSensor(@NonNull Sensor sensor, @Nullable String description, @NonNull String units,
                 int dimensions, boolean saveHistory) {
@@ -180,20 +208,16 @@ abstract class BasicSensor implements SensorEventListener {
 
     // getDimensions................................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return Dimensionality of sensor (e.g. scalar, vector, etc)
      */
     @Contract(pure = true)
     public static int getDimensions() {
         return mDimensions;
     }
 
-    public static String getUnits() { return mUnits; }
-
     // getHistory...................................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return History of recorded sensor values
      */
     List<SensorEvent> getHistory() {
         return mHistory;
@@ -201,38 +225,44 @@ abstract class BasicSensor implements SensorEventListener {
 
     // getLast......................................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return Last recorded sensor value
      */
     SensorEvent getLast() {
         if (mHistory.size() == 0) {
+            // no values have been reported by the sensor
             return null;
         }
+        // if history is disabled, the last value is always stored in element 0
         return mHistory.get( mHistory.size() - 1 );
     }
 
     // mSensor......................................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return Reference to system hardware
      */
     Sensor getSensor() {
         return mSensor;
     }
+
+    // getUnits.....................................................................................
+    /**
+     * @return The units of the sensor
+     */
+    @Contract(pure = true)
+    public static String getUnits() { return mUnits; }
 
     // Public Overriding Instance Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // onAccuracyChanged............................................................................
     /**
-     * TODO: description, comments and logging
-     * @param sensor bla
-     * @param accuracy bla
+     * Called by the system whenever the sensor's accuracy has changed
+     * @param sensor Reference to system hardware
+     * @param accuracy Accuracy code
      */
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
-        // Do something here if sensor accuracy changes.
-        // For now, I don't care
+        // TODO: Do something here if sensor accuracy changes.  For now, I don't care
 
         switch (accuracy) {
             case (SensorManager.SENSOR_STATUS_ACCURACY_LOW): {
@@ -263,12 +293,11 @@ abstract class BasicSensor implements SensorEventListener {
 
     // onSensorChanged..............................................................................
     /**
-     * TODO: description, comments and logging
-     * @param event bla
+     * Called by the system when the sensor value changes
+     * @param event Bundle of information regarding the sensor and its value change
      */
     @Override
     public void onSensorChanged(SensorEvent event) {
-
         if (mHistory.size() == 0) {
             onAccuracyChanged(event.sensor, event.accuracy);
             mHistory.add(event);
@@ -285,8 +314,7 @@ abstract class BasicSensor implements SensorEventListener {
 
     // toString.....................................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return A string summarizing this sensor and its abilities/settings
      */
     @Override
     @NonNull

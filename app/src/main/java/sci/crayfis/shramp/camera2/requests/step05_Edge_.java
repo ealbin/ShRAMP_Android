@@ -1,20 +1,18 @@
-/*******************************************************************************
- *                                                                             *
- * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones     *
- * @version: ShRAMP v0.0                                                       *
- *                                                                             *
- * @objective: To detect extensive air shower radiation using smartphones      *
- *             for the scientific study of ultra-high energy cosmic rays       *
- *                                                                             *
- * @institution: University of California, Irvine                              *
- * @department:  Physics and Astronomy                                         *
- *                                                                             *
- * @author: Eric Albin                                                         *
- * @email:  Eric.K.Albin@gmail.com                                             *
- *                                                                             *
- * @updated: 25 March 2019                                                     *
- *                                                                             *
- ******************************************************************************/
+/*
+ * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones
+ * @version: ShRAMP v0.0
+ *
+ * @objective: To detect extensive air shower radiation using smartphones
+ *             for the scientific study of ultra-high energy cosmic rays
+ *
+ * @institution: University of California, Irvine
+ * @department:  Physics and Astronomy
+ *
+ * @author: Eric Albin
+ * @email:  Eric.K.Albin@gmail.com
+ *
+ * @updated: 15 April 2019
+ */
 
 package sci.crayfis.shramp.camera2.requests;
 
@@ -27,33 +25,26 @@ import android.util.Log;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import sci.crayfis.shramp.MasterController;
 import sci.crayfis.shramp.camera2.CameraController;
 import sci.crayfis.shramp.camera2.util.Parameter;
 
 /**
- * TODO: description, comments and logging
+ * Configuration class for default CaptureRequest creation, the parameters set here include:
+ *    EDGE_MODE
  */
 @TargetApi(21)
 abstract class step05_Edge_ extends step04_Distortion_ {
-
-    // Constructors
-    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-    // step05_Edge_.................................................................................
-    /**
-     * TODO: description, comments and logging
-     */
-    protected step05_Edge_() { super(); }
 
     // Protected Overriding Instance Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // makeDefault..................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param builder bla
-     * @param characteristicsMap bla
-     * @param captureRequestMap bla
+     * Creating a default CaptureRequest, setting EDGE_.* parameters
+     * @param builder CaptureRequest.Builder in progress
+     * @param characteristicsMap Parameter map of characteristics
+     * @param captureRequestMap Parameter map of capture request settings
      */
     @SuppressWarnings("unchecked")
     @Override
@@ -65,7 +56,12 @@ abstract class step05_Edge_ extends step04_Distortion_ {
         Log.e("                Edge_", "setting default Edge_ requests");
         List<CaptureRequest.Key<?>> supportedKeys;
         supportedKeys = CameraController.getAvailableCaptureRequestKeys();
-        assert supportedKeys != null;
+        if (supportedKeys == null) {
+            // TODO: error
+            Log.e(Thread.currentThread().getName(), "Supported keys cannot be null");
+            MasterController.quitSafely();
+            return;
+        }
 
         //==========================================================================================
         {
@@ -84,7 +80,12 @@ abstract class step05_Edge_ extends step04_Distortion_ {
 
                 cKey = CameraCharacteristics.EDGE_AVAILABLE_EDGE_MODES;
                 property = characteristicsMap.get(cKey);
-                assert property != null;
+                if (property == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Edge modes cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 setting = new Parameter<>(name, property.getValue(), property.getUnits(),
                                                                      property.getFormatter());

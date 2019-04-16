@@ -1,20 +1,18 @@
-/*******************************************************************************
- *                                                                             *
- * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones     *
- * @version: ShRAMP v0.0                                                       *
- *                                                                             *
- * @objective: To detect extensive air shower radiation using smartphones      *
- *             for the scientific study of ultra-high energy cosmic rays       *
- *                                                                             *
- * @institution: University of California, Irvine                              *
- * @department:  Physics and Astronomy                                         *
- *                                                                             *
- * @author: Eric Albin                                                         *
- * @email:  Eric.K.Albin@gmail.com                                             *
- *                                                                             *
- * @updated: 25 March 2019                                                     *
- *                                                                             *
- ******************************************************************************/
+/*
+ * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones
+ * @version: ShRAMP v0.0
+ *
+ * @objective: To detect extensive air shower radiation using smartphones
+ *             for the scientific study of ultra-high energy cosmic rays
+ *
+ * @institution: University of California, Irvine
+ * @department:  Physics and Astronomy
+ *
+ * @author: Eric Albin
+ * @email:  Eric.K.Albin@gmail.com
+ *
+ * @updated: 15 April 2019
+ */
 
 package sci.crayfis.shramp;
 
@@ -24,39 +22,39 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
-import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.os.Bundle;
 import android.system.Os;
 import android.system.StructUtsname;
-import android.widget.TextView;
-
-import java.io.File;
+import android.util.Log;
 
 import sci.crayfis.shramp.util.BuildString;
-import sci.crayfis.shramp.logging.ShrampLogger;
-import sci.crayfis.shramp.ssh.AsyncResponse;
 import sci.crayfis.shramp.error.FailManager;
 
-
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-//                                      UNDER CONSTRUCTION
+//                         (TODO)      UNDER CONSTRUCTION      (TODO)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
+// Right now, this doesn't do much..
+// The app starts with onCreate(), and this class logs basic device metadata and asks permissions
+// before handing full control over to MasterController.
+// For the future, I haven't decided exactly what else I want this to do, or if it should just
+// be part of MasterController..
 
 /**
  * Entry point for the ShRAMP app
- * Checks permissions then runs MasterController
+ * Checks permissions then hands control over to MasterController
+ * AsyncResponse is for SSH data transfer, currently disabled and probably going to be moved
+ * out of this class.
  */
 @TargetApi(21)
-public final class MaineShRAMP extends Activity implements AsyncResponse {
+public final class MaineShRAMP extends Activity { //implements AsyncResponse {
 
-    //**********************************************************************************************
-    // Class Variables
-    //----------------
+    // Public Class Fields
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+    // PERMISSIONS and PERMISSION_CODE..............................................................
+    // The list of device permissions needed for this app to operate.
+    // Consider moving this over to GlobalSettings..
     public static final String[] PERMISSIONS = {
             Manifest.permission.INTERNET,
             Manifest.permission.CAMERA,
@@ -64,39 +62,47 @@ public final class MaineShRAMP extends Activity implements AsyncResponse {
     };
     public static final int PERMISSION_CODE = 0; // could be anything >= 0
 
-    // logging
-    private static ShrampLogger mLogger = new ShrampLogger(ShrampLogger.DEFAULT_STREAM);
+    // Private Instance Fields
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+    // mNextActivity and mFailActivity..............................................................
+    // Where to pass control of the app over to.  Set in onCreate()
     private Intent mNextActivity;
     private Intent mFailActivity;
 
-    //**********************************************************************************************
-    // Class Methods
-    //--------------
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    // Public Overriding Instance Methods
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+    // onCreate.....................................................................................
     /**
      * Entry point for the app at start.
-     * @param savedInstanceState passed in by Android OS
+     * @param savedInstanceState passed in by Android OS for returning from a suspended state
+     *                           (not used)
      */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        //Log.e(Thread.currentThread().getName(), "MaineShRAMP onCreate");
+        mNextActivity = new Intent(this, MasterController.class);
+        mFailActivity = new Intent(this, FailManager.class);
 
-       mNextActivity = new Intent(this, MasterController.class);
-       mFailActivity = new Intent(this, FailManager.class);
+        // Setting this flag destroys MaineShRAMP after passing control over to one of these new
+        // intents
+        mNextActivity.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        mFailActivity.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
-       mNextActivity.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-       mFailActivity.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        Log.e(Thread.currentThread().getName(), "Welcome to the Shower Reconstruction Application for Mobile Phones");
+        Log.e(Thread.currentThread().getName(), "or \"ShRAMP\" for short");
 
-        MaineShRAMP.mLogger.log("Welcome to the Shower Reconstruction Application for Mobile Phones");
-        MaineShRAMP.mLogger.log("or \"ShRAMP\" for short");
-
-        // Get build info
+        // Log build info
         String buildString = BuildString.get();
-        MaineShRAMP.mLogger.log(buildString);
+        Log.e(Thread.currentThread().getName(), buildString);
 
+        // Log device info
         StructUtsname uname = Os.uname();
         String unameString = " \n"
                 + "Machine:   " + uname.machine  + "\n"
@@ -104,8 +110,9 @@ public final class MaineShRAMP extends Activity implements AsyncResponse {
                 + "Release:   " + uname.release  + "\n"
                 + "Sysname:   " + uname.sysname  + "\n"
                 + "Version:   " + uname.version  + "\n";
-        MaineShRAMP.mLogger.log(unameString);
+        Log.e(Thread.currentThread().getName(), unameString);
 
+        // Log hardware info
         String buildDetails = " \n"
                 + "Underlying board:        " + Build.BOARD               + "\n"
                 + "Bootloader version:      " + Build.BOOTLOADER          + "\n"
@@ -123,42 +130,30 @@ public final class MaineShRAMP extends Activity implements AsyncResponse {
                 + "Build time:              " + Long.toString(Build.TIME) + "\n"
                 + "Build type:              " + Build.TYPE                + "\n"
                 + "User:                    " + Build.USER                + "\n";
-        MaineShRAMP.mLogger.log(buildDetails);
+        Log.e(Thread.currentThread().getName(), buildDetails);
 
-
-        // if API 22 or below, user would have granted permissions on start
+        // if the API was 22 or below, the user would have granted permissions on start
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            MaineShRAMP.mLogger.log("API 22 or below, permissions granted on start");
-            MaineShRAMP.mLogger.log("Starting MasterController");
-            //Log.e(Thread.currentThread().getName(), "MaineShRAMP -> NextActivity");
-            //Log.e(Thread.currentThread().getName(), ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
+            Log.e(Thread.currentThread().getName(), "API 22 or below, permissions granted on start");
+            Log.e(Thread.currentThread().getName(), "Starting MasterController");
             super.startActivity(this.mNextActivity);
-            //finish();
         }
         else {
             // if API > 22
             if (permissionsGranted()) {
-                //MaineShRAMP.mLogger.log("API 23 or above, and permissions have previously been granted");
-                //MaineShRAMP.mLogger.log("Starting MasterController");
-                //Log.e(Thread.currentThread().getName(), "MaineShRAMP -> NextActivity");
-                //Log.e(Thread.currentThread().getName(), ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
                 super.startActivity(this.mNextActivity);
-                //finish();
             }
             else {
-                //MaineShRAMP.mLogger.log("API 23 or above, but permissions not granted, asking permissions");
-                // response to request is handled in onRequestPermissionsResult()
+                // Execution resumes with onRequestPermissionResult() below
                 super.requestPermissions(PERMISSIONS, PERMISSION_CODE);
             }
         }
     }
 
-    public void finish() {
-        //Log.e(Thread.currentThread().getName(), "MaineShRAMP finish");
-    }
+    // Private Instance Methods
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    //----------------------------------------------------------------------------------------------
-
+    // permissionsGranted...........................................................................
     /**
      * Check if permissions have been granted
      * @return true if all permissions have been granted, false if not
@@ -171,30 +166,29 @@ public final class MaineShRAMP extends Activity implements AsyncResponse {
             int permission_value = checkSelfPermission(permission);
 
             if (permission_value == PackageManager.PERMISSION_DENIED) {
-                MaineShRAMP.mLogger.log(permission + ": " + "DENIED");
+                Log.e(Thread.currentThread().getName(), permission + ": " + "DENIED");
                 allGranted = false;
             }
             else {
-                MaineShRAMP.mLogger.log(permission + ": " + "GRANTED");
+                Log.e(Thread.currentThread().getName(), permission + ": " + "GRANTED");
             }
         }
 
         if (allGranted) {
-            MaineShRAMP.mLogger.log("All permissions granted");
+            Log.e(Thread.currentThread().getName(), "All permissions granted");
         }
         else {
-            MaineShRAMP.mLogger.log("Some or all permissions denied");
+            Log.e(Thread.currentThread().getName(), "Some or all permissions denied");
         }
 
-        MaineShRAMP.mLogger.log("permissionsGranted? return: " + Boolean.toString(allGranted));
+        Log.e(Thread.currentThread().getName(), "permissionsGranted? return: " + Boolean.toString(allGranted));
         return allGranted;
     }
 
-    //----------------------------------------------------------------------------------------------
-
+    // onRequestPermissions.........................................................................
     /**
      * After user responds to permission request, this routine is called.
-     * @param requestCode permission code, see PERMISSION_CODE
+     * @param requestCode permission code, ref. PERMISSION_CODE field
      * @param permissions permissions requested
      * @param grantResults user's response
      */
@@ -204,25 +198,19 @@ public final class MaineShRAMP extends Activity implements AsyncResponse {
                                            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (this.permissionsGranted()) {
-            MaineShRAMP.mLogger.log("Permissions asked and granted");
-            //MaineShRAMP.mLogger.log("Starting MasterController");
-            //Log.e(Thread.currentThread().getName(), "MaineShRAMP -> NextActivity");
-            //Log.e(Thread.currentThread().getName(), ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
+            Log.e(Thread.currentThread().getName(), "Permissions asked and granted");
             super.startActivity(mNextActivity);
-            //finish();
         }
         else {
-            MaineShRAMP.mLogger.log("Permissions were not granted");
-            //MaineShRAMP.mLogger.log("Starting FailManager");
-            //Log.e(Thread.currentThread().getName(), "MaineShRAMP -> FailActivity");
-            //Log.e(Thread.currentThread().getName(), ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
+            Log.e(Thread.currentThread().getName(), "Permissions were not granted");
             super.startActivity(mFailActivity);
-            //finish();
         }
-        //MaineShRAMP.mLogger.log("return;");
     }
 
 
+    // TODO: SSH stuff works, but isn't used at this moment as I work on the StorageMeda details
+    // Also, probably going to to move this out of MaineShRAMP..
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // SSHrampSession is an AsyncTask, holding this reference allows main to
     // see the result when it finishes.
@@ -244,32 +232,25 @@ public final class MaineShRAMP extends Activity implements AsyncResponse {
     }
     */
 
-        /**
-         * Tests if .ssh folder exists and can read it.
-         * @return true (yes) or false (no)
-         */
-    public boolean haveSSHKey() {
-        String ssh_path = Environment.getExternalStorageDirectory() + "/.ssh";
-        File file_obj = new File(ssh_path);
-        return file_obj.canRead();
-    }
+    /**
+     * Tests if .ssh folder exists and can read it.
+     * @return true (yes) or false (no)
+     */
+    //public boolean haveSSHKey() {
+    //    String ssh_path = Environment.getExternalStorageDirectory() + "/.ssh";
+    //    File file_obj = new File(ssh_path);
+    //    return file_obj.canRead();
+    //}
 
     /**
      * Implements the AsyncResponse interface.
      * Called after an SSHrampSession operation is completed as an AsyncTask.
      * @param status a string of information to give back to the Activity.
      */
-    @Override
-    public void processFinish(String status){
-        TextView textOut = (TextView) findViewById(R.id.textOut);
-        textOut.append(status);
-    }
+    //@Override
+    //public void processFinish(String status){
+    //    TextView textOut = (TextView) findViewById(R.id.textOut);
+    //    textOut.append(status);
+    //}
 
-
-    /**
-     * TODO
-     */
-    public void quit() {
-        finish();
-    }
 }

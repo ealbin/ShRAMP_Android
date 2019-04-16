@@ -1,20 +1,18 @@
-/*******************************************************************************
- *                                                                             *
- * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones     *
- * @version: ShRAMP v0.0                                                       *
- *                                                                             *
- * @objective: To detect extensive air shower radiation using smartphones      *
- *             for the scientific study of ultra-high energy cosmic rays       *
- *                                                                             *
- * @institution: University of California, Irvine                              *
- * @department:  Physics and Astronomy                                         *
- *                                                                             *
- * @author: Eric Albin                                                         *
- * @email:  Eric.K.Albin@gmail.com                                             *
- *                                                                             *
- * @updated: 25 March 2019                                                     *
- *                                                                             *
- ******************************************************************************/
+/*
+ * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones
+ * @version: ShRAMP v0.0
+ *
+ * @objective: To detect extensive air shower radiation using smartphones
+ *             for the scientific study of ultra-high energy cosmic rays
+ *
+ * @institution: University of California, Irvine
+ * @department:  Physics and Astronomy
+ *
+ * @author: Eric Albin
+ * @email:  Eric.K.Albin@gmail.com
+ *
+ * @updated: 15 April 2019
+ */
 
 package sci.crayfis.shramp.ssh;
 
@@ -35,28 +33,23 @@ import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-//                                      UNDER CONSTRUCTION
+//                         (TODO)      UNDER CONSTRUCTION      (TODO)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
+// This class works well for transmitting data via SSH, but I've currently disabled that
+// functionality.  I want to revisit this after I've done some work on StorageMedia
 
 public class SSHrampSession extends AsyncTask<String, Void, String> {
-    final String TAG = "SSHrampSession";
 
-    // This is a link back to the MaineShRAMP set in onCreate.
+    // This is a link back to the main activity
     public AsyncResponse mainactivity = null;
 
     /**
      * SSHrampSession operations to be done in the background asynchronously from the main thread.
-     * @param yupvoid dummy name
+     * @param filenames dummy name
      * @return returns the status of the SSHrampSession operation which gets passed back to the main activity
      */
     protected String doInBackground(String... filenames) {
-        final String LOCAL_TAG = TAG.concat(".doInBackground()");
-        Log.e(LOCAL_TAG, "Doing SSHrampSession stuff");
-
         String filename = filenames[0];
 
         // status string for reporting back to the main activity
@@ -139,7 +132,6 @@ public class SSHrampSession extends AsyncTask<String, Void, String> {
             status = status.concat("\t");
             status = status.concat(e.getLocalizedMessage());
         }
-        Log.e(LOCAL_TAG, "well the damage has been done");
         return status;
     }
 
@@ -152,4 +144,5 @@ public class SSHrampSession extends AsyncTask<String, Void, String> {
     protected void onPostExecute(String status) {
         mainactivity.processFinish(status);
     }
+
 }

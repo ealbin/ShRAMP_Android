@@ -1,20 +1,18 @@
-/*******************************************************************************
- *                                                                             *
- * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones     *
- * @version: ShRAMP v0.0                                                       *
- *                                                                             *
- * @objective: To detect extensive air shower radiation using smartphones      *
- *             for the scientific study of ultra-high energy cosmic rays       *
- *                                                                             *
- * @institution: University of California, Irvine                              *
- * @department:  Physics and Astronomy                                         *
- *                                                                             *
- * @author: Eric Albin                                                         *
- * @email:  Eric.K.Albin@gmail.com                                             *
- *                                                                             *
- * @updated: 25 March 2019                                                     *
- *                                                                             *
- ******************************************************************************/
+/*
+ * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones
+ * @version: ShRAMP v0.0
+ *
+ * @objective: To detect extensive air shower radiation using smartphones
+ *             for the scientific study of ultra-high energy cosmic rays
+ *
+ * @institution: University of California, Irvine
+ * @department:  Physics and Astronomy
+ *
+ * @author: Eric Albin
+ * @email:  Eric.K.Albin@gmail.com
+ *
+ * @updated: 15 April 2019
+ */
 
 package sci.crayfis.shramp.util;
 
@@ -25,7 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * TODO: description, comments and logging
+ * Helper for reading camera abilities, turns a primitive-type array (or object array) into
+ * a List<Object> array.
  */
 @TargetApi(21)
 abstract public class ArrayToList {
@@ -35,9 +34,9 @@ abstract public class ArrayToList {
 
     // convert......................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param array bla
-     * @return bla
+     * Turns a boolean[] array into a List<Boolean> array
+     * @param array input
+     * @return output
      */
     @NonNull
     public static List<Boolean> convert(@NonNull boolean[] array) {
@@ -50,9 +49,9 @@ abstract public class ArrayToList {
 
     // convert......................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param array bla
-     * @return bla
+     * Turns a byte[] array into a List<Byte> array
+     * @param array input
+     * @return output
      */
     @NonNull
     public static List<Byte> convert(@NonNull byte[] array) {
@@ -65,9 +64,9 @@ abstract public class ArrayToList {
 
     // convert......................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param array bla
-     * @return bla
+     * Turns a char[] array into a List<Char> array
+     * @param array input
+     * @return output
      */
     @NonNull
     public static List<Character> convert(@NonNull char[] array) {
@@ -80,9 +79,9 @@ abstract public class ArrayToList {
 
     // convert......................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param array bla
-     * @return bla
+     * Turns a short[] array into a List<Short> array
+     * @param array input
+     * @return output
      */
     @NonNull
     public static List<Short> convert(@NonNull short[] array) {
@@ -95,9 +94,9 @@ abstract public class ArrayToList {
 
     // convert......................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param array bla
-     * @return bla
+     * Turns an int[] array into a List<Integer> array
+     * @param array input
+     * @return output
      */
     @NonNull
     public static List<Integer> convert(@NonNull int[] array) {
@@ -110,9 +109,9 @@ abstract public class ArrayToList {
 
     // convert......................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param array bla
-     * @return bla
+     * Turns a long[] array into a List<Long> array
+     * @param array input
+     * @return output
      */
     @NonNull
     public static List<Long> convert(@NonNull long[] array) {
@@ -125,9 +124,9 @@ abstract public class ArrayToList {
 
     // convert......................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param array bla
-     * @return bla
+     * Turns a float[] array into a List<Float> array
+     * @param array input
+     * @return output
      */
     @NonNull
     public static List<Float> convert(@NonNull float[] array) {
@@ -140,9 +139,9 @@ abstract public class ArrayToList {
 
     // convert......................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param array bla
-     * @return bla
+     * Turns a double[] array into a List<Double> array
+     * @param array input
+     * @return output
      */
     @NonNull
     public static List<Double> convert(@NonNull double[] array) {
@@ -155,9 +154,9 @@ abstract public class ArrayToList {
 
     // convert......................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param array bla
-     * @return bla
+     * Turns an Object[] array into a List<Object> array
+     * @param array input
+     * @return output
      */
     @NonNull
     public static <T> List<T> convert(@NonNull T[] array) {

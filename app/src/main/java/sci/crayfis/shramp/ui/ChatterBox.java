@@ -1,68 +1,59 @@
-/*******************************************************************************
- *                                                                             *
- * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones     *
- * @version: ShRAMP v0.0                                                       *
- *                                                                             *
- * @objective: To detect extensive air shower radiation using smartphones      *
- *             for the scientific study of ultra-high energy cosmic rays       *
- *                                                                             *
- * @institution: University of California, Irvine                              *
- * @department:  Physics and Astronomy                                         *
- *                                                                             *
- * @author: Eric Albin                                                         *
- * @email:  Eric.K.Albin@gmail.com                                             *
- *                                                                             *
- * @updated: 25 March 2019                                                     *
- *                                                                             *
- ******************************************************************************/
+/*
+ * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones
+ * @version: ShRAMP v0.0
+ *
+ * @objective: To detect extensive air shower radiation using smartphones
+ *             for the scientific study of ultra-high energy cosmic rays
+ *
+ * @institution: University of California, Irvine
+ * @department:  Physics and Astronomy
+ *
+ * @author: Eric Albin
+ * @email:  Eric.K.Albin@gmail.com
+ *
+ * @updated: 15 April 2019
+ */
 
 package sci.crayfis.shramp.ui;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.os.Build;
 import android.support.annotation.NonNull;
-import android.util.Log;
-
-import sci.crayfis.shramp.MaineShRAMP;
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-//                                      UNDER CONSTRUCTION
+//                         (TODO)      UNDER CONSTRUCTION      (TODO)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+// Ignore this -- it's a relic of an earlier effort.. probably will be re-worked or removed
+// in the near future...
 
-
-
-
-@TargetApi(Build.VERSION_CODES.LOLLIPOP) // 21
+/**
+ * Displays a pop-up message to the user
+ */
+@TargetApi(21)
 public class ChatterBox {
-    //**********************************************************************************************
-    // Class Variables
-    //----------------
 
-    // Logcat strings
-    private final static String     TAG = "ChatterBox";
-    private final static String DIVIDER = "---------------------------------------------";
+    // Private Instance Fields
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    // Reference to MaineShRAMP activity context, set by ChatterBox constructor
-    private static MaineShRAMP mMaine_shramp;
+    // Reference to running Activity, set by ChatterBox constructor
+    private Activity mActivity;
 
-    //**********************************************************************************************
-    // Class Methods
-    //--------------
+    // Constructors
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     /**
      * Initialize dialogs class
-     * @param maine_shramp connects this context back to the main activity
+     * @param activity connects this context back to the main activity
      */
-    public ChatterBox(@NonNull MaineShRAMP maine_shramp) {
-        final String LOCAL_TAG = TAG.concat("ChatterBox(MaineShRAMP)");
-        Log.e(LOCAL_TAG, DIVIDER);
-
-        mMaine_shramp = maine_shramp;
-        Log.e(LOCAL_TAG, "RETURN");
+    public ChatterBox(@NonNull Activity activity) {
+        mActivity = activity;
     }
+
+    // Public Class Methods
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     /**
      * Basic alert, aka title, message, and a neutral button.
@@ -75,10 +66,7 @@ public class ChatterBox {
     public void displayBasicAlert(@NonNull String title, @NonNull String message,
                                   @NonNull String button, @NonNull final Runnable action) {
 
-        final String LOCAL_TAG = TAG.concat("displayBasicAlert(String,String,String)");
-        Log.e(LOCAL_TAG, DIVIDER);
-
-        AlertDialog.Builder alert_builder = new AlertDialog.Builder(mMaine_shramp);
+        AlertDialog.Builder alert_builder = new AlertDialog.Builder(mActivity);
         alert_builder.setTitle(title);
         alert_builder.setMessage(message);
 
@@ -87,16 +75,11 @@ public class ChatterBox {
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        Log.e(LOCAL_TAG, "Neutral button has been pressed");
-                        Log.e(LOCAL_TAG, "RETURN");
                         action.run();
                     }
                 }
                 );
-
-        Log.e(LOCAL_TAG, "Showing alert");
         alert_builder.show();
-        Log.e(LOCAL_TAG, "RETURN");
     }
 
 }

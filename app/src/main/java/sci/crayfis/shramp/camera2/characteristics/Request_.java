@@ -1,20 +1,18 @@
-/*******************************************************************************
- *                                                                             *
- * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones     *
- * @version: ShRAMP v0.0                                                       *
- *                                                                             *
- * @objective: To detect extensive air shower radiation using smartphones      *
- *             for the scientific study of ultra-high energy cosmic rays       *
- *                                                                             *
- * @institution: University of California, Irvine                              *
- * @department:  Physics and Astronomy                                         *
- *                                                                             *
- * @author: Eric Albin                                                         *
- * @email:  Eric.K.Albin@gmail.com                                             *
- *                                                                             *
- * @updated: 25 March 2019                                                     *
- *                                                                             *
- ******************************************************************************/
+/*
+ * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones
+ * @version: ShRAMP v0.0
+ *
+ * @objective: To detect extensive air shower radiation using smartphones
+ *             for the scientific study of ultra-high energy cosmic rays
+ *
+ * @institution: University of California, Irvine
+ * @department:  Physics and Astronomy
+ *
+ * @author: Eric Albin
+ * @email:  Eric.K.Albin@gmail.com
+ *
+ * @updated: 15 April 2019
+ */
 
 package sci.crayfis.shramp.camera2.characteristics;
 
@@ -28,33 +26,32 @@ import android.util.Log;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import sci.crayfis.shramp.MasterController;
 import sci.crayfis.shramp.camera2.util.Parameter;
 import sci.crayfis.shramp.camera2.util.ParameterFormatter;
 import sci.crayfis.shramp.util.ArrayToList;
 
 /**
- * TODO: description, comments and logging
+ * A specialized class for discovering camera abilities, the parameters searched for include:
+ *    REQUEST_AVAILABLE_CAPABILITIES
+ *    REQUEST_MAX_NUM_INPUT_STREAMS
+ *    REQUEST_MAX_NUM_OUTPUT_PROC
+ *    REQUEST_MAX_NUM_OUTPUT_PROC_STALLING
+ *    REQUEST_MAX_NUM_OUTPUT_RAW
+ *    REQUEST_PARTIAL_RESULT_COUNT
+ *    REQUEST_PIPELINE_MAX_DEPTH
  */
 @TargetApi(21)
 abstract class Request_ extends Reprocess_ {
-
-    // Constructors
-    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-    // Request_.....................................................................................
-    /**
-     * TODO: description, comments and logging
-     */
-    protected Request_() { super(); }
 
     // Protected Overriding Instance Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // read.........................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param cameraCharacteristics bla
-     * @param characteristicsMap bla
+     * Continue discovering abilities with specialized classes
+     * @param cameraCharacteristics Encapsulation of camera abilities
+     * @param characteristicsMap A mapping of characteristics names to their respective parameter options
      */
     @Override
     protected void read(@NonNull CameraCharacteristics cameraCharacteristics,
@@ -79,7 +76,12 @@ abstract class Request_ extends Reprocess_ {
 
             if (keychain.contains(key)) {
                 int[]  capabilities  = cameraCharacteristics.get(key);
-                assert capabilities != null;
+                if (capabilities == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Capabilities cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
                 List<Integer> available = ArrayToList.convert(capabilities);
 
                 Integer BACKWARD_COMPATIBLE          = CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_BACKWARD_COMPATIBLE;
@@ -92,9 +94,9 @@ abstract class Request_ extends Reprocess_ {
                 Integer YUV_REPROCESSING             = null;
                 Integer DEPTH_OUTPUT                 = null;
                 Integer CONSTRAINED_HIGH_SPEED_VIDEO = null;
-                Integer MOTION_TRACKING              = CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_MOTION_TRACKING;
-                Integer LOGICAL_MULTI_CAMERA         = CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_LOGICAL_MULTI_CAMERA;
-                Integer MONOCHROME                   = CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_MONOCHROME;
+                Integer MOTION_TRACKING              = null;
+                Integer LOGICAL_MULTI_CAMERA         = null;
+                Integer MONOCHROME                   = null;
 
                 if (Build.VERSION.SDK_INT >= 22) {
                     READ_SENSOR_SETTINGS         = CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_READ_SENSOR_SETTINGS;
@@ -106,6 +108,12 @@ abstract class Request_ extends Reprocess_ {
                     YUV_REPROCESSING             = CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_YUV_REPROCESSING;
                     DEPTH_OUTPUT                 = CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_DEPTH_OUTPUT;
                     CONSTRAINED_HIGH_SPEED_VIDEO = CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_CONSTRAINED_HIGH_SPEED_VIDEO;
+                }
+
+                if (Build.VERSION.SDK_INT >= 28) {
+                    MOTION_TRACKING              = CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_MOTION_TRACKING;
+                    LOGICAL_MULTI_CAMERA         = CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_LOGICAL_MULTI_CAMERA;
+                    MONOCHROME                   = CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_MONOCHROME;
                 }
 
                 valueString = "( ";
@@ -151,7 +159,12 @@ abstract class Request_ extends Reprocess_ {
                 valueString += ")";
 
                 value = available.toArray(new Integer[0]);
-                assert value != null;
+                if (value == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Abilities cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 formatter = new ParameterFormatter<Integer[]>(valueString) {
                     @NonNull
@@ -183,7 +196,12 @@ abstract class Request_ extends Reprocess_ {
 
                 if (keychain.contains(key)) {
                     value = cameraCharacteristics.get(key);
-                    assert value != null;
+                    if (value == null) {
+                        // TODO: error
+                        Log.e(Thread.currentThread().getName(), "Max number of input streams cannot be null");
+                        MasterController.quitSafely();
+                        return;
+                    }
 
                     formatter = new ParameterFormatter<Integer>() {
                         @NonNull
@@ -215,7 +233,12 @@ abstract class Request_ extends Reprocess_ {
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
-                assert value != null;
+                if (value == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Max number of output proc cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 formatter = new ParameterFormatter<Integer>() {
                     @NonNull
@@ -246,7 +269,12 @@ abstract class Request_ extends Reprocess_ {
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
-                assert value != null;
+                if (value == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Max number of output proc stalling cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 formatter = new ParameterFormatter<Integer>() {
                     @NonNull
@@ -277,7 +305,12 @@ abstract class Request_ extends Reprocess_ {
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
-                assert value != null;
+                if (value == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Max number of output raw cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 formatter = new ParameterFormatter<Integer>() {
                     @NonNull
@@ -308,7 +341,12 @@ abstract class Request_ extends Reprocess_ {
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
-                assert value != null;
+                if (value == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Partial result count cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 formatter = new ParameterFormatter<Integer>() {
                     @NonNull
@@ -339,7 +377,12 @@ abstract class Request_ extends Reprocess_ {
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
-                assert value != null;
+                if (value == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Pipeline depth cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 formatter = new ParameterFormatter<Byte>() {
                     @NonNull
@@ -358,4 +401,5 @@ abstract class Request_ extends Reprocess_ {
         }
         //==========================================================================================
     }
+
 }

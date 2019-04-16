@@ -1,20 +1,18 @@
-/*******************************************************************************
- *                                                                             *
- * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones     *
- * @version: ShRAMP v0.0                                                       *
- *                                                                             *
- * @objective: To detect extensive air shower radiation using smartphones      *
- *             for the scientific study of ultra-high energy cosmic rays       *
- *                                                                             *
- * @institution: University of California, Irvine                              *
- * @department:  Physics and Astronomy                                         *
- *                                                                             *
- * @author: Eric Albin                                                         *
- * @email:  Eric.K.Albin@gmail.com                                             *
- *                                                                             *
- * @updated: 25 March 2019                                                     *
- *                                                                             *
- ******************************************************************************/
+/*
+ * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones
+ * @version: ShRAMP v0.0
+ *
+ * @objective: To detect extensive air shower radiation using smartphones
+ *             for the scientific study of ultra-high energy cosmic rays
+ *
+ * @institution: University of California, Irvine
+ * @department:  Physics and Astronomy
+ *
+ * @author: Eric Albin
+ * @email:  Eric.K.Albin@gmail.com
+ *
+ * @updated: 15 April 2019
+ */
 
 package sci.crayfis.shramp.camera2.characteristics;
 
@@ -28,33 +26,26 @@ import android.util.Log;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import sci.crayfis.shramp.MasterController;
 import sci.crayfis.shramp.camera2.util.Parameter;
 import sci.crayfis.shramp.camera2.util.ParameterFormatter;
 import sci.crayfis.shramp.util.ArrayToList;
 
 /**
- * TODO: description, comments and logging
+ * A specialized class for discovering camera abilities, the parameters searched for include:
+ *    DISTORTION_CORRECTION_AVAILABLE_MODES
  */
 @TargetApi(21)
 abstract class Distortion_ extends Depth_ {
-
-    // Constructors
-    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-    // Distortion_..................................................................................
-    /**
-     * TODO: description, comments and logging
-     */
-    protected Distortion_() { super(); }
 
     // Protected Overriding Instance Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // read.........................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param cameraCharacteristics bla
-     * @param characteristicsMap bla
+     * Continue discovering abilities with specialized classes
+     * @param cameraCharacteristics Encapsulation of camera abilities
+     * @param characteristicsMap A mapping of characteristics names to their respective parameter options
      */
     @Override
     protected void read(@NonNull CameraCharacteristics cameraCharacteristics,
@@ -80,7 +71,12 @@ abstract class Distortion_ extends Depth_ {
 
                 if (keychain.contains(key)) {
                     int[]  modes  = cameraCharacteristics.get(key);
-                    assert modes != null;
+                    if (modes == null) {
+                        // TODO: error
+                        Log.e(Thread.currentThread().getName(), "Distortion modes cannot be null");
+                        MasterController.quitSafely();
+                        return;
+                    }
                     List<Integer> options = ArrayToList.convert(modes);
 
                     Integer OFF          = CameraMetadata.DISTORTION_CORRECTION_MODE_OFF;
@@ -114,4 +110,5 @@ abstract class Distortion_ extends Depth_ {
         }
         //==========================================================================================
     }
+
 }

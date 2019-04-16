@@ -26,30 +26,30 @@ import android.support.annotation.NonNull;
 // Low priority
 
 /**
- * Ambient Light Sensors
+ * Ambient Temperature Sensors
  */
 @TargetApi(21)
-final class Light extends BasicSensor {
+final class Temperature extends BasicSensor {
 
     // Private Class Constants
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    private final static String mDescription = "Ambient illuminance";
-    private final static String mUnits       = "Lux";
+    private final static String mDescription = "Ambient air temperature";
+    private final static String mUnits       = "Celsius";
 
-    // Illuminance is a scalar quantity (dimensionality = 1)
+    // Temperature is a scalar quantity (dimensionality = 1)
     private final static int mDimensions = 1;
 
     // Constructors
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    // Light........................................................................................
+    // Temperature...........................................................................
     /**
-     * Create a new light sensor
+     * Create new temperature sensor
      * @param sensor System hardware reference
      * @param saveHistory True to enable saving pressure history, false to disable
      */
-    Light(@NonNull Sensor sensor, boolean saveHistory) {
+    Temperature(@NonNull Sensor sensor, boolean saveHistory) {
         super(sensor, mDescription, mUnits, mDimensions, saveHistory);
     }
 

@@ -1,20 +1,18 @@
-/*******************************************************************************
- *                                                                             *
- * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones     *
- * @version: ShRAMP v0.0                                                       *
- *                                                                             *
- * @objective: To detect extensive air shower radiation using smartphones      *
- *             for the scientific study of ultra-high energy cosmic rays       *
- *                                                                             *
- * @institution: University of California, Irvine                              *
- * @department:  Physics and Astronomy                                         *
- *                                                                             *
- * @author: Eric Albin                                                         *
- * @email:  Eric.K.Albin@gmail.com                                             *
- *                                                                             *
- * @updated: 25 March 2019                                                     *
- *                                                                             *
- ******************************************************************************/
+/*
+ * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones
+ * @version: ShRAMP v0.0
+ *
+ * @objective: To detect extensive air shower radiation using smartphones
+ *             for the scientific study of ultra-high energy cosmic rays
+ *
+ * @institution: University of California, Irvine
+ * @department:  Physics and Astronomy
+ *
+ * @author: Eric Albin
+ * @email:  Eric.K.Albin@gmail.com
+ *
+ * @updated: 15 April 2019
+ */
 
 package sci.crayfis.shramp.camera2.requests;
 
@@ -31,12 +29,13 @@ import android.util.Log;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import sci.crayfis.shramp.MasterController;
 import sci.crayfis.shramp.camera2.CameraController;
 import sci.crayfis.shramp.camera2.util.Parameter;
 import sci.crayfis.shramp.util.ArrayToList;
 
 /**
- * TODO: description, comments and logging
+ * Public access to building a CaptureRequest using optimal settings for the current hardware
  */
 @TargetApi(21)
 final public class RequestMaker extends step16_Tonemap_ {
@@ -45,7 +44,7 @@ final public class RequestMaker extends step16_Tonemap_ {
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // mInstance....................................................................................
-    // TODO: description
+    // Reference to single instance of this class
     private final static RequestMaker mInstance = new RequestMaker();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -61,7 +60,7 @@ final public class RequestMaker extends step16_Tonemap_ {
 
     // RequestMaker.................................................................................
     /**
-     * TODO: description, comments and logging
+     * Disabled
      */
     private RequestMaker() {}
 
@@ -70,24 +69,39 @@ final public class RequestMaker extends step16_Tonemap_ {
 
     // makeDefault..................................................................................
     /**
-     * TODO: description, comments and logging
+     * Loads an optimized CaptureRequest into the active Camera
      */
+    // Quiet compiler -- TODO: not sure what causes this
     @SuppressWarnings("unchecked")
     public static void makeDefault() {
-        Log.e(Thread.currentThread().getName(), "RequestMaker makeDefault");
 
         LinkedHashMap<CaptureRequest.Key, Parameter> captureRequestMap = new LinkedHashMap<>();
 
         CameraDevice cameraDevice = CameraController.getOpenedCameraDevice();
-        assert cameraDevice != null;
+        if (cameraDevice == null) {
+            // TODO: error
+            Log.e(Thread.currentThread().getName(), "Camera device cannot be null");
+            MasterController.quitSafely();
+            return;
+        }
 
         LinkedHashMap<CameraCharacteristics.Key, Parameter> characteristicsMap;
         characteristicsMap = CameraController.getOpenedCharacteristicsMap();
-        assert characteristicsMap != null;
+        if (characteristicsMap == null) {
+            // TODO: error
+            Log.e(Thread.currentThread().getName(), "Characteristics map cannot be null");
+            MasterController.quitSafely();
+            return;
+        }
 
         List<CaptureRequest.Key<?>> supportedKeys;
         supportedKeys = CameraController.getAvailableCaptureRequestKeys();
-        assert supportedKeys != null;
+        if (supportedKeys == null) {
+            // TODO: error
+            Log.e(Thread.currentThread().getName(), "Supported keys cannot be null");
+            MasterController.quitSafely();
+            return;
+        }
 
         //==========================================================================================
 
@@ -99,10 +113,20 @@ final public class RequestMaker extends step16_Tonemap_ {
             key = CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES;
 
             parameter = characteristicsMap.get(key);
-            assert parameter != null;
+            if (parameter == null) {
+                // TODO: error
+                Log.e(Thread.currentThread().getName(), "CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES cannot be null");
+                MasterController.quitSafely();
+                return;
+            }
 
-            Integer[] capabilities  = parameter.getValue();
-            assert capabilities    != null;
+            Integer[] capabilities = parameter.getValue();
+            if (capabilities == null) {
+                // TODO: error
+                Log.e(Thread.currentThread().getName(), "Capabilities array cannot be null");
+                MasterController.quitSafely();
+                return;
+            }
             List<Integer> abilities = ArrayToList.convert(capabilities);
 
             if (abilities.contains(CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_MANUAL_SENSOR)) {
@@ -120,9 +144,14 @@ final public class RequestMaker extends step16_Tonemap_ {
         }
         catch (CameraAccessException e) {
             // TODO: error
+            Log.e(Thread.currentThread().getName(), "Camera cannot be accessed");
+            MasterController.quitSafely();
+            return;
         }
-        assert builder != null;
 
+        //==========================================================================================
+
+        // Pass to superclasses to complete the build
         mInstance.makeDefault(builder, characteristicsMap, captureRequestMap);
 
         CameraController.setCaptureRequestTemplate(template);
@@ -132,11 +161,10 @@ final public class RequestMaker extends step16_Tonemap_ {
 
     // write........................................................................................
     /**
-     * TODO: description, comments and logging
-     *
-     * @param label bla
-     * @param map bla
-     * @param keychain bla
+     * Display the CaptureRequest details, called from Camera
+     * @param label (Optional) Custom title
+     * @param map Details of CaptureRequest in terms of Parameters<T>
+     * @param keychain (Optional) All keys that potentially can be set
      */
     public static void write(@Nullable String label,
                              @NonNull LinkedHashMap<CaptureRequest.Key, Parameter> map,
@@ -169,10 +197,10 @@ final public class RequestMaker extends step16_Tonemap_ {
 
     // makeDefault..................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param builder bla
-     * @param characteristicsMap bla
-     * @param captureRequestMap bla
+     * Continue creating a default CaptureRequest with specialized super classes
+     * @param builder CaptureRequest.Builder in progress
+     * @param characteristicsMap Parameter map of characteristics
+     * @param captureRequestMap Parameter map of capture request settings
      */
     @SuppressWarnings("unchecked")
     @Override

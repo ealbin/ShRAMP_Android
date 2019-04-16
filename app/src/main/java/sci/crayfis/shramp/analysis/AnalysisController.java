@@ -1,20 +1,18 @@
-/*******************************************************************************
- *                                                                             *
- * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones     *
- * @version: ShRAMP v0.0                                                       *
- *                                                                             *
- * @objective: To detect extensive air shower radiation using smartphones      *
- *             for the scientific study of ultra-high energy cosmic rays       *
- *                                                                             *
- * @institution: University of California, Irvine                              *
- * @department:  Physics and Astronomy                                         *
- *                                                                             *
- * @author: Eric Albin                                                         *
- * @email:  Eric.K.Albin@gmail.com                                             *
- *                                                                             *
- * @updated: 25 March 2019                                                     *
- *                                                                             *
- ******************************************************************************/
+/*
+ * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones
+ * @version: ShRAMP v0.0
+ *
+ * @objective: To detect extensive air shower radiation using smartphones
+ *             for the scientific study of ultra-high energy cosmic rays
+ *
+ * @institution: University of California, Irvine
+ * @department:  Physics and Astronomy
+ *
+ * @author: Eric Albin
+ * @email:  Eric.K.Albin@gmail.com
+ *
+ * @updated: 15 April 2019
+ */
 
 package sci.crayfis.shramp.analysis;
 
@@ -34,6 +32,7 @@ import org.apache.commons.math3.special.Erf;
 import org.jetbrains.annotations.Contract;
 
 import sci.crayfis.shramp.GlobalSettings;
+import sci.crayfis.shramp.MasterController;
 import sci.crayfis.shramp.ScriptC_PostProcessing;
 import sci.crayfis.shramp.ScriptC_LiveProcessing;
 import sci.crayfis.shramp.camera2.CameraController;
@@ -41,7 +40,7 @@ import sci.crayfis.shramp.camera2.capture.CaptureController;
 import sci.crayfis.shramp.util.NumToString;
 
 /**
- * TODO: description, comments and logging
+ * Public interface to the analysis (ImageProcessor) code
  */
 @TargetApi(21)
 public abstract class AnalysisController {
@@ -50,45 +49,51 @@ public abstract class AnalysisController {
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // WAIT.........................................................................................
-    // TODO: description
+    // Dummy object for calling wait()
     private final static Object WAIT = new Object();
 
     // Private Class Fields
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // mRS..........................................................................................
-    // TODO: description
+    // System RenderScript object
     private static RenderScript mRS;
 
     // mUCharType...................................................................................
-    // TODO: description
+    // RenderScript Allocation unsigned char type [width x height pixels]
     private static Type mUCharType;
 
     // mUShortType..................................................................................
-    // TODO: description
+    // RenderScript Allocation unsigned short type [width x height pixels]
     private static Type mUShortType;
 
     // mUIntType....................................................................................
-    // TODO: description
+    // RenderScript Allocation unsigned int type [width x height pixels]
     private static Type mUIntType;
 
     // mFloatType...................................................................................
-    // TODO: description
+    // RenderScript Allocation float type [width x height pixels]
     private static Type mFloatType;
 
     // mDoubleType..................................................................................
-    // TODO: description
+    // RenderScript Allocation double type [width x height pixels]
     private static Type mDoubleType;
 
     // mSimpleLongType..............................................................................
-    // TODO: description
+    // RenderScript Allocation signed long type [1 x 1]
     private static Type mSimpleLongType;
 
     // mNpixels.....................................................................................
-    // TODO: description
+    // Total number of pixels [width * height pixels]
     private static int mNpixels;
 
+    // mNeedsCalibration............................................................................
+    // TODO: probably remove in the future, a switch for doing calibration
     private static boolean mNeedsCalibration;
+
+    // mThresholdOffset.............................................................................
+    // TODO: probably remove in the future, a fudge factor for controlling the significance rate
+    private static double mThresholdOffset = 0.;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -99,8 +104,8 @@ public abstract class AnalysisController {
 
     // initialize...................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param activity bla
+     * Set up RenderScript things
+     * @param activity Reference to main activity
      */
     public static void initialize(@NonNull Activity activity) {
 
@@ -120,13 +125,20 @@ public abstract class AnalysisController {
         Element simpleLongElement = Element.I64(mRS);
 
         Size outputSize = CameraController.getOutputSize();
-        assert outputSize != null;
+        if (outputSize == null) {
+            // TODO: error
+            Log.e(Thread.currentThread().getName(), "Output size cannot be null");
+            MasterController.quitSafely();
+            return;
+        }
         int width  = outputSize.getWidth();
         int height = outputSize.getHeight();
         mNpixels = width * height;
 
         ImageWrapper.setNpixels(height, width);
-        PrintAndSave.setNpixels(mNpixels);
+
+        // TODO: remove
+        PrintAllocations.setNpixels(mNpixels);
 
         mUCharType  = new Type.Builder(mRS, ucharElement ).setX(width).setY(height).create();
         mUShortType = new Type.Builder(mRS, ushortElement).setX(width).setY(height).create();
@@ -137,7 +149,12 @@ public abstract class AnalysisController {
         mSimpleLongType = new Type.Builder(mRS, simpleLongElement).setX(1).setY(1).create();
 
         Integer outputFormat = CameraController.getOutputFormat();
-        assert outputFormat != null;
+        if (outputFormat == null) {
+            // TODO: error
+            Log.e(Thread.currentThread().getName(), "Output format cannot be null");
+            MasterController.quitSafely();
+            return;
+        }
         switch (outputFormat) {
             case (ImageFormat.YUV_420_888): {
                 ImageWrapper.setAs8bitData();
@@ -149,17 +166,20 @@ public abstract class AnalysisController {
                 ImageProcessor.setImageAllocation(newUShortAllocation());
                 break;
             }
-
             default: {
                 // TODO: error
+                Log.e(Thread.currentThread().getName(), "Output format is neither YUV_420_888 or RAW_SENSOR");
+                MasterController.quitSafely();
+                return;
             }
         }
 
         // Must happen after ImageWrapper is set up (above)
+        // TODO: maybe make it so it can be set at the same time?
         OutputWrapper.configure();
 
-        // Check for existing calibrations
-        // if none, set need calibration flag
+        // TODO: Check for existing calibrations
+        // if none, set need calibration flag and load empty Allocations into statistics
         mNeedsCalibration = true;
         ImageProcessor.setStatistics(newFloatAllocation(), newFloatAllocation(), newFloatAllocation());
 
@@ -170,13 +190,18 @@ public abstract class AnalysisController {
         ImageProcessor.resetTotals();
     }
 
+    // needsCalibration.............................................................................
+    /**
+     * @return True if calibration run is needed, false if calibrations were successfully loaded
+     */
+    @Contract(pure = true)
     public static boolean needsCalibration() {
         return mNeedsCalibration;
     }
 
     // enableSignificance...........................................................................
     /**
-     * TODO: description, comments and logging
+     * Enable live significance measurement: (pixel value - mean) / stddev
      */
     public static void enableSignificance() {
         ImageProcessor.enableSignificance();
@@ -184,7 +209,7 @@ public abstract class AnalysisController {
 
     // disableSignificance..........................................................................
     /**
-     * TODO: description, comments and logging
+     * Disable live significance measurement
      */
     public static void disableSignificance() {
         ImageProcessor.disableSignificance();
@@ -192,8 +217,7 @@ public abstract class AnalysisController {
 
     // isSignificanceEnabled........................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return True if significance is being computed, false if not
      */
     @Contract(pure = true)
     public static boolean isSignificanceEnabled() {
@@ -202,8 +226,8 @@ public abstract class AnalysisController {
 
     // setSignificanceThreshold.....................................................................
     /**
-     * TODO: description, comments and logging
-     * @param n_frames bla
+     * Figure out what the threshold should be for declaring a recorded pixel value significant
+     * @param n_frames The number of frames that will be processed in this run
      */
     public static void setSignificanceThreshold(int n_frames) {
         double n_samples = (double) mNpixels * n_frames;
@@ -212,23 +236,18 @@ public abstract class AnalysisController {
         double probabilityThreshold = n_chanceAboveThreshold / n_samples;
 
         double threshold = Math.sqrt(2.) * Erf.erfInv(1. - 2. * probabilityThreshold);
+
+        // TODO: remove in the future
         threshold += mThresholdOffset;
 
         ImageProcessor.setSignificanceThreshold((float) threshold);
-        Log.e(Thread.currentThread().getName(), "__________Threshold: " + NumToString.decimal(threshold));
-    }
-
-    private static double mThresholdOffset = 0.;
-
-    static void increaseSignificanceThreshold() {
-        mThresholdOffset += GlobalSettings.THRESHOLD_STEP;
-        CaptureController.resetCaptureSession();
+        Log.e(Thread.currentThread().getName(), "Significance threshold level: "
+                + NumToString.decimal(threshold));
     }
 
     // isBusy.......................................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return True if image processor is working, false if in idle
      */
     public static boolean isBusy() {
         return ImageProcessor.isBusy();
@@ -236,7 +255,7 @@ public abstract class AnalysisController {
 
     // resetRunningTotals...........................................................................
     /**
-     * TODO: description, comments and logging
+     * Reset running totals in ImageProcessor
      */
     public static void resetRunningTotals() {
         ImageProcessor.resetTotals();
@@ -244,7 +263,7 @@ public abstract class AnalysisController {
 
     // runStatistics................................................................................
     /**
-     * TODO: description, comments and logging
+     * Post process a run and compute run statistics
      */
     public static void runStatistics(String filename) {
         synchronized (WAIT) {
@@ -252,9 +271,9 @@ public abstract class AnalysisController {
             DataQueue.purge();
             while (!DataQueue.isEmpty() || ImageProcessor.isBusy()) {
                 try {
-                    WAIT.wait(GlobalSettings.DEFAULT_WAIT_MS);
-                    Log.e(Thread.currentThread().getName(), "Waiting for queue to empty/processor to finish");
+                    Log.e(Thread.currentThread().getName(), "Waiting for queue to empty/processor to finish before running statistics");
                     DataQueue.purge();
+                    WAIT.wait(GlobalSettings.DEFAULT_WAIT_MS);
                 }
                 catch (InterruptedException e) {
                     // TODO: error
@@ -265,8 +284,8 @@ public abstract class AnalysisController {
 
             while (ImageProcessor.isBusy()) {
                 try {
-                    WAIT.wait(GlobalSettings.DEFAULT_WAIT_MS);
                     Log.e(Thread.currentThread().getName(), "Waiting for processor to finish with statistics");
+                    WAIT.wait(GlobalSettings.DEFAULT_WAIT_MS);
                 }
                 catch (InterruptedException e) {
                     // TODO: error
@@ -280,8 +299,7 @@ public abstract class AnalysisController {
 
     // newUCharAllocation...........................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return Empty unsigned char Allocation [width x height pixels]
      */
     @NonNull
     static Allocation newUCharAllocation() {
@@ -290,8 +308,7 @@ public abstract class AnalysisController {
 
     // newUShortAllocation..........................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return Empty unsigned short Allocation [width x height pixels]
      */
     @NonNull
     static Allocation newUShortAllocation() {
@@ -300,8 +317,7 @@ public abstract class AnalysisController {
 
     // newUIntAllocation............................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return Empty unsigned integer Allocation [width x height pixels]
      */
     static Allocation newUIntAllocation() {
         return Allocation.createTyped(mRS, mUIntType, Allocation.USAGE_SCRIPT);
@@ -309,8 +325,7 @@ public abstract class AnalysisController {
 
     // newFloatAllocation...........................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return Empty float Allocation [width x height pixels]
      */
     @NonNull
     static Allocation newFloatAllocation() {
@@ -319,8 +334,7 @@ public abstract class AnalysisController {
 
     // newDoubleAllocation..........................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return Empty double Allocation [width x height pixels]
      */
     @NonNull
     static Allocation newDoubleAllocation() {
@@ -329,24 +343,31 @@ public abstract class AnalysisController {
 
     // newSimpleLongAllocation
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return Empty signed long Allocation [1 x 1]
      */
     static Allocation newSimpleLongAllocation() {
         return Allocation.createTyped(mRS, mSimpleLongType, Allocation.USAGE_SCRIPT);
     }
 
-    // resetAllocation..............................................................................
+    // destroyAllocation............................................................................
     /**
-     * TODO: descripion, comments and logging
-     * @param allocation bla
+     * TODO: might not be needed, still not completely sure about freeing Allocations
+     * @param allocation Allocation to be destroyed
      */
-    static void resetAllocation(@Nullable Allocation allocation) {
+    static void destroyAllocation(@Nullable Allocation allocation) {
         if (allocation == null) {
             return;
         }
         allocation.destroy();
         allocation = null;
+    }
+
+    /**
+     * TODO: remove in the future, fudge-factor for controlling significance rate
+     */
+    static void increaseSignificanceThreshold() {
+        mThresholdOffset += GlobalSettings.THRESHOLD_STEP;
+        CaptureController.resetCaptureSession();
     }
 
 }

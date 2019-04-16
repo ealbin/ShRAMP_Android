@@ -1,20 +1,18 @@
-/*******************************************************************************
- *                                                                             *
- * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones     *
- * @version: ShRAMP v0.0                                                       *
- *                                                                             *
- * @objective: To detect extensive air shower radiation using smartphones      *
- *             for the scientific study of ultra-high energy cosmic rays       *
- *                                                                             *
- * @institution: University of California, Irvine                              *
- * @department:  Physics and Astronomy                                         *
- *                                                                             *
- * @author: Eric Albin                                                         *
- * @email:  Eric.K.Albin@gmail.com                                             *
- *                                                                             *
- * @updated: 25 March 2019                                                     *
- *                                                                             *
- ******************************************************************************/
+/*
+ * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones
+ * @version: ShRAMP v0.0
+ *
+ * @objective: To detect extensive air shower radiation using smartphones
+ *             for the scientific study of ultra-high energy cosmic rays
+ *
+ * @institution: University of California, Irvine
+ * @department:  Physics and Astronomy
+ *
+ * @author: Eric Albin
+ * @email:  Eric.K.Albin@gmail.com
+ *
+ * @updated: 15 April 2019
+ */
 
 package sci.crayfis.shramp.camera2.characteristics;
 
@@ -30,7 +28,7 @@ import java.util.List;
 import sci.crayfis.shramp.camera2.util.Parameter;
 
 /**
- * TODO: description, comments and logging
+ * Public access to discovering all abilities of a camera
  */
 @TargetApi(21)
 public final class CharacteristicsReader extends Tonemap_ {
@@ -39,7 +37,7 @@ public final class CharacteristicsReader extends Tonemap_ {
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // mInstance....................................................................................
-    // TODO: description
+    // Reference to single instance of this class
     private static final CharacteristicsReader mInstance = new CharacteristicsReader();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -51,21 +49,19 @@ public final class CharacteristicsReader extends Tonemap_ {
 
     // CharacteristicsReader........................................................................
     /**
-     * TODO: description, comments and logging
+     * Disabled
      */
-    private CharacteristicsReader() {
-        super();
-    }
+    private CharacteristicsReader() {}
 
     // Public Class Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // read.........................................................................................
     /**
-     * TODO: description, comments and logging
-     *
-     * @param cameraCharacteristics bla
-     * @return bla
+     * Discovers the abilities of the active camera.  In some cases, filters or optimizes
+     * parameter options.
+     * @param cameraCharacteristics Encapsulation of camera abilities
+     * @return A mapping of characteristics names to their respective parameter options
      */
     @NonNull
     public static LinkedHashMap<CameraCharacteristics.Key, Parameter> read(
@@ -80,11 +76,10 @@ public final class CharacteristicsReader extends Tonemap_ {
 
     // write........................................................................................
     /**
-     * TODO: description, comments and logging
-     *
-     * @param label bla
-     * @param map bla
-     * @param keychain bla
+     * Display all of the abilities of the camera
+     * @param label (Optional) Custom title
+     * @param map Details of camera abilities in terms of Parameters<T>
+     * @param keychain (Optional) All keys that can be potentially set
      */
     public static void write(@Nullable String label,
                              @NonNull LinkedHashMap<CameraCharacteristics.Key, Parameter> map,
@@ -117,10 +112,9 @@ public final class CharacteristicsReader extends Tonemap_ {
 
     // read.........................................................................................
     /**
-     * TODO: description, comments and logging
-     *
-     * @param cameraCharacteristics bla
-     * @param characteristicsMap bla
+     * Continue discovering abilities with specialized super classes
+     * @param cameraCharacteristics Encapsulation of camera abilities
+     * @param characteristicsMap A mapping of characteristics names to their respective parameter options
      */
     @Override
     protected void read(@NonNull CameraCharacteristics cameraCharacteristics,

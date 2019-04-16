@@ -1,20 +1,18 @@
-/*******************************************************************************
- *                                                                             *
- * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones     *
- * @version: ShRAMP v0.0                                                       *
- *                                                                             *
- * @objective: To detect extensive air shower radiation using smartphones      *
- *             for the scientific study of ultra-high energy cosmic rays       *
- *                                                                             *
- * @institution: University of California, Irvine                              *
- * @department:  Physics and Astronomy                                         *
- *                                                                             *
- * @author: Eric Albin                                                         *
- * @email:  Eric.K.Albin@gmail.com                                             *
- *                                                                             *
- * @updated: 25 March 2019                                                     *
- *                                                                             *
- ******************************************************************************/
+/*
+ * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones
+ * @version: ShRAMP v0.0
+ *
+ * @objective: To detect extensive air shower radiation using smartphones
+ *             for the scientific study of ultra-high energy cosmic rays
+ *
+ * @institution: University of California, Irvine
+ * @department:  Physics and Astronomy
+ *
+ * @author: Eric Albin
+ * @email:  Eric.K.Albin@gmail.com
+ *
+ * @updated: 15 April 2019
+ */
 
 package sci.crayfis.shramp.camera2.characteristics;
 
@@ -28,33 +26,29 @@ import android.util.Log;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import sci.crayfis.shramp.MasterController;
 import sci.crayfis.shramp.camera2.util.Parameter;
 import sci.crayfis.shramp.camera2.util.ParameterFormatter;
 import sci.crayfis.shramp.util.ArrayToList;
 
 /**
- * TODO: description, comments and logging
+ * A specialized class for discovering camera abilities, the parameters searched for include:
+ *    STATISTICS_INFO_AVAILABLE_FACE_DETECT_MODES
+ *    STATISTICS_INFO_AVAILABLE_HOT_PIXEL_MAP_MODES
+ *    STATISTICS_INFO_AVAILABLE_OIS_DATA_MODES
+ *    STATISTICS_INFO_MAX_FACE_COUNT
  */
 @TargetApi(21)
 abstract class Statistics_ extends Shading_ {
-
-    // Constructors
-    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-    // Statistics_..................................................................................
-    /**
-     * TODO: description, comments and logging
-     */
-    protected Statistics_() { super(); }
 
     // Protected Overriding Instance Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // read.........................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param cameraCharacteristics bla
-     * @param characteristicsMap bla
+     * Continue discovering abilities with specialized classes
+     * @param cameraCharacteristics Encapsulation of camera abilities
+     * @param characteristicsMap A mapping of characteristics names to their respective parameter options
      */
     @Override
     protected void read(@NonNull CameraCharacteristics cameraCharacteristics,
@@ -79,7 +73,12 @@ abstract class Statistics_ extends Shading_ {
 
             if (keychain.contains(key)) {
                 int[]  modes  = cameraCharacteristics.get(key);
-                assert modes != null;
+                if (modes == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Face detect modes cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
                 List<Integer> options = ArrayToList.convert(modes);
 
                 Integer OFF    = CameraMetadata.STATISTICS_FACE_DETECT_MODE_OFF;
@@ -118,10 +117,20 @@ abstract class Statistics_ extends Shading_ {
 
             if (keychain.contains(key)) {
                 boolean[] modes  = cameraCharacteristics.get(key);
-                assert    modes != null;
+                if (   modes == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Hot pixel map modes cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 value = (Boolean[]) ArrayToList.convert(modes).toArray(new Boolean[0]);
-                assert value != null;
+                if (value == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Hot pixel map modes cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 formatter = new ParameterFormatter<Boolean[]>() {
                     @NonNull
@@ -167,7 +176,12 @@ abstract class Statistics_ extends Shading_ {
 
                 if (keychain.contains(key)) {
                     int[] modes = cameraCharacteristics.get(key);
-                    assert modes != null;
+                    if (modes == null) {
+                        // TODO: error
+                        Log.e(Thread.currentThread().getName(), "Shading map modes cannot be null");
+                        MasterController.quitSafely();
+                        return;
+                    }
                     List<Integer> options = ArrayToList.convert(modes);
 
                     Integer OFF = CameraMetadata.STATISTICS_LENS_SHADING_MAP_MODE_OFF;
@@ -208,7 +222,12 @@ abstract class Statistics_ extends Shading_ {
 
                 if (keychain.contains(key)) {
                     int[] modes = cameraCharacteristics.get(key);
-                    assert modes != null;
+                    if (modes == null) {
+                        // TODO: error
+                        Log.e(Thread.currentThread().getName(), "OIS data modes cannot be null");
+                        MasterController.quitSafely();
+                        return;
+                    }
                     List<Integer> options = ArrayToList.convert(modes);
 
                     Integer OFF = CameraMetadata.STATISTICS_OIS_DATA_MODE_OFF;
@@ -247,7 +266,12 @@ abstract class Statistics_ extends Shading_ {
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
-                assert value != null;
+                if (value == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Max face count cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 formatter = new ParameterFormatter<Integer>() {
                     @NonNull
@@ -266,4 +290,5 @@ abstract class Statistics_ extends Shading_ {
         }
         //==========================================================================================
     }
+
 }

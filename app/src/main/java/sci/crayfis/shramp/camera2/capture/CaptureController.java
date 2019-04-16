@@ -1,20 +1,18 @@
-/*******************************************************************************
- *                                                                             *
- * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones     *
- * @version: ShRAMP v0.0                                                       *
- *                                                                             *
- * @objective: To detect extensive air shower radiation using smartphones      *
- *             for the scientific study of ultra-high energy cosmic rays       *
- *                                                                             *
- * @institution: University of California, Irvine                              *
- * @department:  Physics and Astronomy                                         *
- *                                                                             *
- * @author: Eric Albin                                                         *
- * @email:  Eric.K.Albin@gmail.com                                             *
- *                                                                             *
- * @updated: 25 March 2019                                                     *
- *                                                                             *
- ******************************************************************************/
+/*
+ * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones
+ * @version: ShRAMP v0.0
+ *
+ * @objective: To detect extensive air shower radiation using smartphones
+ *             for the scientific study of ultra-high energy cosmic rays
+ *
+ * @institution: University of California, Irvine
+ * @department:  Physics and Astronomy
+ *
+ * @author: Eric Albin
+ * @email:  Eric.K.Albin@gmail.com
+ *
+ * @updated: 15 April 2019
+ */
 
 package sci.crayfis.shramp.camera2.capture;
 
@@ -37,7 +35,7 @@ import sci.crayfis.shramp.MasterController;
 import sci.crayfis.shramp.GlobalSettings;
 import sci.crayfis.shramp.analysis.AnalysisController;
 import sci.crayfis.shramp.analysis.DataQueue;
-import sci.crayfis.shramp.analysis.PrintAndSave;
+import sci.crayfis.shramp.analysis.PrintAllocations;
 import sci.crayfis.shramp.battery.BatteryController;
 import sci.crayfis.shramp.camera2.CameraController;
 import sci.crayfis.shramp.camera2.requests.RequestMaker;
@@ -394,7 +392,7 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
 
             case CALIBRATION_COLD_FAST: {
                 AnalysisController.runStatistics("cold_fast");
-                PrintAndSave.printMeanAndErr();
+                PrintAllocations.printMeanAndErr();
 
                 if (false) {
                     MasterController.quitSafely();
@@ -409,7 +407,7 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
 
             case CALIBRATION_COLD_SLOW: {
                 AnalysisController.runStatistics("cold_slow");
-                PrintAndSave.printMeanAndErr();
+                PrintAllocations.printMeanAndErr();
 
                 mRunMode = Mode.WARMUP;
                 mNextMode = Mode.CALIBRATION_HOT_FAST;
@@ -454,7 +452,7 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
 
             case CALIBRATION_HOT_FAST: {
                 AnalysisController.runStatistics("hot_fast");
-                PrintAndSave.printMeanAndErr();
+                PrintAllocations.printMeanAndErr();
 
                 mRunMode = Mode.CALIBRATION_HOT_SLOW;
                 mTarget.ExposureNanos = GlobalSettings.DEFAULT_SLOW_FPS;
@@ -464,7 +462,7 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
 
             case CALIBRATION_HOT_SLOW: {
                 AnalysisController.runStatistics("hot_slow");
-                PrintAndSave.printMeanAndErr();
+                PrintAllocations.printMeanAndErr();
 
                 mRunMode = Mode.COOLDOWN;
                 coolDown();

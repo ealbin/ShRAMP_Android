@@ -1,20 +1,18 @@
-/*******************************************************************************
- *                                                                             *
- * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones     *
- * @version: ShRAMP v0.0                                                       *
- *                                                                             *
- * @objective: To detect extensive air shower radiation using smartphones      *
- *             for the scientific study of ultra-high energy cosmic rays       *
- *                                                                             *
- * @institution: University of California, Irvine                              *
- * @department:  Physics and Astronomy                                         *
- *                                                                             *
- * @author: Eric Albin                                                         *
- * @email:  Eric.K.Albin@gmail.com                                             *
- *                                                                             *
- * @updated: 25 March 2019                                                     *
- *                                                                             *
- ******************************************************************************/
+/*
+ * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones
+ * @version: ShRAMP v0.0
+ *
+ * @objective: To detect extensive air shower radiation using smartphones
+ *             for the scientific study of ultra-high energy cosmic rays
+ *
+ * @institution: University of California, Irvine
+ * @department:  Physics and Astronomy
+ *
+ * @author: Eric Albin
+ * @email:  Eric.K.Albin@gmail.com
+ *
+ * @updated: 15 April 2019
+ */
 
 package sci.crayfis.shramp.camera2.requests;
 
@@ -28,39 +26,53 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import android.util.Range;
 
+import org.apache.commons.math3.exception.MathInternalError;
+
 import java.util.LinkedHashMap;
 import java.util.List;
 
 import sci.crayfis.shramp.GlobalSettings;
+import sci.crayfis.shramp.MasterController;
 import sci.crayfis.shramp.camera2.CameraController;
 import sci.crayfis.shramp.camera2.util.Parameter;
 import sci.crayfis.shramp.camera2.util.ParameterFormatter;
 import sci.crayfis.shramp.util.ArrayToList;
 
 /**
- * TODO: description, comments and logging
+ * Super-most class for default CaptureRequest creation, these parameters are set first and include:
+ *    CONTROL_MODE
+ *    CONTROL_CAPTURE_INTENT
+ *    CONTROL_AWB_MODE
+ *    CONTROL_AWB_LOCK
+ *    CONTROL_AWB_REGIONS
+ *    CONTROL_AF_MODE
+ *    CONTROL_AF_REGIONS
+ *    CONTROL_AF_TRIGGER
+ *    CONTROL_AE_MODE
+ *    CONTROL_AE_LOCK
+ *    CONTROL_AE_REGIONS
+ *    CONTROL_AE_PRECAPTURE_TRIGGER
+ *    CONTROL_AE_ANTIBANDING_MODE
+ *    CONTROL_AE_EXPOSURE_COMPENSATION
+ *    CONTROL_AE_TARGET_FPS_RANGE
+ *    CONTROL_EFFECT_MODE
+ *    CONTROL_ENABLE_ZSL
+ *    CONTROL_POST_RAW_SENSITIVITY_BOOST
+ *    CONTROL_SCENE_MODE
+ *    CONTROL_VIDEO_STABILIZATION_MODE
  */
 @TargetApi(21)
 abstract class step01_Control_ {
-
-    // Constructors
-    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-    // step01_Control_..............................................................................
-    /**
-     * TODO: description, comments and logging
-     */
-    protected step01_Control_() {}
 
     // Protected Instance Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // makeDefault..................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param builder bla
-     * @param characteristicsMap bla
-     * @param captureRequestMap bla
+     * Creating a default CaptureRequest, setting CONTROL_.* parameters
+     * @param builder CaptureRequest.Builder in progress
+     * @param characteristicsMap Parameter map of characteristics
+     * @param captureRequestMap Parameter map of capture request settings
      */
     @SuppressWarnings("unchecked")
     protected void makeDefault(@NonNull CaptureRequest.Builder builder,
@@ -70,7 +82,12 @@ abstract class step01_Control_ {
         Log.e("             Control_", "setting default Control_ requests");
         List<CaptureRequest.Key<?>> supportedKeys;
         supportedKeys = CameraController.getAvailableCaptureRequestKeys();
-        assert supportedKeys != null;
+        if (supportedKeys == null) {
+            // TODO: error
+            Log.e(Thread.currentThread().getName(), "Supported keys cannot be null");
+            MasterController.quitSafely();
+            return;
+        }
 
         //==========================================================================================
         {
@@ -110,7 +127,12 @@ abstract class step01_Control_ {
                     CameraCharacteristics.Key<int[]> cKey;
                     cKey = CameraCharacteristics.CONTROL_AVAILABLE_MODES;
                     property = characteristicsMap.get(cKey);
-                    assert property != null;
+                    if (property == null) {
+                        // TODO: error
+                        Log.e(Thread.currentThread().getName(), "Control available modes cannot null");
+                        MasterController.quitSafely();
+                        return;
+                    }
 
                     setting = new Parameter<>(name, property.getValue(), property.getUnits(),
                                                                          property.getFormatter());
@@ -119,7 +141,12 @@ abstract class step01_Control_ {
                     CameraCharacteristics.Key<Integer> cKey;
                     cKey = CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL;
                     property = characteristicsMap.get(cKey);
-                    assert property != null;
+                    if (property == null) {
+                        // TODO: error
+                        Log.e(Thread.currentThread().getName(), "Supported hardware level cannot be null");
+                        MasterController.quitSafely();
+                        return;
+                    }
 
                     if (property.toString().equals("LEGACY")
                             || property.toString().equals("EXTERNAL")) {
@@ -167,10 +194,20 @@ abstract class step01_Control_ {
 
                 cKey = CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES;
                 properties = characteristicsMap.get(cKey);
-                assert properties != null;
+                if (properties == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Available capabilities cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 Integer[] capabilities = properties.getValue();
-                assert capabilities != null;
+                if (capabilities == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Capabilities cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
                 List<Integer> abilities = ArrayToList.convert(capabilities);
 
                 //Integer CUSTOM           = CameraMetadata.CONTROL_CAPTURE_INTENT_CUSTOM;
@@ -229,7 +266,12 @@ abstract class step01_Control_ {
 
                 Parameter<Integer> mode;
                 mode = captureRequestMap.get(CaptureRequest.CONTROL_MODE);
-                assert mode != null;
+                if (mode == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Control mode cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 if (GlobalSettings.FORCE_CONTROL_MODE_AUTO) {
                     value = CameraMetadata.CONTROL_AWB_MODE_AUTO;
@@ -249,7 +291,12 @@ abstract class step01_Control_ {
 
                     cKey = CameraCharacteristics.CONTROL_AWB_AVAILABLE_MODES;
                     property = characteristicsMap.get(cKey);
-                    assert property != null;
+                    if (property == null) {
+                        // TODO: error
+                        Log.e(Thread.currentThread().getName(), "AWB modes cannot be null");
+                        MasterController.quitSafely();
+                        return;
+                    }
 
                     setting = new Parameter<>(name, property.getValue(), property.getUnits(),
                                                                          property.getFormatter());
@@ -282,7 +329,12 @@ abstract class step01_Control_ {
 
                 Parameter<Integer> mode;
                 mode = captureRequestMap.get(CaptureRequest.CONTROL_AWB_MODE);
-                assert mode != null;
+                if (mode == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "AWB mode cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 if (!mode.toString().contains("AUTO")) {
                     setting = new Parameter<>(name);
@@ -294,7 +346,12 @@ abstract class step01_Control_ {
 
                     cKey     = CameraCharacteristics.CONTROL_AWB_LOCK_AVAILABLE;
                     property = characteristicsMap.get(cKey);
-                    assert property != null;
+                    if (property == null) {
+                        // TODO: error
+                        Log.e(Thread.currentThread().getName(), "AWB lock cannot be null");
+                        MasterController.quitSafely();
+                        return;
+                    }
 
                     formatter = new ParameterFormatter<Boolean>() {
                         @NonNull
@@ -378,7 +435,12 @@ abstract class step01_Control_ {
 
                 Parameter<Integer> mode;
                 mode = captureRequestMap.get(CaptureRequest.CONTROL_MODE);
-                assert mode != null;
+                if (mode == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Control mode cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 if (GlobalSettings.FORCE_CONTROL_MODE_AUTO) {
                     value = CameraMetadata.CONTROL_AF_MODE_AUTO;
@@ -398,7 +460,12 @@ abstract class step01_Control_ {
 
                     cKey = CameraCharacteristics.CONTROL_AF_AVAILABLE_MODES;
                     property = characteristicsMap.get(cKey);
-                    assert property != null;
+                    if (property == null) {
+                        // TODO: error
+                        Log.e(Thread.currentThread().getName(), "AF modes cannot be null");
+                        MasterController.quitSafely();
+                        return;
+                    }
 
                     setting = new Parameter<>(name, property.getValue(), property.getUnits(),
                             property.getFormatter());
@@ -495,7 +562,12 @@ abstract class step01_Control_ {
 
                 Parameter<Integer> mode;
                 mode = captureRequestMap.get(CaptureRequest.CONTROL_MODE);
-                assert mode != null;
+                if (mode == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Control mode cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 if (GlobalSettings.FORCE_CONTROL_MODE_AUTO) {
                     value = CameraMetadata.CONTROL_AWB_MODE_AUTO;
@@ -515,7 +587,12 @@ abstract class step01_Control_ {
 
                     cKey = CameraCharacteristics.CONTROL_AE_AVAILABLE_MODES;
                     property = characteristicsMap.get(cKey);
-                    assert property != null;
+                    if (property == null) {
+                        // TODO: error
+                        Log.e(Thread.currentThread().getName(), "AE modes cannot be null");
+                        MasterController.quitSafely();
+                        return;
+                    }
 
                     setting = new Parameter<>(name, property.getValue(), property.getUnits(),
                             property.getFormatter());
@@ -548,7 +625,12 @@ abstract class step01_Control_ {
 
                 Parameter<Integer> mode;
                 mode = captureRequestMap.get(CaptureRequest.CONTROL_AE_MODE);
-                assert mode != null;
+                if (mode == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "AE mode cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 if (!mode.toString().contains("AUTO")) {
                     setting = new Parameter<>(name);
@@ -560,7 +642,12 @@ abstract class step01_Control_ {
 
                     cKey     = CameraCharacteristics.CONTROL_AE_LOCK_AVAILABLE;
                     property = characteristicsMap.get(cKey);
-                    assert property != null;
+                    if (property == null) {
+                        // TODO: error
+                        Log.e(Thread.currentThread().getName(), "AE lock cannot be null");
+                        MasterController.quitSafely();
+                        return;
+                    }
 
                     formatter = new ParameterFormatter<Boolean>() {
                         @NonNull
@@ -667,14 +754,24 @@ abstract class step01_Control_ {
 
                 Parameter<Integer> mode;
                 mode = captureRequestMap.get(CaptureRequest.CONTROL_AE_MODE);
-                assert mode != null;
+                if (mode == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "AE mode cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 if (mode.toString().contains("AUTO")) {
                     CameraCharacteristics.Key<int[]> cKey;
 
                     cKey = CameraCharacteristics.CONTROL_AE_AVAILABLE_ANTIBANDING_MODES;
                     property = characteristicsMap.get(cKey);
-                    assert property != null;
+                    if (property == null) {
+                        // TODO: error
+                        Log.e(Thread.currentThread().getName(), "AE antibanding modes cannot be null");
+                        MasterController.quitSafely();
+                        return;
+                    }
 
                     setting = new Parameter<>(name, property.getValue(), property.getUnits(),
                             property.getFormatter());
@@ -708,14 +805,24 @@ abstract class step01_Control_ {
 
                 Parameter<Integer> mode;
                 mode = captureRequestMap.get(CaptureRequest.CONTROL_AE_MODE);
-                assert mode != null;
+                if (mode == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "AE mode cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 if (mode.toString().contains("AUTO")) {
                     CameraCharacteristics.Key<Range<Integer>> cKey;
 
                     cKey = CameraCharacteristics.CONTROL_AE_COMPENSATION_RANGE;
                     property = characteristicsMap.get(cKey);
-                    assert property != null;
+                    if (property == null) {
+                        // TODO: error
+                        Log.e(Thread.currentThread().getName(), "AE compensation range cannot be null");
+                        MasterController.quitSafely();
+                        return;
+                    }
 
                     setting = new Parameter<>(name, property.getValue(), property.getUnits(),
                             property.getFormatter());
@@ -751,17 +858,32 @@ abstract class step01_Control_ {
 
                 Parameter<Integer> mode;
                 mode = captureRequestMap.get(CaptureRequest.CONTROL_AE_MODE);
-                assert mode != null;
+                if (mode == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "AE mode cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 if (mode.toString().contains("AUTO")) {
                     CameraCharacteristics.Key<Range<Integer>[]> cKey;
 
                     cKey = CameraCharacteristics.CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES;
                     property = characteristicsMap.get(cKey);
-                    assert property != null;
+                    if (property == null) {
+                        // TODO: error
+                        Log.e(Thread.currentThread().getName(), "AE target FPS ranges cannot be null");
+                        MasterController.quitSafely();
+                        return;
+                    }
 
                     Range<Integer>[] ranges = property.getValue();
-                    assert ranges != null;
+                    if (ranges == null) {
+                        // TODO: error
+                        Log.e(Thread.currentThread().getName(), "FPS ranges cannot be null");
+                        MasterController.quitSafely();
+                        return;
+                    }
 
                     // Select fastest range
                     value = ranges[ranges.length - 1];
@@ -805,7 +927,12 @@ abstract class step01_Control_ {
 
                 cKey = CameraCharacteristics.CONTROL_AVAILABLE_EFFECTS;
                 properties = characteristicsMap.get(cKey);
-                assert properties != null;
+                if (properties == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Available effects cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 setting = new Parameter<>(name, properties.getValue(), properties.getUnits(),
                                                                        properties.getFormatter());
@@ -869,7 +996,12 @@ abstract class step01_Control_ {
 
                     cKey = CameraCharacteristics.CONTROL_POST_RAW_SENSITIVITY_BOOST_RANGE;
                     properties = characteristicsMap.get(cKey);
-                    assert properties != null;
+                    if (properties == null) {
+                        // TODO: error
+                        Log.e(Thread.currentThread().getName(), "Sensitivity boost range cannot be null");
+                        MasterController.quitSafely();
+                        return;
+                    }
 
                     setting = new Parameter<>(name, properties.getValue(), properties.getUnits(),
                                                                            properties.getFormatter());
@@ -900,7 +1032,12 @@ abstract class step01_Control_ {
 
                 cKey = CameraCharacteristics.CONTROL_AVAILABLE_SCENE_MODES;
                 properties = characteristicsMap.get(cKey);
-                assert properties != null;
+                if (properties == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Available scene modes cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 setting = new Parameter<>(name, properties.getValue(), properties.getUnits(),
                                                                        properties.getFormatter());
@@ -930,7 +1067,12 @@ abstract class step01_Control_ {
 
                 cKey = CameraCharacteristics.CONTROL_AVAILABLE_VIDEO_STABILIZATION_MODES;
                 properties = characteristicsMap.get(cKey);
-                assert properties != null;
+                if (properties == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Video stabilization modes cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 setting = new Parameter<>(name, properties.getValue(), properties.getUnits(),
                         properties.getFormatter());

@@ -1,3 +1,19 @@
+/*
+ * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones
+ * @version: ShRAMP v0.0
+ *
+ * @objective: To detect extensive air shower radiation using smartphones
+ *             for the scientific study of ultra-high energy cosmic rays
+ *
+ * @institution: University of California, Irvine
+ * @department:  Physics and Astronomy
+ *
+ * @author: Eric Albin
+ * @email:  Eric.K.Albin@gmail.com
+ *
+ * @updated: 15 April 2019
+ */
+
 package sci.crayfis.shramp.battery;
 
 import android.annotation.TargetApi;
@@ -22,43 +38,43 @@ final public class BatteryChanged extends BatteryReceiver {
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // mBatteryIcon.................................................................................
-    // TODO: description
+    // TODO: No idea what the hell this is
     private static Integer mBatteryIcon;
 
     // mBatteryTechnology...........................................................................
-    // TODO: description
+    // Simple description string of battery technology, e.g. Li-ion
     private static String mBatteryTechnology;
 
     // mBatteryPresent..............................................................................
-    // TODO: description
+    // Battery is present, yes or no
     private static Boolean mBatteryPresent;
 
     // mBatteryHealth...............................................................................
-    // TODO: description
+    // Simple string describing battery condition, e.g. "GOOD" or "DEAD"
     private static String mBatteryHealth;
 
     // mBatteryStatus...............................................................................
-    // TODO: description
+    // Simple string describing what the battery is doing right now, e.g. "CHARGING"
     private static String mBatteryStatus;
 
     // mBatteryPlugged..............................................................................
-    // TODO: description
+    // Simple string describing power source, e.g. "USING USB POWER", "USING BATTERY POWER ONLY"
     private static String mBatteryPlugged;
 
     // mBatteryVoltage..............................................................................
-    // TODO: description
+    // Battery voltage in volts
     private static Double mBatteryVoltage;
 
     // mBatteryTemperature..........................................................................
-    // TODO: description
+    // Battery temperature in degrees Celsius
     private static Double mBatteryTemperature;
 
     // mBatteryLevel................................................................................
-    // TODO: description
+    // Battery level, usually integer percent, but could be energy/charge/etc
     private static Integer mBatteryLevel;
 
     // mBatteryScale................................................................................
-    // TODO: description
+    // Maximum value of mBatteryLevel, usually 100 percent, but could be energy/charge/etc
     private static Integer mBatteryScale;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -70,7 +86,9 @@ final public class BatteryChanged extends BatteryReceiver {
 
     // BatteryChanged...............................................................................
     /**
-     * TODO: description, comments and logging
+     * !! DO NOT CALL THIS !!
+     * The default constructor has to be here to satisfy Android manifest requirements to receive
+     * battery broadcast.
      */
     public BatteryChanged() {
         super();
@@ -78,8 +96,8 @@ final public class BatteryChanged extends BatteryReceiver {
 
     // BatteryChanged...............................................................................
     /**
-     * TODO: description, comments and logging
-     * @param activity bla
+     * Call this to initialize
+     * @param activity Main activity controlling the app
      */
     BatteryChanged(@NonNull Activity activity) {
         super(activity, Intent.ACTION_BATTERY_CHANGED);
@@ -90,8 +108,8 @@ final public class BatteryChanged extends BatteryReceiver {
 
     // getCurrentIcon...............................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * TODO: No idea what the hell this is
+     * @return An integer
      */
     @Contract(pure = true)
     @Nullable
@@ -101,8 +119,7 @@ final public class BatteryChanged extends BatteryReceiver {
 
     // getTechnology................................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return A simple string describing the technology, e.g. "Li-ion"
      */
     @Contract(pure = true)
     @Nullable
@@ -112,8 +129,7 @@ final public class BatteryChanged extends BatteryReceiver {
 
     // isBatteryPresent.............................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return Is the battery present?  yes/no
      */
     @Contract(pure = true)
     @NonNull
@@ -123,8 +139,7 @@ final public class BatteryChanged extends BatteryReceiver {
 
     // getCurrentHealth.............................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return A simple string describing the health of the battery, e.g. "GOOD", "DEAD"
      */
     @Contract(pure = true)
     @Nullable
@@ -134,8 +149,7 @@ final public class BatteryChanged extends BatteryReceiver {
 
     // getCurrentStatus.............................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return A simple string describing what the battery is doing, e.g. "CHARGING"
      */
     @Contract(pure = true)
     @Nullable
@@ -145,8 +159,7 @@ final public class BatteryChanged extends BatteryReceiver {
 
     // getCurrentPowerSource........................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return A simple string describing where the power is coming from, e.g. "USING USB POWER"
      */
     @Contract(pure = true)
     @Nullable
@@ -156,8 +169,7 @@ final public class BatteryChanged extends BatteryReceiver {
 
     // getCurrentVoltage............................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return Battery voltage in volts
      */
     @Contract(pure = true)
     @Nullable
@@ -167,8 +179,7 @@ final public class BatteryChanged extends BatteryReceiver {
 
     // mBatteryTemperature..........................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return Battery temperature in degrees Celsius
      */
     @Contract(pure = true)
     @Nullable
@@ -178,8 +189,7 @@ final public class BatteryChanged extends BatteryReceiver {
 
     // getCurrentLevel..............................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return Battery level, usually as integer percent, but could be energy/charge/etc
      */
     @Contract(pure = true)
     @Nullable
@@ -189,8 +199,7 @@ final public class BatteryChanged extends BatteryReceiver {
 
     // getScale.....................................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return Maximal value of getCurrentLevel, usually 100%, but could be energy/charge/etc
      */
     @Contract(pure = true)
     @Nullable
@@ -200,8 +209,7 @@ final public class BatteryChanged extends BatteryReceiver {
 
     // getCurrentPercent............................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return getCurrentLevel() / getScale() as a percent
      */
     @Contract(pure = true)
     @Nullable
@@ -212,10 +220,11 @@ final public class BatteryChanged extends BatteryReceiver {
         return 100. * mBatteryLevel / (double) mBatteryScale;
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
     // getString....................................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return A string representation of the battery's current condition
      */
     @Override
     @NonNull
@@ -227,7 +236,7 @@ final public class BatteryChanged extends BatteryReceiver {
             batteryIcon = nullString;
         }
         else {
-            batteryIcon = NumToString.number(mBatteryIcon) + " [TODO: units]";
+            batteryIcon = NumToString.number(mBatteryIcon) + " [TODO: what the hell is this..]";
         }
 
         String batteryTechnology;
@@ -336,9 +345,9 @@ final public class BatteryChanged extends BatteryReceiver {
 
     // onReceive....................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param context bla
-     * @param intent bla
+     * Called by the system every time the battery broadcasts a change
+     * @param context The context this receiver is running in
+     * @param intent The intent received containing the broadcast data
      */
     @Override
     public void onReceive(@NonNull Context context, @NonNull Intent intent) {

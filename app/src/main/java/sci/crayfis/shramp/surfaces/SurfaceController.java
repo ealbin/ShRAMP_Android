@@ -1,20 +1,18 @@
-/*******************************************************************************
- *                                                                             *
- * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones     *
- * @version: ShRAMP v0.0                                                       *
- *                                                                             *
- * @objective: To detect extensive air shower radiation using smartphones      *
- *             for the scientific study of ultra-high energy cosmic rays       *
- *                                                                             *
- * @institution: University of California, Irvine                              *
- * @department:  Physics and Astronomy                                         *
- *                                                                             *
- * @author: Eric Albin                                                         *
- * @email:  Eric.K.Albin@gmail.com                                             *
- *                                                                             *
- * @updated: 25 March 2019                                                     *
- *                                                                             *
- ******************************************************************************/
+/*
+ * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones
+ * @version: ShRAMP v0.0
+ *
+ * @objective: To detect extensive air shower radiation using smartphones
+ *             for the scientific study of ultra-high energy cosmic rays
+ *
+ * @institution: University of California, Irvine
+ * @department:  Physics and Astronomy
+ *
+ * @author: Eric Albin
+ * @email:  Eric.K.Albin@gmail.com
+ *
+ * @updated: 15 April 2019
+ */
 
 package sci.crayfis.shramp.surfaces;
 
@@ -29,14 +27,18 @@ import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
 
+import org.jetbrains.annotations.Contract;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import sci.crayfis.shramp.GlobalSettings;
+import sci.crayfis.shramp.MasterController;
 import sci.crayfis.shramp.camera2.CameraController;
 
 /**
- * TODO: description, comments and logging
+ * This class is intended to be the public face of all surface operations, controlling
+ * creation, updating, etc internally.
  */
 @TargetApi(21)
 final public class SurfaceController {
@@ -45,49 +47,50 @@ final public class SurfaceController {
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // mInstance....................................................................................
-    // TODO: description
+    // Reference to single instance
     private static final SurfaceController mInstance = new SurfaceController();
 
     // mImageReaderListener.........................................................................
-    // TODO: description
+    // Reference to single ImageReader surface for receiving camera frames
     private static final ImageReaderListener mImageReaderListener = new ImageReaderListener();
 
     // mSurfaces....................................................................................
-    // TODO: description
+    // Master list of any and all open surfaces ready for use
     private static final List<Surface> mSurfaces = new ArrayList<>();
 
     // Private Instance Constants
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // mTextureViewListener.........................................................................
-    // TODO: description
+    // Reference to single TextureView surface for displaying text or video, cannot be static
+    // due to its link with the governing Activity
     private final TextureViewListener mTextureViewListener = new TextureViewListener();
 
     // Private Instance Fields
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // mImageReaderIsReady..........................................................................
-    // TODO: description
+    // Status of ImageReader, true if ready for use, false if not
     private Boolean mImageReaderIsReady = false;
 
     // mTextureViewIsReady..........................................................................
-    // TODO: description
+    // Status of TextureView, true if ready for use, false if not
     private Boolean mTextureViewIsReady = false;
 
     // mOutputFormat................................................................................
-    // TODO: description
+    // Output format, either ImageFormat.RAW or ImageFormat.YUV_420_888
     private Integer mOutputFormat;
 
     // mOutputSize..................................................................................
-    // TODO: description
+    // Output image dimensions (width, height) in pixels
     private Size mOutputSize;
 
     // mNextRunnable................................................................................
-    // TODO: description
+    // After a surface is opened (asynchronously), execute this runnable on mNextHandler's thread
     private Runnable mNextRunnable;
 
     // mNextHandler.................................................................................
-    // TODO: description
+    // Handler of the thread to run mNextRunnable on after opening a surface asynchronously
     private Handler mNextHandler;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -99,7 +102,7 @@ final public class SurfaceController {
 
     // SurfaceController...............................................................................
     /**
-     * TODO: description, comments and logging
+     * Nothing special, just create single instance
      */
     private SurfaceController() {}
 
@@ -108,52 +111,58 @@ final public class SurfaceController {
 
     // getOpenSurfaces..............................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return Master list of open surfaces ready to use
      */
     @NonNull
+    @Contract(pure = true)
     public static List<Surface> getOpenSurfaces() {
         return mSurfaces;
     }
 
     // getOutputSurfaceClasses......................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return List of surface classes to be used, useful for determining output format / resolution
      */
     @NonNull
     public static List<Class> getOutputSurfaceClasses() {
         List<Class> classList = new ArrayList<>();
 
+        // Video feed on screen
         if (GlobalSettings.TEXTURE_VIEW_SURFACE_ENABLED) {
-            // TextureView itself isn't known to StreamConfigurationMap
-            // but TextureView uses SurfaceTexture, which is known
+            // The TextureView class itself isn't known to StreamConfigurationMap for determining
+            // output format / resolution abilities, but TextureView turns out to use
+            // SurfaceTexture, which is known to StreamConfigurationMap
             classList.add(SurfaceTexture.class);
         }
 
+        // Image processing
         if (GlobalSettings.IMAGE_READER_SURFACE_ENABLED) {
             classList.add(ImageReader.class);
         }
+
         return classList;
     }
 
     // openSurfaces.................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param activity bla
-     * @param runnable bla
-     * @param handler bla
+     * Open all surfaces specified in GlobalSettings
+     * @param activity The app-controlling activity
+     * @param runnable Optional Runnable to run on handler's thread after asynchronous opening
+     *                 all surfaces.  This method itself returns before the surfaces are open.
+     * @param handler Handler to thread to run on after opening surfaces, defaults to main thread
      */
     public static void openSurfaces(@NonNull Activity activity,
                                     @Nullable Runnable runnable, @Nullable Handler handler) {
 
-        Log.e(Thread.currentThread().getName(), "SurfaceController openSurfaces");
-
         mInstance.mOutputFormat = CameraController.getOutputFormat();
         mInstance.mOutputSize   = CameraController.getOutputSize();
 
-        assert mInstance.mOutputFormat != null;
-        assert mInstance.mOutputSize   != null;
+        if (mInstance.mOutputFormat == null || mInstance.mOutputSize == null) {
+            // TODO: error
+            Log.e(Thread.currentThread().getName(), "Output format/size cannot be null");
+            MasterController.quitSafely();
+            return;
+        }
 
         if (handler == null) {
             mInstance.mNextHandler = new Handler(activity.getMainLooper());
@@ -161,12 +170,14 @@ final public class SurfaceController {
         mInstance.mNextHandler  = handler;
         mInstance.mNextRunnable = runnable;
 
+        // Video feed on screen
         if (GlobalSettings.TEXTURE_VIEW_SURFACE_ENABLED) {
             mInstance.mTextureViewListener.openSurface(activity);
         }
 
+        // Image processing
         if (GlobalSettings.IMAGE_READER_SURFACE_ENABLED) {
-            mImageReaderListener.openSurface(activity, mInstance.mOutputFormat, mInstance.mOutputSize);
+            mImageReaderListener.openSurface(mInstance.mOutputFormat, mInstance.mOutputSize);
         }
     }
 
@@ -175,11 +186,12 @@ final public class SurfaceController {
 
     // surfaceHasOpened.............................................................................
     /**
-     * TODO: description, comments and logging
-     * @param surface bla
+     * Called by other classes in this immediate package as their surfaces come online
+     * @param surface Surface that has opened
+     * @param klass Class of surface that has opened
      */
     static void surfaceHasOpened(@NonNull Surface surface, @NonNull Class klass) {
-        Log.e(Thread.currentThread().getName(), "SurfaceController surfaceHasOpened: " + klass.getSimpleName());
+        Log.e(Thread.currentThread().getName(), klass.getSimpleName() + " surface has opened");
         mSurfaces.add(surface);
 
         if (klass == TextureViewListener.class) {
@@ -190,18 +202,6 @@ final public class SurfaceController {
             mInstance.mImageReaderIsReady = true;
         }
 
-        surfaceReady();
-    }
-
-    // Private Instance Methods
-    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-    // surfaceReady.................................................................................
-    /**
-     * TODO: description, comments and logging
-     */
-    private static void surfaceReady() {
-        Log.e(Thread.currentThread().getName(), "SurfaceController SurfaceReady");
         boolean allReady = true;
         if (GlobalSettings.TEXTURE_VIEW_SURFACE_ENABLED) {
             allReady = allReady && mInstance.mTextureViewIsReady;
@@ -211,11 +211,11 @@ final public class SurfaceController {
         }
 
         if (allReady) {
-            if (mInstance.mNextRunnable != null && mInstance.mNextHandler != null) {
+            if (mInstance.mNextRunnable != null) {
                 mInstance.mNextHandler.post(mInstance.mNextRunnable);
-                mInstance.mNextHandler  = null;
-                mInstance.mNextRunnable = null;
             }
+            mInstance.mNextHandler  = null;
+            mInstance.mNextRunnable = null;
         }
     }
 

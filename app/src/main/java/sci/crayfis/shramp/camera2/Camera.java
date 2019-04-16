@@ -1,20 +1,18 @@
-/*******************************************************************************
- *                                                                             *
- * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones     *
- * @version: ShRAMP v0.0                                                       *
- *                                                                             *
- * @objective: To detect extensive air shower radiation using smartphones      *
- *             for the scientific study of ultra-high energy cosmic rays       *
- *                                                                             *
- * @institution: University of California, Irvine                              *
- * @department:  Physics and Astronomy                                         *
- *                                                                             *
- * @author: Eric Albin                                                         *
- * @email:  Eric.K.Albin@gmail.com                                             *
- *                                                                             *
- * @updated: 25 March 2019                                                     *
- *                                                                             *
- ******************************************************************************/
+/*
+ * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones
+ * @version: ShRAMP v0.0
+ *
+ * @objective: To detect extensive air shower radiation using smartphones
+ *             for the scientific study of ultra-high energy cosmic rays
+ *
+ * @institution: University of California, Irvine
+ * @department:  Physics and Astronomy
+ *
+ * @author: Eric Albin
+ * @email:  Eric.K.Albin@gmail.com
+ *
+ * @updated: 15 April 2019
+ */
 
 package sci.crayfis.shramp.camera2;
 
@@ -39,6 +37,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import sci.crayfis.shramp.GlobalSettings;
+import sci.crayfis.shramp.MasterController;
 import sci.crayfis.shramp.camera2.characteristics.CharacteristicsReader;
 import sci.crayfis.shramp.camera2.requests.RequestMaker;
 import sci.crayfis.shramp.camera2.util.Parameter;
@@ -48,7 +47,7 @@ import sci.crayfis.shramp.util.NumToString;
 import sci.crayfis.shramp.util.SizeSortedSet;
 
 /**
- * TODO: description, comments and logging
+ * Encapsulation of CameraDevice, its characteristics, abilities and configuration for capture
  */
 // TODO: figure out who is giving the unchecked warning
 @SuppressWarnings("unchecked")
@@ -59,47 +58,47 @@ final class Camera extends CameraDevice.StateCallback{
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // mBitsPerPixel................................................................................
-    // TODO: description
+    // Output format bits per pixel
     private Integer mBitsPerPixel;
 
     // mCameraCharacteristics.......................................................................
-    // TODO: description
+    // Encapsulation of camera's features
     private CameraCharacteristics mCameraCharacteristics;
 
     // mCameraDevice................................................................................
-    // TODO: description
+    // Reference to the camera device hardware
     private CameraDevice mCameraDevice;
 
     // mCameraId....................................................................................
-    // TODO: description
+    // System-assigned camera ID
     private String mCameraId;
 
     // mCaptureRequestBuilder.......................................................................
-    // TODO: description
+    // Current capture request builder
     private CaptureRequest.Builder mCaptureRequestBuilder;
 
     // mCaptureRequestMap...........................................................................
-    // TODO: description
+    // Current full configuration of camera for capture
     private LinkedHashMap<CaptureRequest.Key, Parameter> mCaptureRequestMap;
 
     // mCaptureRequestTemplate......................................................................
-    // TODO: description
+    // Camera capture template
     private Integer mCaptureRequestTemplate;
 
     // mCharacteristicsMap..........................................................................
-    // TODO: description
+    // Encapsulation of all camera abilities and features
     private LinkedHashMap<CameraCharacteristics.Key, Parameter> mCharacteristicsMap;
 
     // mName........................................................................................
-    // TODO: description
+    // Human-friendly camera name
     private String mName;
 
     // mOutputFormat................................................................................
-    // TODO: description
+    // Output format (ImageFormat.YUV_420_888 or RAW_SENSOR)
     private Integer mOutputFormat;
 
     // mOutputSize..................................................................................
-    // TODO: description
+    // Output size (width and height in pixels)
     private Size mOutputSize;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -111,16 +110,22 @@ final class Camera extends CameraDevice.StateCallback{
 
     // Camera.......................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param name bla
-     * @param cameraId bla
-     * @param cameraCharacteristics bla
+     * Public access disabled
+     */
+    private Camera() { super(); }
+
+    // Camera.......................................................................................
+    /**
+     * Create a new Camera
+     * @param name Human-friendly name for camera
+     * @param cameraId System-assigned camera ID
+     * @param cameraCharacteristics Encapsulation of camera features
      */
     Camera(@NonNull String name, @NonNull String cameraId,
            @NonNull CameraCharacteristics cameraCharacteristics) {
         this();
 
-        Log.e(Thread.currentThread().getName(), "Camera Camera: " + name + ", ID: " + cameraId);
+        Log.e(Thread.currentThread().getName(), "New camera created: " + name + " with ID: " + cameraId);
 
         mName                  = name;
         mCameraId              = cameraId;
@@ -130,31 +135,100 @@ final class Camera extends CameraDevice.StateCallback{
         establishOutputFormatting();
     }
 
-    // Camera.......................................................................................
+    // Private Instance Methods
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+    // establishOutputFormatting....................................................................
     /**
-     * TODO: description, comments and logging
+     * Figure out optimal output format for capture
      */
-    private Camera() { super(); }
+    private void establishOutputFormatting() {
+        Parameter parameter;
+
+        parameter = mCharacteristicsMap.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
+        if (parameter == null) {
+            // TODO: error
+            Log.e(Thread.currentThread().getName(), "Stream configuration map cannot be null");
+            MasterController.quitSafely();
+            return;
+        }
+
+        StreamConfigurationMap streamConfigurationMap = (StreamConfigurationMap) parameter.getValue();
+        if (streamConfigurationMap == null) {
+            // TODO: error
+            Log.e(Thread.currentThread().getName(), "Stream configuration map cannot be null");
+            MasterController.quitSafely();
+            return;
+        }
+
+        parameter = mCharacteristicsMap.get(CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES);
+        if (parameter == null) {
+            // TODO: error
+            Log.e(Thread.currentThread().getName(), "Available capabilities cannot be null");
+            MasterController.quitSafely();
+            return;
+        }
+
+        Integer[] capabilities = (Integer[]) parameter.getValue();
+        if (capabilities == null) {
+            // TODO: error
+            Log.e(Thread.currentThread().getName(), "Capabilities cannot be null");
+        }
+        List<Integer> abilities = ArrayToList.convert(capabilities);
+
+        if (!GlobalSettings.DISABLE_RAW_OUTPUT && abilities.contains(CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_RAW)) {
+            mOutputFormat = ImageFormat.RAW_SENSOR;
+        }
+        else {
+            mOutputFormat = ImageFormat.YUV_420_888;
+        }
+
+        mBitsPerPixel = ImageFormat.getBitsPerPixel(mOutputFormat);
+
+        // Find the largest output size supported by all output surfaces
+        SizeSortedSet outputSizes = new SizeSortedSet();
+
+        Size[] streamOutputSizes = streamConfigurationMap.getOutputSizes(mOutputFormat);
+        Collections.addAll(outputSizes, streamOutputSizes);
+
+        List<Class> outputClasses = SurfaceController.getOutputSurfaceClasses();
+        for (Class klass : outputClasses) {
+            Size[] classOutputSizes = streamConfigurationMap.getOutputSizes(klass);
+            if (classOutputSizes == null) {
+                // TODO: error
+                Log.e(Thread.currentThread().getName(), "Class output size cannot be null");
+                MasterController.quitSafely();
+                return;
+            }
+            for (Size s : classOutputSizes) {
+                if (!outputSizes.contains(s)) {
+                    outputSizes.remove(s);
+                }
+            }
+        }
+
+        mOutputSize = outputSizes.last();
+    }
 
     // Package-private Instance Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // close........................................................................................
     /**
-     * TODO: description, comments and logging
+     * Close this camera
      */
     void close() {
-        Log.e(Thread.currentThread().getName(), "Camera close: " + mName + ", ID: " + mCameraId);
-        Log.e("CameraClass", "Camera: " + mName + " has been asked to close");
+        Log.e(Thread.currentThread().getName(), "Closing camera: " + mName + " with ID: " + mCameraId);
         if (mCameraDevice != null) {
             mCameraDevice.close();
         }
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
     // getAvailableCaptureRequestKeys...............................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return Current capture request keys
      */
     @NonNull
     List<CaptureRequest.Key<?>> getAvailableCaptureRequestKeys() {
@@ -163,8 +237,7 @@ final class Camera extends CameraDevice.StateCallback{
 
     // getAvailableCharacteristicsKeys..............................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return All camera characteristics and abilities
      */
     @NonNull
     List<CameraCharacteristics.Key<?>> getAvailableCharacteristicsKeys() {
@@ -173,8 +246,7 @@ final class Camera extends CameraDevice.StateCallback{
 
     // getBitsPerPixel..............................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return Output format bits per pixel
      */
     @Contract(pure = true)
     @Nullable
@@ -184,8 +256,7 @@ final class Camera extends CameraDevice.StateCallback{
 
     // getCameraDevice..............................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return Reference to CameraDevice contained by this object
      */
     @Contract(pure = true)
     @Nullable
@@ -195,8 +266,7 @@ final class Camera extends CameraDevice.StateCallback{
 
     // getCameraId..................................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return Get system-assigned camera ID
      */
     @Contract(pure = true)
     @NonNull
@@ -206,8 +276,7 @@ final class Camera extends CameraDevice.StateCallback{
 
     // getCaptureRequestBuilder.....................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return Current capture request builder
      */
     @Contract(pure = true)
     @Nullable
@@ -217,8 +286,7 @@ final class Camera extends CameraDevice.StateCallback{
 
     // getCharacteristicsMap........................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return Encapsulation of camera features
      */
     @Contract(pure = true)
     @NonNull
@@ -228,8 +296,7 @@ final class Camera extends CameraDevice.StateCallback{
 
     // getOutputFormat..............................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return Camera output format (ImageFormat.YUV_420_888 or RAW_SENSOR)
      */
     @Contract(pure = true)
     @Nullable
@@ -237,10 +304,9 @@ final class Camera extends CameraDevice.StateCallback{
         return mOutputFormat;
     }
 
-    // getOutputFormat..............................................................................
+    // getOutputSize................................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return Output size (width and height in pixels)
      */
     @Contract(pure = true)
     @NonNull
@@ -248,10 +314,11 @@ final class Camera extends CameraDevice.StateCallback{
         return mOutputSize;
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
     // setCaptureRequestBuilder.....................................................................
     /**
-     * TODO: description, comments and logging
-     * @param builder bla
+     * @param builder Set camera to use CaptureRequest.Builder for capture
      */
     void setCaptureRequestBuilder(@NonNull CaptureRequest.Builder builder) {
         mCaptureRequestBuilder = builder;
@@ -259,8 +326,7 @@ final class Camera extends CameraDevice.StateCallback{
 
     // setCaptureRequestMap.........................................................................
     /**
-     * TODO: description, comments and logging
-     * @param map bla
+     * @param map Set full camera request mapping
      */
     void setCaptureRequestMap(@NonNull LinkedHashMap<CaptureRequest.Key, Parameter>  map) {
         mCaptureRequestMap = map;
@@ -268,20 +334,19 @@ final class Camera extends CameraDevice.StateCallback{
 
     // setCaptureRequestTemplate....................................................................
     /**
-     * TODO: description, comments and logging
-     * @param template bla
+     * @param template Set camera request template for capture
      */
     void setCaptureRequestTemplate(@NonNull Integer template) {
         mCaptureRequestTemplate = template;
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
     // writeFPS.....................................................................................
     /**
-     * TODO: description, comments and logging
+     * Display current Camera FPS settings
      */
     void writeFPS() {
-        Log.e(Thread.currentThread().getName(), "Camera writeBuilder: " + mName);
-
         Long frameDuration = mCaptureRequestBuilder.get(CaptureRequest.SENSOR_FRAME_DURATION);
         Long exposureTime  = mCaptureRequestBuilder.get(CaptureRequest.SENSOR_EXPOSURE_TIME);
         Range<Integer> fpsRange = mCaptureRequestBuilder.get(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE);
@@ -303,111 +368,70 @@ final class Camera extends CameraDevice.StateCallback{
 
     // writeCharacteristics.........................................................................
     /**
-     * TODO: description, comments and logging
+     * Display full camera features
      */
     void writeCharacteristics() {
-        Log.e(Thread.currentThread().getName(), "Camera writeCharacteristics: " + mName);
         String label = mName + ", ID: " + mCameraId;
         CharacteristicsReader.write(label, mCharacteristicsMap, getAvailableCharacteristicsKeys());
     }
 
     // writeRequest.................................................................................
     /**
-     * TODO: description, comments and logging
+     * Display current capture request
      */
     void writeRequest() {
-        Log.e(Thread.currentThread().getName(), "Camera writeRequest: " + mName);
         String label = mName + ", ID: " + mCameraId;
         RequestMaker.write(label, mCaptureRequestMap, getAvailableCaptureRequestKeys());
-    }
-
-    // Private Instance Methods
-    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-    // establishOutputFormatting....................................................................
-    /**
-     * TODO: description, comments and logging
-     */
-    private void establishOutputFormatting() {
-        Parameter parameter;
-
-        parameter = mCharacteristicsMap.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
-        assert parameter != null;
-        StreamConfigurationMap streamConfigurationMap = (StreamConfigurationMap) parameter.getValue();
-        assert streamConfigurationMap != null;
-
-        parameter = mCharacteristicsMap.get(CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES);
-        assert parameter != null;
-        Integer[] capabilities = (Integer[]) parameter.getValue();
-        assert capabilities != null;
-        List<Integer> abilities = ArrayToList.convert(capabilities);
-
-        if (!GlobalSettings.DISABLE_RAW_OUTPUT && abilities.contains(CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_RAW)) {
-            mOutputFormat = ImageFormat.RAW_SENSOR;
-        }
-        else {
-            mOutputFormat = ImageFormat.YUV_420_888;
-        }
-
-        mBitsPerPixel = ImageFormat.getBitsPerPixel(mOutputFormat);
-
-        // Find the largest output size supported by all output surfaces
-        SizeSortedSet outputSizes = new SizeSortedSet();
-
-        Size[] streamOutputSizes = streamConfigurationMap.getOutputSizes(mOutputFormat);
-        Collections.addAll(outputSizes, streamOutputSizes);
-
-        List<Class> outputClasses = SurfaceController.getOutputSurfaceClasses();
-        for (Class klass : outputClasses) {
-            Size[] classOutputSizes = streamConfigurationMap.getOutputSizes(klass);
-            assert classOutputSizes != null;
-            for (Size s : classOutputSizes) {
-                if (!outputSizes.contains(s)) {
-                    outputSizes.remove(s);
-                }
-            }
-        }
-
-        mOutputSize = outputSizes.last();
     }
 
     // Public Overriding Instance Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+    // onOpened.....................................................................................
+    /**
+     * Called by the system when camera comes online, execution continues in CameraController.cameraHasOpened()
+     * @param camera CameraDevice that has been opened
+     */
+    @Override
+    public void onOpened(@NonNull CameraDevice camera) {
+        Log.e(Thread.currentThread().getName(), "Camera: " + mName + " has opened");
+        mCameraDevice = camera;
+
+        CameraController.cameraHasOpened(this);
+    }
+
     // onClosed.....................................................................................
     /**
-     * TODO: description, comments and logging
-     * Actions when camera is closed.
-     * No actions yet.
+     * Called by the system when the camera is closing.
+     * Execution continues in CameraController.cameraHasClosed()
      * @param camera CameraDevice that has been closed
      */
     @Override
     public void onClosed(@NonNull CameraDevice camera) {
-        Log.e(Thread.currentThread().getName(), "Camera onClosed: " + mName);
+        Log.e(Thread.currentThread().getName(), "Camera: " + mName + " has closed");
         CameraController.cameraHasClosed();
     }
 
     // onDisconnected...............................................................................
     /**
-     * TODO: description, comments and logging
-     * Actions when camera is disconnected.
-     * Close camera.
-     * @param camera CameraDevice that has been closed
+     * Called by the system when the camera has been disconnected
+     * @param camera CameraDevice that has been disconnected
      */
     @Override
     public void onDisconnected(@NonNull CameraDevice camera) {
-        Log.e(Thread.currentThread().getName(), "Camera onDisconnected: " + mName);
+        // TODO: error
+        Log.e(Thread.currentThread().getName(), "Camera: " + mName + " has been disconnected");
+        MasterController.quitSafely();
     }
 
     // onError......................................................................................
     /**
-     * TODO: description, comments and logging
-     * Actions when camera has erred.
-     * Determine error cause and close camera.
+     * Called by the system when an error occurs with the camera
      * @param camera CameraDevice that has erred
      */
     @Override
     public void onError(@NonNull CameraDevice camera, int error) {
+        // TODO: figure out why the compiler says there are missing options for the switch-case
         String err;
         switch (error) {
             case (CameraDevice.StateCallback.ERROR_CAMERA_DEVICE): {
@@ -435,22 +459,9 @@ final class Camera extends CameraDevice.StateCallback{
             }
         }
 
-        Log.e(Thread.currentThread().getName(), "Camera onError: " + mName + " err: " + err);
-    }
-
-    // onOpened.....................................................................................
-    /**
-     * TODO: description, comments and logging
-     * Actions when camera is opened.
-     * Configure camera for capture session.
-     * @param camera CameraDevice that has been opened
-     */
-    @Override
-    public void onOpened(@NonNull CameraDevice camera) {
-        Log.e(Thread.currentThread().getName(), "Camera onOpened: " + mName);
-        mCameraDevice = camera;
-
-        CameraController.cameraHasOpened(this);
+        // TODO: error
+        Log.e(Thread.currentThread().getName(), "Camera error: " + mName + " err: " + err);
+        MasterController.quitSafely();
     }
 
 }

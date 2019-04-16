@@ -1,20 +1,18 @@
-/*******************************************************************************
- *                                                                             *
- * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones     *
- * @version: ShRAMP v0.0                                                       *
- *                                                                             *
- * @objective: To detect extensive air shower radiation using smartphones      *
- *             for the scientific study of ultra-high energy cosmic rays       *
- *                                                                             *
- * @institution: University of California, Irvine                              *
- * @department:  Physics and Astronomy                                         *
- *                                                                             *
- * @author: Eric Albin                                                         *
- * @email:  Eric.K.Albin@gmail.com                                             *
- *                                                                             *
- * @updated: 25 March 2019                                                     *
- *                                                                             *
- ******************************************************************************/
+/*
+ * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones
+ * @version: ShRAMP v0.0
+ *
+ * @objective: To detect extensive air shower radiation using smartphones
+ *             for the scientific study of ultra-high energy cosmic rays
+ *
+ * @institution: University of California, Irvine
+ * @department:  Physics and Astronomy
+ *
+ * @author: Eric Albin
+ * @email:  Eric.K.Albin@gmail.com
+ *
+ * @updated: 15 April 2019
+ */
 
 package sci.crayfis.shramp.camera2.characteristics;
 
@@ -37,33 +35,48 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 
+import sci.crayfis.shramp.MasterController;
 import sci.crayfis.shramp.camera2.util.Parameter;
 import sci.crayfis.shramp.camera2.util.ParameterFormatter;
 import sci.crayfis.shramp.util.ArrayToList;
 
 /**
- * TODO: description, comments and logging
+ * A specialized class for discovering camera abilities, the parameters searched for include:
+ *    SENSOR_AVAILABLE_TEST_PATTERN_MODES
+ *    SENSOR_BLACK_LEVEL_PATTERN
+ *    SENSOR_CALIBRATION_TRANSFORM1
+ *    SENSOR_CALIBRATION_TRANSFORM2
+ *    SENSOR_COLOR_TRANSFORM1
+ *    SENSOR_COLOR_TRANSFORM2
+ *    SENSOR_FORWARD_MATRIX1
+ *    SENSOR_FORWARD_MATRIX2
+ *    SENSOR_INFO_ACTIVE_ARRAY_SIZE
+ *    SENSOR_INFO_COLOR_FILTER_ARRANGEMENT
+ *    SENSOR_INFO_EXPOSURE_TIME_RANGE
+ *    SENSOR_INFO_LENS_SHADING_APPLIED
+ *    SENSOR_INFO_MAX_FRAME_DURATION
+ *    SENSOR_INFO_PHYSICAL_SIZE
+ *    SENSOR_INFO_PIXEL_ARRAY_SIZE
+ *    SENSOR_INFO_SENSITIVITY_RANGE
+ *    SENSOR_INFO_TIMESTAMP_SOURCE
+ *    SENSOR_INFO_WHITE_LEVEL
+ *    SENSOR_MAX_ANALOG_SENSITIVITY
+ *    SENSOR_OPTICAL_BLACK_REGIONS
+ *    SENSOR_ORIENTATION
+ *    SENSOR_REFERENCE_ILLUMINANT1
+ *    SENSOR_REFERENCE_ILLUMINANT2
  */
 @TargetApi(21)
 abstract class Sensor_ extends Scaler_ {
-
-    // Constructors
-    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-    // Sensor_......................................................................................
-    /**
-     * TODO: description, comments and logging
-     */
-    protected Sensor_() { super(); }
 
     // Protected Overriding Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // read.........................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param cameraCharacteristics bla
-     * @param characteristicsMap bla
+     * Continue discovering abilities with specialized classes
+     * @param cameraCharacteristics Encapsulation of camera abilities
+     * @param characteristicsMap A mapping of characteristics names to their respective parameter options
      */
     @Override
     protected void read(@NonNull CameraCharacteristics cameraCharacteristics,
@@ -88,7 +101,12 @@ abstract class Sensor_ extends Scaler_ {
 
             if (keychain.contains(key)) {
                 int[]  modes  = cameraCharacteristics.get(key);
-                assert modes != null;
+                if (modes == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Test pattern cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
                 List<Integer> options = ArrayToList.convert(modes);
 
                 Integer OFF                     = CameraMetadata.SENSOR_TEST_PATTERN_MODE_OFF;
@@ -130,7 +148,12 @@ abstract class Sensor_ extends Scaler_ {
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
-                assert value != null;
+                if (value == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Black level pattern cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 formatter = new ParameterFormatter<BlackLevelPattern>() {
                     @NonNull
@@ -161,7 +184,12 @@ abstract class Sensor_ extends Scaler_ {
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
-                assert value != null;
+                if (value == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Calibration transform 1 cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 formatter = new ParameterFormatter<ColorSpaceTransform>() {
                     @NonNull
@@ -192,7 +220,12 @@ abstract class Sensor_ extends Scaler_ {
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
-                assert value != null;
+                if (value == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Calibration transform 2 cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 formatter = new ParameterFormatter<ColorSpaceTransform>() {
                     @NonNull
@@ -223,7 +256,12 @@ abstract class Sensor_ extends Scaler_ {
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
-                assert value != null;
+                if (value == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Color transform 1 cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 formatter = new ParameterFormatter<ColorSpaceTransform>() {
                     @NonNull
@@ -254,7 +292,12 @@ abstract class Sensor_ extends Scaler_ {
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
-                assert value != null;
+                if (value == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Color transform 2 cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 formatter = new ParameterFormatter<ColorSpaceTransform>() {
                     @NonNull
@@ -285,7 +328,12 @@ abstract class Sensor_ extends Scaler_ {
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
-                assert value != null;
+                if (value == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Sensor matrix 1 cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 formatter = new ParameterFormatter<ColorSpaceTransform>() {
                     @NonNull
@@ -316,7 +364,12 @@ abstract class Sensor_ extends Scaler_ {
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
-                assert value != null;
+                if (value == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Sensor matrix 2 cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 formatter = new ParameterFormatter<ColorSpaceTransform>() {
                     @NonNull
@@ -349,7 +402,12 @@ abstract class Sensor_ extends Scaler_ {
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
-                assert value != null;
+                if (value == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Active array size cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 formatter = new ParameterFormatter<Rect>() {
                     @NonNull
@@ -381,7 +439,12 @@ abstract class Sensor_ extends Scaler_ {
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
-                assert value != null;
+                if (value == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Color filter arrangement cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 Integer RGGB = CameraMetadata.SENSOR_INFO_COLOR_FILTER_ARRANGEMENT_RGGB;
                 Integer GRBG = CameraMetadata.SENSOR_INFO_COLOR_FILTER_ARRANGEMENT_GRBG;
@@ -405,7 +468,12 @@ abstract class Sensor_ extends Scaler_ {
                 if (value.equals(RGB)) {
                     valueString = "RGB";
                 }
-                assert valueString != null;
+                if (valueString == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Unknown color arrangement");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
                     @NonNull
@@ -438,7 +506,12 @@ abstract class Sensor_ extends Scaler_ {
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
-                assert value != null;
+                if (value == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Exposure time range cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 formatter = new ParameterFormatter<Range<Long>>() {
                     @NonNull
@@ -473,7 +546,12 @@ abstract class Sensor_ extends Scaler_ {
 
                 if (keychain.contains(key)) {
                     value = cameraCharacteristics.get(key);
-                    assert value != null;
+                    if (value == null) {
+                        // TODO: error
+                        Log.e(Thread.currentThread().getName(), "Lens shading cannot be null");
+                        MasterController.quitSafely();
+                        return;
+                    }
 
                     formatter = new ParameterFormatter<Boolean>() {
                         @NonNull
@@ -510,7 +588,12 @@ abstract class Sensor_ extends Scaler_ {
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
-                assert value != null;
+                if (value == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Max frame duration cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 formatter = new ParameterFormatter<Long>() {
                     @NonNull
@@ -545,7 +628,12 @@ abstract class Sensor_ extends Scaler_ {
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
-                assert value != null;
+                if (value == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Physical size cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 formatter = new ParameterFormatter<SizeF>() {
                     @NonNull
@@ -578,7 +666,12 @@ abstract class Sensor_ extends Scaler_ {
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
-                assert value != null;
+                if (value == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Array size cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 formatter = new ParameterFormatter<Size>() {
                     @NonNull
@@ -612,7 +705,12 @@ abstract class Sensor_ extends Scaler_ {
 
                 if (keychain.contains(key)) {
                     value = cameraCharacteristics.get(key);
-                    assert value != null;
+                    if (value == null) {
+                        // TODO: error
+                        Log.e(Thread.currentThread().getName(), "Pre-correction array size cannot be null");
+                        MasterController.quitSafely();
+                        return;
+                    }
 
                     formatter = new ParameterFormatter<Rect>() {
                         @NonNull
@@ -646,7 +744,12 @@ abstract class Sensor_ extends Scaler_ {
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
-                assert value != null;
+                if (value == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Sensitivity range cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 formatter = new ParameterFormatter<Range<Integer>>() {
                     @NonNull
@@ -678,7 +781,12 @@ abstract class Sensor_ extends Scaler_ {
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
-                assert value != null;
+                if (value == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Timestamp source cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 Integer UNKNOWN  = CameraMetadata.SENSOR_INFO_TIMESTAMP_SOURCE_UNKNOWN;
                 Integer REALTIME = CameraMetadata.SENSOR_INFO_TIMESTAMP_SOURCE_REALTIME;
@@ -719,7 +827,12 @@ abstract class Sensor_ extends Scaler_ {
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
-                assert value != null;
+                if (value == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "White level cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 formatter = new ParameterFormatter<Integer>() {
                     @NonNull
@@ -752,7 +865,12 @@ abstract class Sensor_ extends Scaler_ {
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
-                assert value != null;
+                if (value == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Analog sensitivity cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 formatter = new ParameterFormatter<Integer>() {
                     @NonNull
@@ -786,7 +904,12 @@ abstract class Sensor_ extends Scaler_ {
 
                 if (keychain.contains(key)) {
                     value = cameraCharacteristics.get(key);
-                    assert value != null;
+                    if (value == null) {
+                        // TODO: error
+                        Log.e(Thread.currentThread().getName(), "Black regions cannot be null");
+                        MasterController.quitSafely();
+                        return;
+                    }
 
                     formatter = new ParameterFormatter<Rect[]>() {
                         @NonNull
@@ -824,7 +947,12 @@ abstract class Sensor_ extends Scaler_ {
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
-                assert value != null;
+                if (value == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Orientation cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 formatter = new ParameterFormatter<Integer>() {
                     @NonNull
@@ -877,7 +1005,12 @@ abstract class Sensor_ extends Scaler_ {
                 Integer ISO_STUDIO_TUNGSTEN    = CameraMetadata.SENSOR_REFERENCE_ILLUMINANT1_ISO_STUDIO_TUNGSTEN;
 
                 value = cameraCharacteristics.get(key);
-                assert value != null;
+                if (value == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Illumination reference cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 valueString = null;
                 if (value.equals(DAYLIGHT)) {
@@ -937,7 +1070,12 @@ abstract class Sensor_ extends Scaler_ {
                 if (value.equals(ISO_STUDIO_TUNGSTEN)) {
                     valueString = "ISO_STUDIO_TUNGSTEN";
                 }
-                assert valueString != null;
+                if (valueString == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Unknown illumination reference");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
                     @NonNull
@@ -969,7 +1107,12 @@ abstract class Sensor_ extends Scaler_ {
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
-                assert value != null;
+                if (value == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Illumination reference 2 cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 Integer DAYLIGHT               = CameraMetadata.SENSOR_REFERENCE_ILLUMINANT1_DAYLIGHT;
                 Integer FLUORESCENT            = CameraMetadata.SENSOR_REFERENCE_ILLUMINANT1_FLUORESCENT;
@@ -1050,7 +1193,12 @@ abstract class Sensor_ extends Scaler_ {
                 if (valueInteger.equals(ISO_STUDIO_TUNGSTEN)) {
                     valueString = "ISO_STUDIO_TUNGSTEN";
                 }
-                assert valueString != null;
+                if (valueString == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Unknown illumination reference 2");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 formatter = new ParameterFormatter<Byte>(valueString) {
                     @NonNull
@@ -1069,4 +1217,5 @@ abstract class Sensor_ extends Scaler_ {
         }
         //==========================================================================================
     }
+
 }

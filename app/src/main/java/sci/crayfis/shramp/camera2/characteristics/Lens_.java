@@ -1,20 +1,18 @@
-/*******************************************************************************
- *                                                                             *
- * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones     *
- * @version: ShRAMP v0.0                                                       *
- *                                                                             *
- * @objective: To detect extensive air shower radiation using smartphones      *
- *             for the scientific study of ultra-high energy cosmic rays       *
- *                                                                             *
- * @institution: University of California, Irvine                              *
- * @department:  Physics and Astronomy                                         *
- *                                                                             *
- * @author: Eric Albin                                                         *
- * @email:  Eric.K.Albin@gmail.com                                             *
- *                                                                             *
- * @updated: 25 March 2019                                                     *
- *                                                                             *
- ******************************************************************************/
+/*
+ * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones
+ * @version: ShRAMP v0.0
+ *
+ * @objective: To detect extensive air shower radiation using smartphones
+ *             for the scientific study of ultra-high energy cosmic rays
+ *
+ * @institution: University of California, Irvine
+ * @department:  Physics and Astronomy
+ *
+ * @author: Eric Albin
+ * @email:  Eric.K.Albin@gmail.com
+ *
+ * @updated: 15 April 2019
+ */
 
 package sci.crayfis.shramp.camera2.characteristics;
 
@@ -28,34 +26,39 @@ import android.util.Log;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import sci.crayfis.shramp.MasterController;
 import sci.crayfis.shramp.camera2.util.Parameter;
 import sci.crayfis.shramp.camera2.util.ParameterFormatter;
 import sci.crayfis.shramp.util.ArrayToList;
 
 /**
- * TODO: description, comments and logging
+ * A specialized class for discovering camera abilities, the parameters searched for include:
+ *    LENS_DISTORTION
+ *    LENS_FACING
+ *    LENS_INFO_AVAILABLE_APERTURES
+ *    LENS_INFO_AVAILABLE_FILTER_DENSITIES
+ *    LENS_INFO_AVAILABLE_FOCAL_LENGTHS
+ *    LENS_INFO_AVAILABLE_OPTICAL_STABILIZATION
+ *    LENS_INFO_FOCUS_DISTANCE_CALIBRATION
+ *    LENS_INFO_HYPERFOCAL_DISTANCE
+ *    LENS_INFO_MINIMUM_FOCUS_DISTANCE
+ *    LENS_INTRINSIC_CALIBRATION
+ *    LENS_POSE_REFERENCE
+ *    LENS_POSE_ROTATION
+ *    LENS_POSE_TRANSLATION
  */
 @SuppressWarnings("unchecked")
 @TargetApi(21)
 abstract class Lens_ extends Jpeg_ {
-
-    // Constructors
-    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-    // Lens_........................................................................................
-    /**
-     * TODO: description, comments and logging
-     */
-    protected Lens_() { super(); }
 
     // Protected Overriding Instance Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // read.........................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param cameraCharacteristics bla
-     * @param characteristicsMap bla
+     * Continue discovering abilities with specialized classes
+     * @param cameraCharacteristics Encapsulation of camera abilities
+     * @param characteristicsMap A mapping of characteristics names to their respective parameter options
      */
     @Override
     protected void read(@NonNull CameraCharacteristics cameraCharacteristics,
@@ -82,10 +85,20 @@ abstract class Lens_ extends Jpeg_ {
 
                 if (keychain.contains(key)) {
                     float[] coefficients  = cameraCharacteristics.get(key);
-                    assert  coefficients != null;
+                    if ( coefficients == null) {
+                        // TODO: error
+                        Log.e(Thread.currentThread().getName(), "Lens distortion cannot be null");
+                        MasterController.quitSafely();
+                        return;
+                    }
 
                     value = (Float[]) ArrayToList.convert(coefficients).toArray(new Float[0]);
-                    assert value != null;
+                    if (value == null) {
+                        // TODO: error
+                        Log.e(Thread.currentThread().getName(), "Lens distortion coefficients cannot be null");
+                        MasterController.quitSafely();
+                        return;
+                    }
 
                     formatter = new ParameterFormatter<Float[]>() {
                         @NonNull
@@ -126,7 +139,12 @@ abstract class Lens_ extends Jpeg_ {
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
-                assert value != null;
+                if (value == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Lens facing cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 Integer FRONT    = CameraMetadata.LENS_FACING_FRONT;
                 Integer BACK     = CameraMetadata.LENS_FACING_BACK;
@@ -176,7 +194,12 @@ abstract class Lens_ extends Jpeg_ {
 
             if (keychain.contains(key)) {
                 float[] apertures = cameraCharacteristics.get(key);
-                assert apertures != null;
+                if (apertures == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Lens apertures cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 Float smallest = null;
                 for (Float val : apertures) {
@@ -188,7 +211,12 @@ abstract class Lens_ extends Jpeg_ {
                         smallest = val;
                     }
                 }
-                assert smallest != null;
+                if (smallest == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "There must be a smallest aperture");
+                    MasterController.quitSafely();
+                    return;
+                }
                 value = smallest;
 
                 formatter = new ParameterFormatter<Float>("smallest: ") {
@@ -222,7 +250,12 @@ abstract class Lens_ extends Jpeg_ {
 
             if (keychain.contains(key)) {
                 float[] densities = cameraCharacteristics.get(key);
-                assert densities != null;
+                if (densities == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Filter densities cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 Float biggest = null;
                 for (Float val : densities) {
@@ -234,7 +267,12 @@ abstract class Lens_ extends Jpeg_ {
                         biggest = val;
                     }
                 }
-                assert biggest != null;
+                if (biggest == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "There must be a biggest density");
+                    MasterController.quitSafely();
+                    return;
+                }
                 value = biggest;
 
                 formatter = new ParameterFormatter<Float>("biggest: ") {
@@ -268,7 +306,12 @@ abstract class Lens_ extends Jpeg_ {
 
             if (keychain.contains(key)) {
                 float[] lengths = cameraCharacteristics.get(key);
-                assert lengths != null;
+                if (lengths == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Lens focal lengths cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 Float longest = null;
                 for (Float val : lengths) {
@@ -280,7 +323,12 @@ abstract class Lens_ extends Jpeg_ {
                         longest = val;
                     }
                 }
-                assert longest != null;
+                if (longest == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Longest focal length must exist");
+                    MasterController.quitSafely();
+                    return;
+                }
                 value = longest;
 
                 formatter = new ParameterFormatter<Float>("longest: ") {
@@ -313,7 +361,12 @@ abstract class Lens_ extends Jpeg_ {
 
             if (keychain.contains(key)) {
                 int[]  modes  = cameraCharacteristics.get(key);
-                assert modes != null;
+                if (modes == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Optical stabilization cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
                 List<Integer> options = ArrayToList.convert(modes);
 
                 Integer OFF = CameraMetadata.LENS_OPTICAL_STABILIZATION_MODE_OFF;
@@ -358,7 +411,12 @@ abstract class Lens_ extends Jpeg_ {
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
-                assert value != null;
+                if (value == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Lens calibration cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 Integer UNCALIBRATED = CameraMetadata.LENS_INFO_FOCUS_DISTANCE_CALIBRATION_UNCALIBRATED;
                 Integer APPROXIMATE  = CameraMetadata.LENS_INFO_FOCUS_DISTANCE_CALIBRATION_APPROXIMATE;
@@ -408,10 +466,20 @@ abstract class Lens_ extends Jpeg_ {
                 if (characteristicsMap.containsKey(CameraCharacteristics.LENS_INFO_FOCUS_DISTANCE_CALIBRATION)) {
                     Parameter<Integer> calibration;
                     calibration = characteristicsMap.get(CameraCharacteristics.LENS_INFO_FOCUS_DISTANCE_CALIBRATION);
-                    assert calibration != null;
+                    if (calibration == null) {
+                        // TODO: error
+                        Log.e(Thread.currentThread().getName(), "Lens hyperfocal distances cannot be null");
+                        MasterController.quitSafely();
+                        return;
+                    }
 
                     Integer calValue = calibration.getValue();
-                    assert calValue != null;
+                    if (calValue == null) {
+                        // TODO: error
+                        Log.e(Thread.currentThread().getName(), "Lens calibration cannot be null");
+                        MasterController.quitSafely();
+                        return;
+                    }
 
                     if (!calValue.equals(CameraMetadata.LENS_INFO_FOCUS_DISTANCE_CALIBRATION_UNCALIBRATED)){
                         units = "diopters";
@@ -422,7 +490,12 @@ abstract class Lens_ extends Jpeg_ {
                 }
 
                 value = cameraCharacteristics.get(key);
-                assert value != null;
+                if (value == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Lens hyperfocal distances cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 formatter = new ParameterFormatter<Float>() {
                     @NonNull
@@ -458,12 +531,14 @@ abstract class Lens_ extends Jpeg_ {
                 if (characteristicsMap.containsKey(CameraCharacteristics.LENS_INFO_FOCUS_DISTANCE_CALIBRATION)) {
                     Parameter<Integer> calibration;
                     calibration = characteristicsMap.get(CameraCharacteristics.LENS_INFO_FOCUS_DISTANCE_CALIBRATION);
-                    assert calibration != null;
+                    if (calibration == null) {
+                        // TODO: error
+                        Log.e(Thread.currentThread().getName(), "Lens calibration cannot be null");
+                        MasterController.quitSafely();
+                        return;
+                    }
 
                     Integer calValue = calibration.getValue();
-                    assert calValue != null;
-
-                    // assert is unreliable :-(
                     if (calValue == null) {
                         units = "uncalibrated diopters";
                     }
@@ -476,7 +551,12 @@ abstract class Lens_ extends Jpeg_ {
                 }
 
                 value = cameraCharacteristics.get(key);
-                assert value != null;
+                if (value == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Lens minimum focus cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 formatter = new ParameterFormatter<Float>() {
                     @NonNull
@@ -510,10 +590,20 @@ abstract class Lens_ extends Jpeg_ {
 
                 if (keychain.contains(key)) {
                     float[] coefficients  = cameraCharacteristics.get(key);
-                    assert  coefficients != null;
+                    if ( coefficients == null) {
+                        // TODO: error
+                        Log.e(Thread.currentThread().getName(), "Lens calibration cannot be null");
+                        MasterController.quitSafely();
+                        return;
+                    }
 
                     value = ArrayToList.convert(coefficients).toArray(new Float[0]);
-                    assert value != null;
+                    if (value == null) {
+                        // TODO: error
+                        Log.e(Thread.currentThread().getName(), "Lens coefficients cannot be null");
+                        MasterController.quitSafely();
+                        return;
+                    }
 
                     formatter = new ParameterFormatter<Float[]>() {
                         @NonNull
@@ -555,7 +645,12 @@ abstract class Lens_ extends Jpeg_ {
 
                 if (keychain.contains(key)) {
                     value = cameraCharacteristics.get(key);
-                    assert value != null;
+                    if (value == null) {
+                        // TODO: error
+                        Log.e(Thread.currentThread().getName(), "Lens reference cannot be null");
+                        MasterController.quitSafely();
+                        return;
+                    }
 
                     Integer PRIMARY_CAMERA = CameraMetadata.LENS_POSE_REFERENCE_PRIMARY_CAMERA;
                     Integer GYROSCOPE      = CameraMetadata.LENS_POSE_REFERENCE_GYROSCOPE;
@@ -599,10 +694,20 @@ abstract class Lens_ extends Jpeg_ {
 
                 if (keychain.contains(key)) {
                     float[] coefficients  = cameraCharacteristics.get(key);
-                    assert  coefficients != null;
+                    if ( coefficients == null) {
+                        // TODO: error
+                        Log.e(Thread.currentThread().getName(), "Lens rotation cannot be null");
+                        MasterController.quitSafely();
+                        return;
+                    }
 
                     value = ArrayToList.convert(coefficients).toArray(new Float[0]);
-                    assert value != null;
+                    if (value == null) {
+                        // TODO: error
+                        Log.e(Thread.currentThread().getName(), "Lens coefficients cannot be null");
+                        MasterController.quitSafely();
+                        return;
+                    }
 
                     formatter = new ParameterFormatter<Float[]>() {
                         @NonNull
@@ -645,10 +750,20 @@ abstract class Lens_ extends Jpeg_ {
 
                 if (keychain.contains(key)) {
                     float[] coefficients  = cameraCharacteristics.get(key);
-                    assert  coefficients != null;
+                    if ( coefficients == null) {
+                        // TODO: error
+                        Log.e(Thread.currentThread().getName(), "Lens translation cannot be null");
+                        MasterController.quitSafely();
+                        return;
+                    }
 
                     value = ArrayToList.convert(coefficients).toArray(new Float[0]);
-                    assert value != null;
+                    if (value == null) {
+                        // TODO: error
+                        Log.e(Thread.currentThread().getName(), "Lens coefficients cannot be null");
+                        MasterController.quitSafely();
+                        return;
+                    }
 
                     formatter = new ParameterFormatter<Float[]>() {
                         @NonNull
@@ -676,4 +791,5 @@ abstract class Lens_ extends Jpeg_ {
         }
         //==========================================================================================
     }
+
 }

@@ -1,11 +1,32 @@
+/*
+ * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones
+ * @version: ShRAMP v0.0
+ *
+ * @objective: To detect extensive air shower radiation using smartphones
+ *             for the scientific study of ultra-high energy cosmic rays
+ *
+ * @institution: University of California, Irvine
+ * @department:  Physics and Astronomy
+ *
+ * @author: Eric Albin
+ * @email:  Eric.K.Albin@gmail.com
+ *
+ * @updated: 15 April 2019
+ */
+
 package sci.crayfis.shramp.sensor;
 
 import android.annotation.TargetApi;
 import android.hardware.Sensor;
 import android.support.annotation.NonNull;
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//                         (TODO)      UNDER CONSTRUCTION      (TODO)
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Low priority
+
 /**
- * TODO: description, comments and logging
+ * Ambient Humidity Sensors
  */
 @TargetApi(21)
 final class Humidity extends BasicSensor {
@@ -16,7 +37,7 @@ final class Humidity extends BasicSensor {
     private final static String mDescription = "Ambient relative humidity";
     private final static String mUnits       = "%";
 
-    // TODO: description
+    // Humidity is a scalar quantity (dimensionality = 1)
     private final static int mDimensions = 1;
 
     // Constructors
@@ -24,9 +45,9 @@ final class Humidity extends BasicSensor {
 
     // Humidity.....................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param sensor bla
-     * @param saveHistory bla
+     * Create new humidity sensor
+     * @param sensor System hardware reference
+     * @param saveHistory True to enable saving pressure history, false to disable
      */
     Humidity(@NonNull Sensor sensor, boolean saveHistory) {
         super(sensor, mDescription, mUnits, mDimensions, saveHistory);
@@ -37,7 +58,7 @@ final class Humidity extends BasicSensor {
 
     // getDewPointTemperature.......................................................................
     /**
-     * TODO: description, comments and logging
+     * Compute the dew-point temperature
      * @param temperature [celsius]
      * @param relativeHumidity [%]
      * @return [celsius]
@@ -55,8 +76,9 @@ final class Humidity extends BasicSensor {
         return (float) ( Tn * numerator / denominator );
     }
 
+    // getAbsoluteHumidity..........................................................................
     /**
-     * TODO: description, comments and logging
+     * Compute the absolute humidity
      * @param temperature [celsius]
      * @param relativeHumidity [%]
      * @return [grams / meter^3]

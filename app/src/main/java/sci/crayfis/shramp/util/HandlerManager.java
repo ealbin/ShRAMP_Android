@@ -1,20 +1,18 @@
-/*******************************************************************************
- *                                                                             *
- * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones     *
- * @version: ShRAMP v0.0                                                       *
- *                                                                             *
- * @objective: To detect extensive air shower radiation using smartphones      *
- *             for the scientific study of ultra-high energy cosmic rays       *
- *                                                                             *
- * @institution: University of California, Irvine                              *
- * @department:  Physics and Astronomy                                         *
- *                                                                             *
- * @author: Eric Albin                                                         *
- * @email:  Eric.K.Albin@gmail.com                                             *
- *                                                                             *
- * @updated: 25 March 2019                                                     *
- *                                                                             *
- ******************************************************************************/
+/*
+ * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones
+ * @version: ShRAMP v0.0
+ *
+ * @objective: To detect extensive air shower radiation using smartphones
+ *             for the scientific study of ultra-high energy cosmic rays
+ *
+ * @institution: University of California, Irvine
+ * @department:  Physics and Astronomy
+ *
+ * @author: Eric Albin
+ * @email:  Eric.K.Albin@gmail.com
+ *
+ * @updated: 15 April 2019
+ */
 
 package sci.crayfis.shramp.util;
 
@@ -30,7 +28,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * TODO: description, comments and logging
+ * Manages the creation and finish of all running threads.
+ * Call newHandler() to start a new thread, and finish() to shut all threads down.
  */
 @TargetApi(21)
 abstract public class HandlerManager {
@@ -39,54 +38,42 @@ abstract public class HandlerManager {
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // mHandlerHelpers..............................................................................
-    // TODO: description
+    // A list of all running threads
     private final static List<HandlerHelper> mHandlerHelpers = new ArrayList<>();
 
     // Private Class Fields
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // mUntitledThreadsCount........................................................................
-    // TODO: description
+    // A count of threads without explicitly specified names
     private static Integer mUntitledThreadsCount = 0;
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Private Inner Class
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    //**********************************************************************************************
-    // Private Inner Classes
-    //----------------------
 
     /**
-     * TODO: description, comments and logging
+     * The HandlerHelper encapsulates a thread's Handler into a convenient bundle
      */
     private static class HandlerHelper {
 
-        // Private Instance Fields
-        //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
         // nHandler.................................................................................
-        // TODO: description
+        // The thread's Handler contained by this helper instance
         private Handler nHandler;
 
         // nHandlerThread...........................................................................
-        // TODO: description
+        // The thread's HandlerThread contained by this helper instance
         private HandlerThread nHandlerThread;
-
-        ////////////////////////////////////////////////////////////////////////////////////////////
-        //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-        ////////////////////////////////////////////////////////////////////////////////////////////
 
         // Constructors
         //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
         // HandlerHelper............................................................................
         /**
-         * TODO: description, comments and logging
-         * @param name bla
-         * @param priority bla
+         * Start up a new thread with name 'name'
+         * @param name Optional name for the thread
+         * @param priority Optional priority for the thread
          */
-        private HandlerHelper(@Nullable String name,@Nullable Integer priority) {
+        private HandlerHelper(@Nullable String name, @Nullable Integer priority) {
             if (name == null) {
                 name = "Untitled thread: " + Integer.toString(mUntitledThreadsCount);
                 mUntitledThreadsCount += 1;
@@ -106,7 +93,7 @@ abstract public class HandlerManager {
 
         // finish...................................................................................
         /**
-         * TODO: description, comments and logging
+         * Shut down the thread
          */
         private void finish() {
             Log.e(Thread.currentThread().getName(), "HandlerHelper quit safely: " + nHandlerThread.getName());
@@ -124,10 +111,10 @@ abstract public class HandlerManager {
 
     // newHandler...................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param name bla
-     * @param priority bla
-     * @return bla
+     * Start up a new thread named 'name' with priority 'priority'
+     * @param name Name of new thread
+     * @param priority Priority of new thread
+     * @return Handler to new thread
      */
     @NonNull
     public static Handler newHandler(@Nullable String name, @Nullable Integer priority) {
@@ -139,7 +126,7 @@ abstract public class HandlerManager {
 
     // finish.......................................................................................
     /**
-     * TODO: description, comments and logging
+     * Shut down **all** running threads started by this class
      */
     public static void finish() {
         Log.e(Thread.currentThread().getName(), "Handler finish");

@@ -1,20 +1,18 @@
-/*******************************************************************************
- *                                                                             *
- * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones     *
- * @version: ShRAMP v0.0                                                       *
- *                                                                             *
- * @objective: To detect extensive air shower radiation using smartphones      *
- *             for the scientific study of ultra-high energy cosmic rays       *
- *                                                                             *
- * @institution: University of California, Irvine                              *
- * @department:  Physics and Astronomy                                         *
- *                                                                             *
- * @author: Eric Albin                                                         *
- * @email:  Eric.K.Albin@gmail.com                                             *
- *                                                                             *
- * @updated: 25 March 2019                                                     *
- *                                                                             *
- ******************************************************************************/
+/*
+ * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones
+ * @version: ShRAMP v0.0
+ *
+ * @objective: To detect extensive air shower radiation using smartphones
+ *             for the scientific study of ultra-high energy cosmic rays
+ *
+ * @institution: University of California, Irvine
+ * @department:  Physics and Astronomy
+ *
+ * @author: Eric Albin
+ * @email:  Eric.K.Albin@gmail.com
+ *
+ * @updated: 15 April 2019
+ */
 
 package sci.crayfis.shramp.camera2.characteristics;
 
@@ -33,12 +31,29 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import sci.crayfis.shramp.MasterController;
 import sci.crayfis.shramp.camera2.util.Parameter;
 import sci.crayfis.shramp.camera2.util.ParameterFormatter;
 import sci.crayfis.shramp.util.ArrayToList;
 
 /**
- * TODO: description, comments and logging
+ * A specialized class for discovering camera abilities, the parameters searched for include:
+ *    CONTROL_AE_AVAILABLE_ANTIBANDING_MODES
+ *    CONTROL_AE_AVAILABLE_MODES
+ *    CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES
+ *    CONTROL_AE_COMPENSATION_RANGE
+ *    CONTROL_AE_COMPENSATION_STEP
+ *    CONTROL_AE_LOCK_AVAILABLE
+ *    CONTROL_AF_AVAILABLE_MODES
+ *    CONTROL_AVAILABLE_EFFECTS
+ *    CONTROL_AVAILABLE_MODES
+ *    CONTROL_AVAILABLE_SCENE_MODES
+ *    CONTROL_AVAILABLE_VIDEO_STABILIZATION_MODES
+ *    CONTROL_AWB_AVAILABLE_MODES
+ *    CONTROL_AWB_LOCK_AVAILABLE
+ *    CONTROL_MAX_REGIONS_AE
+ *    CONTROL_MAX_REGIONS_AF
+ *    CONTROL_MAX_REGIONS_AWB
  */
 @TargetApi(21)
 @SuppressWarnings("unchecked")
@@ -48,34 +63,25 @@ abstract class Control_ extends Color_ {
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // MAX_FPS......................................................................................
-    // TODO: description
+    // Maximum FPS this app will support
     private static final int MAX_FPS = 30;
 
-    //M MAX_FPS_DIFF................................................................................
-    // TODO: description
+    // MAX_FPS_DIFF................................................................................
+    // Maximum FPS range acceptable for this app, e.g. FPS range [10,12] has a range of 2
     private static final int MAX_FPS_DIFF = 2;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // Constructors
-    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-    // Control_.....................................................................................
-    /**
-     * TODO: description, comments and logging
-     */
-    protected Control_() { super(); }
-
     // Protected Overriding Instance Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // read.........................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param cameraCharacteristics bla
-     * @param characteristicsMap bla
+     * Continue discovering abilities with specialized classes
+     * @param cameraCharacteristics Encapsulation of camera abilities
+     * @param characteristicsMap A mapping of characteristics names to their respective parameter options
      */
     @Override
     protected void read(@NonNull CameraCharacteristics cameraCharacteristics,
@@ -100,7 +106,12 @@ abstract class Control_ extends Color_ {
 
             if (keychain.contains(key)) {
                 int[]  modes  = cameraCharacteristics.get(key);
-                assert modes != null;
+                if (modes == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "AE antibanding modes cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
                 List<Integer> options = ArrayToList.convert(modes);
 
                 Integer OFF   = CameraMetadata.CONTROL_AE_ANTIBANDING_MODE_OFF;
@@ -151,7 +162,12 @@ abstract class Control_ extends Color_ {
 
             if (keychain.contains(key)) {
                 int[]  modes  = cameraCharacteristics.get(key);
-                assert modes != null;
+                if (modes == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "AE modes cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
                 List<Integer> options = ArrayToList.convert(modes);
 
                 Integer OFF                  = CameraMetadata.CONTROL_AE_MODE_OFF;
@@ -209,7 +225,12 @@ abstract class Control_ extends Color_ {
                 }
 
                 Range<Integer>[] options = cameraCharacteristics.get(key);
-                assert options != null;
+                if (options == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "FPS range cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 List<Range<Integer>> fpsRanges = ArrayToList.convert(options);
                 Collections.sort(fpsRanges, new SortByUpper());
@@ -224,7 +245,12 @@ abstract class Control_ extends Color_ {
 
                 // TODO: figure out how to do toArray(new Range<Integer>[])
                 value = (Range<Integer>[]) keep.toArray(new Range[0]);
-                assert value != null;
+                if (value == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "FPS range cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 formatter = new ParameterFormatter<Range<Integer>[]>() {
                     @NonNull
@@ -261,7 +287,12 @@ abstract class Control_ extends Color_ {
 
             if (keychain.contains(key)) {
                 Range<Integer> range = cameraCharacteristics.get(key);
-                assert range != null;
+                if (range == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "AE compensation range cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
                 value = range.getUpper();
 
                 formatter = new ParameterFormatter<Integer>() {
@@ -295,7 +326,12 @@ abstract class Control_ extends Color_ {
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
-                assert value != null;
+                if (value == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "AE compensation step cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 formatter = new ParameterFormatter<Rational>() {
                     @NonNull
@@ -327,7 +363,12 @@ abstract class Control_ extends Color_ {
 
                 if (keychain.contains(key)) {
                     value = cameraCharacteristics.get(key);
-                    assert value != null;
+                    if (value == null) {
+                        // TODO: error
+                        Log.e(Thread.currentThread().getName(), "AE lock cannot be null");
+                        MasterController.quitSafely();
+                        return;
+                    }
 
                     formatter = new ParameterFormatter<Boolean>() {
                         @NonNull
@@ -363,7 +404,12 @@ abstract class Control_ extends Color_ {
 
             if (keychain.contains(key)) {
                 int[]  modes  = cameraCharacteristics.get(key);
-                assert modes != null;
+                if (modes == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "AF modes cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
                 List<Integer> options = ArrayToList.convert(modes);
 
                 Integer OFF                = CameraMetadata.CONTROL_AF_MODE_OFF;
@@ -412,7 +458,12 @@ abstract class Control_ extends Color_ {
 
             if (keychain.contains(key)) {
                 int[]  modes  = cameraCharacteristics.get(key);
-                assert modes != null;
+                if (modes == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Effects cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
                 List<Integer> options = ArrayToList.convert(modes);
 
                 Integer OFF        = CameraMetadata.CONTROL_EFFECT_MODE_OFF;
@@ -459,7 +510,12 @@ abstract class Control_ extends Color_ {
 
                 if (keychain.contains(key)) {
                     int[] modes = cameraCharacteristics.get(key);
-                    assert modes != null;
+                    if (modes == null) {
+                        // TODO: error
+                        Log.e(Thread.currentThread().getName(), "Available modes cannot be null");
+                        MasterController.quitSafely();
+                        return;
+                    }
                     List<Integer> options = ArrayToList.convert(modes);
 
                     Integer OFF            = CameraMetadata.CONTROL_MODE_OFF;
@@ -507,7 +563,12 @@ abstract class Control_ extends Color_ {
 
             if (keychain.contains(key)) {
                 int[]  modes  = cameraCharacteristics.get(key);
-                assert modes != null;
+                if (modes == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Scene modes cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
                 List<Integer> options = ArrayToList.convert(modes);
 
                 Integer DISABLED         = CameraMetadata.CONTROL_SCENE_MODE_DISABLED;
@@ -566,7 +627,7 @@ abstract class Control_ extends Color_ {
 
             if (keychain.contains(key)) {
                 //int[]  modes  = cameraCharacteristics.get(key);
-                //assert modes != null;
+                // a$$ert modes != null;
                 //List<Integer> options = ArrayToList.convert(modes);
 
                 Integer OFF = CameraMetadata.CONTROL_VIDEO_STABILIZATION_MODE_OFF;
@@ -605,7 +666,12 @@ abstract class Control_ extends Color_ {
 
             if (keychain.contains(key)) {
                 int[]  modes  = cameraCharacteristics.get(key);
-                assert modes != null;
+                if (modes == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "AWB modes cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
                 List<Integer> options = ArrayToList.convert(modes);
 
                 Integer OFF              = CameraMetadata.CONTROL_AWB_MODE_OFF;
@@ -657,7 +723,12 @@ abstract class Control_ extends Color_ {
 
                 if (keychain.contains(key)) {
                     value = cameraCharacteristics.get(key);
-                    assert value != null;
+                    if (value == null) {
+                        // TODO: error
+                        Log.e(Thread.currentThread().getName(), "AWB lock cannot be null");
+                        MasterController.quitSafely();
+                        return;
+                    }
 
                     formatter = new ParameterFormatter<Boolean>() {
                         @NonNull
@@ -692,7 +763,12 @@ abstract class Control_ extends Color_ {
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
-                assert value != null;
+                if (value == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "AE regions cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 formatter = new ParameterFormatter<Integer>() {
                     @NonNull
@@ -723,7 +799,12 @@ abstract class Control_ extends Color_ {
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
-                assert value != null;
+                if (value == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "AF regions cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 formatter = new ParameterFormatter<Integer>() {
                     @NonNull
@@ -754,7 +835,12 @@ abstract class Control_ extends Color_ {
 
             if (keychain.contains(key)) {
                 value = cameraCharacteristics.get(key);
-                assert value != null;
+                if (value == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "AWB regions cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
 
                 formatter = new ParameterFormatter<Integer>() {
                     @NonNull
@@ -788,7 +874,12 @@ abstract class Control_ extends Color_ {
 
                 if (keychain.contains(key)) {
                     Range<Integer> range = cameraCharacteristics.get(key);
-                    assert range != null;
+                    if (range == null) {
+                        // TODO: error
+                        Log.e(Thread.currentThread().getName(), "Sensitivity boost cannot be null");
+                        MasterController.quitSafely();
+                        return;
+                    }
 
                     Integer UNITY = 100;
 
@@ -817,4 +908,5 @@ abstract class Control_ extends Color_ {
         }
         //==========================================================================================
     }
+
 }

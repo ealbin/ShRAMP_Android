@@ -1,20 +1,18 @@
-/*******************************************************************************
- *                                                                             *
- * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones     *
- * @version: ShRAMP v0.0                                                       *
- *                                                                             *
- * @objective: To detect extensive air shower radiation using smartphones      *
- *             for the scientific study of ultra-high energy cosmic rays       *
- *                                                                             *
- * @institution: University of California, Irvine                              *
- * @department:  Physics and Astronomy                                         *
- *                                                                             *
- * @author: Eric Albin                                                         *
- * @email:  Eric.K.Albin@gmail.com                                             *
- *                                                                             *
- * @updated: 25 March 2019                                                     *
- *                                                                             *
- ******************************************************************************/
+/*
+ * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones
+ * @version: ShRAMP v0.0
+ *
+ * @objective: To detect extensive air shower radiation using smartphones
+ *             for the scientific study of ultra-high energy cosmic rays
+ *
+ * @institution: University of California, Irvine
+ * @department:  Physics and Astronomy
+ *
+ * @author: Eric Albin
+ * @email:  Eric.K.Albin@gmail.com
+ *
+ * @updated: 15 April 2019
+ */
 
 package sci.crayfis.shramp.camera2.util;
 
@@ -23,8 +21,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 /**
- * TODO: description, comments and logging
- * @param <T>
+ * Encapsulation of a parameter's description, value and units
+ * @param <T> Parameter value type
  */
 @TargetApi(21)
 public class Parameter<T> {
@@ -33,8 +31,9 @@ public class Parameter<T> {
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // mDefaultFormat...............................................................................
-    // TODO: description
+    // If a ParameterFormatter<T> is not provided, this is used as default
     private final ParameterFormatter<T> mDefaultFormat = new ParameterFormatter<T>() {
+        @NonNull
         @Override
         public String formatValue(@NonNull T value) {
             return value.toString();
@@ -45,19 +44,19 @@ public class Parameter<T> {
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // mDescription.................................................................................
-    // TODO: description
+    // A short description of the Parameter
     private String mDescription;
 
     // mValue.......................................................................................
-    // TODO: description
+    // The value associated with the Parameter
     private T mValue;
 
     // mUnits.......................................................................................
-    // TODO: description
+    // The units associated with the parameter
     private String mUnits;
 
     // mParameterFormatter..........................................................................
-    // TODO: description
+    // The ParameterFormatter to use when displaying
     private ParameterFormatter<T> mParameterFormatter;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -69,8 +68,8 @@ public class Parameter<T> {
 
     // Parameter....................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param description bla
+     * Option 1) create a blank Parameter with a description at minimum
+     * @param description A short description of the Parameter
      */
     public Parameter(@NonNull String description) {
         mValue       = null;
@@ -81,11 +80,11 @@ public class Parameter<T> {
 
     // Parameter....................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param description bla
-     * @param value bla
-     * @param units bla
-     * @param parameterFormatter bla
+     * Option 2) create a complete Parameter object
+     * @param description A short description of the parameter
+     * @param value Of type <T>, the value associated with the Parameter (Optional)
+     * @param units The units associated with the value of the Parameter (Optional)
+     * @param parameterFormatter The formatter for this Parameter (Optional)
      */
     public Parameter(@NonNull String description, @Nullable T value,
                      @Nullable String units, @Nullable ParameterFormatter<T> parameterFormatter) {
@@ -102,7 +101,7 @@ public class Parameter<T> {
 
     // Parameter....................................................................................
     /**
-     * TODO: description, comments and logging
+     * Disable the default constructor option
      */
     private Parameter() {}
 
@@ -111,40 +110,35 @@ public class Parameter<T> {
 
     // getDescription...............................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return A short description of the Parameter
      */
     @NonNull
     public String getDescription() { return mDescription; }
 
     // getFormatter.................................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return The formatter being used for this Parameter
      */
     @NonNull
     public ParameterFormatter<T> getFormatter() { return mParameterFormatter; }
 
     // getUnits.....................................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return The units associated with the value of this Parameter
      */
     @Nullable
     public String getUnits() { return  mUnits; }
 
     // getValue.....................................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return The value associated with this Parameter
      */
     @Nullable
     public T getValue() { return  mValue; }
 
     // setFormatter.................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param parameterFormatter bla
+     * @param parameterFormatter ParameterFormatter to be used
      */
     public void setFormatter(@Nullable ParameterFormatter<T> parameterFormatter) {
         if (parameterFormatter == null) {
@@ -157,15 +151,13 @@ public class Parameter<T> {
 
     // setUnits.....................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param units bla
+     * @param units Units of the value
      */
     public void setUnits(@Nullable String units) { mUnits = units; }
 
     // setValueString...............................................................................
     /**
-     * TODO: description, comments and logging
-     * @param valueString bla
+     * @param valueString A String representation of the value (used if value is null)
      */
     public void setValueString(@NonNull String valueString) { mParameterFormatter.setValueString(valueString); }
 
@@ -174,8 +166,7 @@ public class Parameter<T> {
 
     // toString.....................................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return A formatted String representation of this Parameter<T>
      */
     @NonNull
     @Override

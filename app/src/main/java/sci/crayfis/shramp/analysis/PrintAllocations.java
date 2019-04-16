@@ -1,3 +1,19 @@
+/*
+ * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones
+ * @version: ShRAMP v0.0
+ *
+ * @objective: To detect extensive air shower radiation using smartphones
+ *             for the scientific study of ultra-high energy cosmic rays
+ *
+ * @institution: University of California, Irvine
+ * @department:  Physics and Astronomy
+ *
+ * @author: Eric Albin
+ * @email:  Eric.K.Albin@gmail.com
+ *
+ * @updated: 15 April 2019
+ */
+
 package sci.crayfis.shramp.analysis;
 
 import android.annotation.TargetApi;
@@ -8,104 +24,41 @@ import sci.crayfis.shramp.util.HeapMemory;
 import sci.crayfis.shramp.util.NumToString;
 
 /**
- * TODO: description, comments and logging
+ * TODO: remove
+ * Used for debugging, i.e. displaying contents of Allocations
  */
 @TargetApi(21)
-abstract public class PrintAndSave {
+abstract public class PrintAllocations {
 
     // Private Class Constants
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // PEEK_SIZE....................................................................................
-    // TODO: description
+    // Number of elements to print
     private static final int PEEK_SIZE = 100;
 
     // Private Class Fields
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // mNpixels.....................................................................................
-    // TODO: description
+    // Number of pixels (width * height)
     private static Integer mNpixels;
     
     // mFloatData...................................................................................
-    // TODO: description
+    // Data holder for Allocations to dump their content into
     private static float[] mFloatData;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // Package-private Class Methods
+    // Public Class Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    // setNpixels...................................................................................
+    // printMaxMin..................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param npixels bla
+     * Print maximum and minimum of mean and standard deviation Allocations
      */
-    static void setNpixels(int npixels) {
-        mNpixels = npixels;
-        mFloatData = new float[mNpixels];
-    }
-
-    // printExposureValueSum........................................................................
-    /**
-     * TODO: description, comments and logging
-     */
-    public static void printExposureValueSum() {
-        System.gc();
-        if (HeapMemory.isMemoryLow()) {
-            return;
-        }
-        double[] doubleData = new double[mNpixels];
-
-        // TODO: THIS WONT WORK NOW
-        ImageProcessor.getValueSum().copyTo(doubleData);
-        String[] values = new String[PEEK_SIZE];
-        for (int i = 0; i < PEEK_SIZE; i++) {
-            values[i] = NumToString.sci(doubleData[i]);
-        }
-
-        String title = "";
-        title += "-----------------------------------------------------------------------------------\n";
-        title += "// Exposure Value Sum /////////////////////////////////////////////////////////////\n";
-        title += "-----------------------------------------------------------------------------------\n";
-
-        printValues(title, values);
-
-        doubleData = null;
-        System.gc();
-    }
-
-    // printExposureValue2Sum.......................................................................
-    /**
-     * TODO: description, comments and logging
-     */
-    public static void printExposureValue2Sum() {
-        System.gc();
-        if (HeapMemory.isMemoryLow()) {
-            return;
-        }
-        double[] doubleData = new double[mNpixels];
-
-        // TODO: THIS WONT WORK NOW
-        ImageProcessor.getValue2Sum().copyTo(doubleData);
-        String[] values = new String[PEEK_SIZE];
-        for (int i = 0; i < PEEK_SIZE; i++) {
-            values[i] = NumToString.sci(doubleData[i]);
-        }
-
-        String title = "";
-        title += "-----------------------------------------------------------------------------------\n";
-        title += "// Exposure Value^2 Sum ///////////////////////////////////////////////////////////\n";
-        title += "-----------------------------------------------------------------------------------\n";
-
-        printValues(title, values);
-
-        doubleData = null;
-        System.gc();
-    }
-
     public static void printMaxMin() {
         ImageProcessor.getMean().copyTo(mFloatData);
         float meanMax = -1.f;
@@ -153,10 +106,9 @@ abstract public class PrintAndSave {
         Log.e(Thread.currentThread().getName(), out);
     }
 
-
-    // printMeanAndErr...............................................................................
+    // printMeanAndErr..............................................................................
     /**
-     * TODO: description, comments and logging
+     * Print PEEK_SIZE worth of elements from mean and standard error Allocations
      */
     public static void printMeanAndErr() {
         
@@ -210,9 +162,9 @@ abstract public class PrintAndSave {
         Log.e(Thread.currentThread().getName(), out);
     }
 
-    // printStdDev...................................................................................
+    // printStdDev..................................................................................
     /**
-     * TODO: description, comments and logging
+     * Print PEEK_SIZE worth of elements from standard deviation Allocation
      */
     public static void printStdDev() {
 
@@ -230,9 +182,9 @@ abstract public class PrintAndSave {
         printValues(title, values);
     }
 
-    // printSignificance.................................................................................
+    // printSignificance............................................................................
     /**
-     * TODO: description, comments and logging
+     * Print PEEK_SIZE worth of significance Allocation
      */
     public static void printSignificance() {
         ImageProcessor.getSignificance().copyTo(mFloatData);
@@ -252,14 +204,29 @@ abstract public class PrintAndSave {
         System.gc();
     }
 
+    // Package-private Class Methods
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+    // setNpixels...................................................................................
+    /**
+     * @param npixels Number of pixels of sensor (width * height)
+     */
+    static void setNpixels(int npixels) {
+        mNpixels = npixels;
+
+        // Because this is about 25-40 MB, initialize it once and keep it around to avoid sudden
+        // resource fluctuations while taking data
+        mFloatData = new float[mNpixels];
+    }
+
     // Private Class Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // printValues....................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param title bla
-     * @param values bla
+     * Helper for printing values
+     * @param title Title of elements to be printed
+     * @param values Values to be printed
      */
     private static void printValues(@NonNull String title, @NonNull String[] values) {
         int len = 0;

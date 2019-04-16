@@ -1,3 +1,19 @@
+/*
+ * @project: (Sh)ower (R)econstructing (A)pplication for (M)obile (P)hones
+ * @version: ShRAMP v0.0
+ *
+ * @objective: To detect extensive air shower radiation using smartphones
+ *             for the scientific study of ultra-high energy cosmic rays
+ *
+ * @institution: University of California, Irvine
+ * @department:  Physics and Astronomy
+ *
+ * @author: Eric Albin
+ * @email:  Eric.K.Albin@gmail.com
+ *
+ * @updated: 15 April 2019
+ */
+
 package sci.crayfis.shramp.battery;
 
 import android.annotation.TargetApi;
@@ -10,9 +26,15 @@ import android.support.annotation.Nullable;
 import org.jetbrains.annotations.Contract;
 
 import sci.crayfis.shramp.util.NumToString;
+import sci.crayfis.shramp.util.StopWatch;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//                         (TODO)      UNDER CONSTRUCTION      (TODO)
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// This class is basically fine, the to-do is adding additional broadcast listeners (low-priority)
 
 /**
- * TODO: description, comments and logging
+ * Public interface to battery functions
  */
 @TargetApi(21)
 public class BatteryController {
@@ -21,27 +43,32 @@ public class BatteryController {
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // mInstance....................................................................................
-    // TODO: description
+    // Reference to single instance of BatteryController
     private static final BatteryController mInstance = new BatteryController();
 
     // Private Instance Fields
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // mBatteryManager..............................................................................
-    // TODO: description
+    // Reference to system battery manager
     private BatteryManager mBatteryManager;
 
     // mBatteryChanged..............................................................................
-    // TODO: description
+    // Reference to battery broadcast listener
     private BatteryChanged mBatteryChanged;
 
     /*
+    // TODO: other broadcast listeners that may or may not be added soon
     private static Intent mBatteryOkay;
     private static Intent mBatteryLow;
     private static Intent mPowerConnected;
     private static Intent mPowerDisconnected;
     private static Intent mPowerSummary;
     */
+
+    // mStopWatch1..................................................................................
+    // For now, monitoring performance for getting temperature -- (TODO) to be removed later
+    private static final StopWatch mStopWatch = new StopWatch();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -50,6 +77,9 @@ public class BatteryController {
     // Constructors
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+    /**
+     * Disable ability to create multiple instances
+     */
     private BatteryController() {}
 
     // Public Class Methods
@@ -57,8 +87,8 @@ public class BatteryController {
 
     // initialize...................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param activity bla
+     * Start up battery monitoring
+     * @param activity Main activity that is controlling the app
      */
     public static void initialize(@NonNull Activity activity) {
         mInstance.mBatteryManager = (BatteryManager) activity.getSystemService(Context.BATTERY_SERVICE);
@@ -66,6 +96,7 @@ public class BatteryController {
         mInstance.mBatteryChanged = new BatteryChanged(activity);
 
         /*
+        // TODO: other broadcast listeners that may or may not be added soon
         mBatteryOkay       = activity.registerReceiver(this, new IntentFilter(Intent.ACTION_BATTERY_OKAY));
         mBatteryLow        = activity.registerReceiver(this, new IntentFilter(Intent.ACTION_BATTERY_LOW));
         mPowerConnected    = activity.registerReceiver(this, new IntentFilter(Intent.ACTION_POWER_CONNECTED));
@@ -76,56 +107,65 @@ public class BatteryController {
 
     // refresh......................................................................................
     /**
-     * TODO: description, comments and logging
+     * Refresh battery information to latest values
      */
     public static void refresh() {
-        assert mInstance.mBatteryChanged != null;
+        if (mInstance.mBatteryChanged == null) {
+            return;
+        }
         mInstance.mBatteryChanged.refresh();
     }
 
     // getRemainingCapacity.........................................................................
     /**
-     * TODO: description, comments and logging
-     * @return as a percent with no decimal part
+     * @return remaining battery level as a percent with no decimal part
      */
     public static int getRemainingCapacity() {
-        assert mInstance.mBatteryManager != null;
+        if (mInstance.mBatteryManager == null) {
+            return -1;
+        }
         return mInstance.mBatteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
     }
 
     // getBatteryCapacity...........................................................................
     /**
-     * TODO: description, comments and logging
+     * Warning: could be garbage
      * @return capacity in milli-amp-hours
      */
     public static double getBatteryCapacity() {
-        assert mInstance.mBatteryManager != null;
+        if (mInstance.mBatteryManager == null) {
+            return Double.NaN;
+        }
         return mInstance.mBatteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER) / 1e3;
     }
 
     // getInstantaneousCurrent......................................................................
     /**
-     * TODO: description, comments and logging
+     * Warning: could be net current (out - in) or out only
      * @return current current in milli-amps
      */
     public static double getInstantaneousCurrent() {
-        assert mInstance.mBatteryManager != null;
+        if (mInstance.mBatteryManager == null) {
+            return Double.NaN;
+        }
         return mInstance.mBatteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW) / 1e3;
     }
 
     // getAverageCurrent............................................................................
     /**
-     * TODO: description, comments and logging
+     * Warning: could be garbage
      * @return average current in milli-amps
      */
     public static double getAverageCurrent() {
-        assert mInstance.mBatteryManager != null;
+        if (mInstance.mBatteryManager == null) {
+            return Double.NaN;
+        }
         return mInstance.mBatteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_AVERAGE) / 1e3;
     }
 
     // getRemainingTime.............................................................................
     /**
-     * TODO: description, comments and logging
+     * Warning: garbage if getAverageCurrent() is garbage
      * @return hours remaining
      */
     public static double getRemainingTime() {
@@ -134,17 +174,20 @@ public class BatteryController {
 
     // getRemainingEnergy...........................................................................
     /**
-     * TODO: description, comments and logging
+     * Warning: usually garbage
      * @return remaining power in milli-watt-hours
      */
     public static double getRemainingEnergy() {
-        assert mInstance.mBatteryManager != null;
+        if (mInstance.mBatteryManager == null) {
+            return Double.NaN;
+        }
         return mInstance.mBatteryManager.getLongProperty(BatteryManager.BATTERY_PROPERTY_ENERGY_COUNTER) / 1e6;
     }
 
     // getRemainingPower............................................................................
     /**
-     * TODO: description, comments and logging
+     * Warning: garbage if either getRemainingEnergy() or getRemainingTime() is garbage,
+     * i.e. most likely garbage
      * @return average continuous milli-watts of power remaining
      */
     public static double getRemainingPower() {
@@ -153,7 +196,7 @@ public class BatteryController {
 
     // getInstantaneousPower........................................................................
     /**
-     * TODO: description, comments and logging
+     * Warning: either net power (out - in) or out power
      * @return instantaneous power in milli-watts
      */
     @Nullable
@@ -168,7 +211,7 @@ public class BatteryController {
 
     // getAveragePower..............................................................................
     /**
-     * TODO: description, comments and logging
+     * Warning: garbage if getAverageCurrent() is garbage
      * @return average power in milli-watts
      */
     @Nullable
@@ -185,8 +228,8 @@ public class BatteryController {
 
     // getCurrentIcon...............................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * TODO: No idea what the hell this is
+     * @return it's an integer, that's all I know
      */
     @Contract(pure = true)
     @Nullable
@@ -196,8 +239,8 @@ public class BatteryController {
 
     // getTechnology................................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * Warning: most devices don't have this
+     * @return Likely a null string, otherwise it's text describing the technology (e.g. Li-ion)
      */
     @Contract(pure = true)
     @Nullable
@@ -207,8 +250,7 @@ public class BatteryController {
 
     // isBatteryPresent.............................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return True if battery is identified by the system, false if not
      */
     @Contract(pure = true)
     @NonNull
@@ -218,8 +260,8 @@ public class BatteryController {
 
     // getCurrentHealth.............................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return "GOOD", "COLD", "DEAD", "OVERHEAT", "OVER VOLTAGE", "UNKNOWN", "UNSPECIFIED FAILURE",
+     *          "UNKNOWN CONDITION OR NOT AVAILABLE"
      */
     @Contract(pure = true)
     @Nullable
@@ -229,8 +271,8 @@ public class BatteryController {
 
     // getCurrentStatus.............................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return "CHARGING", "DISCHARGING", "FULLY CHARGED", "NOT CHARGING", "CHARGING STATUS UNKNOWN",
+     *          "UNKNOWN STATUS"
      */
     @Contract(pure = true)
     @Nullable
@@ -240,8 +282,8 @@ public class BatteryController {
 
     // getCurrentPowerSource........................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return "USING BATTERY POWER ONLY", "USING AC ADAPTER POWER", "USING USB POWER",
+     *         "USING WIRELESS POWER", "UNKNOWN POWER SOURCE"
      */
     @Contract(pure = true)
     @Nullable
@@ -251,8 +293,7 @@ public class BatteryController {
 
     // getCurrentVoltage............................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return Battery voltage in volts
      */
     @Contract(pure = true)
     @Nullable
@@ -262,19 +303,20 @@ public class BatteryController {
 
     // mBatteryTemperature..........................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return Battery temperature in degrees Celsius
      */
     @Contract(pure = true)
     @Nullable
     public static Double getCurrentTemperature() {
-        return BatteryChanged.getCurrentTemperature();
+        mStopWatch.start();
+        Double temperature = BatteryChanged.getCurrentTemperature();
+        mStopWatch.addTime();
+        return temperature;
     }
 
     // getCurrentLevel..............................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return Usually the same as getRemainingCapacity(), but could be energy or charge units
      */
     @Contract(pure = true)
     @Nullable
@@ -284,8 +326,8 @@ public class BatteryController {
 
     // getScale.....................................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return Maximal value of getCurrentLevel(), usually 100 as in percent, but could be
+     *         energy or charge or something..
      */
     @Contract(pure = true)
     @Nullable
@@ -295,8 +337,7 @@ public class BatteryController {
 
     // getCurrentPercent............................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return Same as getRemainingCapacity(), but possibly (not often) higher precision
      */
     @Contract(pure = true)
     @Nullable
@@ -306,8 +347,7 @@ public class BatteryController {
 
     // getString....................................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return Status string of current battery conditions
      */
     @NonNull
     public static String getString() {
@@ -350,7 +390,7 @@ public class BatteryController {
 
     // shutdown.....................................................................................
     /**
-     * TODO: description, comments and logging
+     * Disable battery broadcast listening
      */
     public static void shutdown() {
         mInstance.mBatteryChanged.shutdown();
