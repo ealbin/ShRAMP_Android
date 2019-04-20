@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 15 April 2019
+ * @updated: 20 April 2019
  */
 
 package sci.crayfis.shramp.util;
@@ -37,7 +37,6 @@ abstract public class BuildString {
      */
     @NonNull
     public static String get() {
-        Log.e(Thread.currentThread().getName(), "BuildString get");
         int buildCode = Build.VERSION.SDK_INT;
         String api = Integer.toString(buildCode);
         String buildString;

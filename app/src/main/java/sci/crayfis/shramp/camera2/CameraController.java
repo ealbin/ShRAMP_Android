@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 15 April 2019
+ * @updated: 20 April 2019
  */
 
 package sci.crayfis.shramp.camera2;
@@ -413,7 +413,6 @@ abstract public class CameraController {
      * @param camera Reference to opened Camera object
      */
     static void cameraHasOpened(@NonNull Camera camera) {
-        Log.e(Thread.currentThread().getName(), "Camera is open");
 
         mOpenCamera = camera;
         RequestMaker.makeDefault();

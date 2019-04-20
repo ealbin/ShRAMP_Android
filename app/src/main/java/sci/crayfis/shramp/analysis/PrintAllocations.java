@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 15 April 2019
+ * @updated: 20 April 2019
  */
 
 package sci.crayfis.shramp.analysis;
@@ -207,7 +207,7 @@ abstract public class PrintAllocations {
     // Package-private Class Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    // setNpixels...................................................................................
+    // setRowsCols...................................................................................
     /**
      * @param npixels Number of pixels of sensor (width * height)
      */

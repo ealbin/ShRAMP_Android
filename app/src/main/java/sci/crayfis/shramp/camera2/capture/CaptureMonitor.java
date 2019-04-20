@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 15 April 2019
+ * @updated: 20 April 2019
  */
 
 package sci.crayfis.shramp.camera2.capture;
@@ -23,10 +23,12 @@ import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.Surface;
 
 import sci.crayfis.shramp.GlobalSettings;
+import sci.crayfis.shramp.MasterController;
 import sci.crayfis.shramp.analysis.AnalysisController;
 import sci.crayfis.shramp.analysis.DataQueue;
 import sci.crayfis.shramp.battery.BatteryController;
@@ -38,37 +40,36 @@ import sci.crayfis.shramp.util.StorageMedia;
 import sci.crayfis.shramp.util.TimeManager;
 
 /**
- * TODO: description, comments and logging
+ * Monitors capture stream on a frame by frame basis, receiving capture metadata
  */
 @TargetApi(21)
-final class CaptureStream extends CameraCaptureSession.CaptureCallback {
+final class CaptureMonitor extends CameraCaptureSession.CaptureCallback {
 
     // Private Class Constants
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    // State........................................................................................
-    // TODO: description
+    // state........................................................................................
+    // state of the capture session
     private enum State {ACTIVE, PAUSED, FINISHED}
 
     // Private Instance Fields
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // mState.......................................................................................
-    // TODO: description
+    // Current state
     private State mState;
 
     // mFrame.......................................................................................
-    // TODO: description
-    private class mFrame {
+    // Encapsulation of frame count and limit, responsible for determining when to stop capture
+    private class Frame {
 
-        // TODO: description
         int FrameLimit;
         int FrameCount;
 
         // setLimit.................................................................................
         /**
-         * TODO: description, comments and logging
-         * @param limit bla
+         * Set condition to end capture
+         * @param limit Maximum number of frames to capture before stopping
          */
         void setLimit(int limit) {
             FrameLimit = limit;
@@ -77,26 +78,28 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
 
         // raiseFrameCount..........................................................................
         /**
-         * TODO: description, comments and logging
+         * Increase frame capture count, and stop capture if frame count has exceeded the limit
          */
         void raiseFrameCount() {
             FrameCount += 1;
 
-            Log.e(Thread.currentThread().getName(), "CaptureStream completed " + Integer.toString(FrameCount)
-                    + " of " + Integer.toString(FrameLimit) + " frames");
-            Log.e("Frame Break", ".......................................................................");
-
+            String dots = ".......................................................................";
+            Log.e(Thread.currentThread().getName(), " \n" + dots + "\n"
+                    + "Captured " + Integer.toString(FrameCount) + " of "
+                    + Integer.toString(FrameLimit) + " frames" + "\n" + dots);
 
             if (FrameCount >= FrameLimit) {
                 Log.e(Thread.currentThread().getName(), "Frame count met, ending capture");
                 mState = State.FINISHED;
-                CaptureController.pauseCaptureSession();
+                CaptureController.pauseSession();
             }
         }
     }
-    private final mFrame mFrame = new mFrame();
+    private final Frame mFrame = new Frame();
 
-    class mTemperature {
+    // mTemperature.................................................................................
+    // Encapsulation of battery temperature statistics, stop capture if temperature exceeds limit
+    class Temperature {
         Double First;
         Double Last;
         Double Max;
@@ -105,6 +108,19 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
         Long   Count;
         Double Limit;
 
+        // setLimit.................................................................................
+        /**
+         * Set temperature limit to end capture
+         * @param temperatureLimit maximum temperature for capture
+         */
+        void setLimit(double temperatureLimit) {
+            Limit = temperatureLimit;
+        }
+
+        // logTemperature...........................................................................
+        /**
+         * Log current battery temperature
+         */
         void logTemperature() {
             Last = BatteryController.getCurrentTemperature();
             if (Last == null) {
@@ -132,14 +148,15 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
             if (Last >= Limit) {
                 Log.e(Thread.currentThread().getName(), "Temperature limit met, ending capture");
                 mState = State.FINISHED;
-                CaptureController.pauseCaptureSession();
+                CaptureController.pauseSession();
             }
         }
 
-        void setLimit(double temperatureLimit) {
-            Limit = temperatureLimit;
-        }
-
+        // getMean..................................................................................
+        /**
+         * @return mean temperature recorded
+         */
+        @Nullable
         Double getMean() {
             if (Sum == null) {
                 return null;
@@ -147,6 +164,11 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
             return Sum / (double) Count;
         }
 
+        // getLastString............................................................................
+        /**
+         * @return a string representation of the last temperature recorded
+         */
+        @Nullable
         String getLastString() {
             if (Last == null) {
                 return null;
@@ -154,7 +176,15 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
             return NumToString.number(Last) + " [Celsius]";
         }
 
+        // getString................................................................................
+        /**
+         * @return a string of temperature statistics
+         */
+        @Nullable
         String getString() {
+            if (Count == null) {
+                return null;
+            }
             String out = " \n";
             out += "Temperature [Celsius] \n";
             out += "\t" + "Start: " + NumToString.number(First) + "\n";
@@ -165,25 +195,29 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
             return out;
         }
     }
-    private final mTemperature mTemperature = new mTemperature();
+    private final Temperature mTemperature = new Temperature();
 
     // mTimestamp...................................................................................
-    // TODO: description
-    class mTimestamp {
+    // Encapsulation of timestamp information
+    class Timestamp {
 
-        // TODO: description
         long First   = 0L;
         long Last    = 0L;
         long Elapsed = 0L;
 
         // add......................................................................................
         /**
-         * TODO: description, comments and logging
-         * @param result bla
+         * Add current sensor timestamp to the record
+         * @param result latest capture result
          */
         void add(TotalCaptureResult result) {
             Long timestamp = result.get(CaptureResult.SENSOR_TIMESTAMP);
-            assert timestamp != null;
+            if (timestamp == null) {
+                // TODO: error
+                Log.e(Thread.currentThread().getName(), "Sensor timestamp cannot be null");
+                MasterController.quitSafely();
+                return;
+            }
 
             if (First == 0L) {
                 First = timestamp;
@@ -195,14 +229,21 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
             Last = timestamp;
         }
     }
-    private final mTimestamp mTimestamp = new mTimestamp();
+    private final Timestamp mTimestamp = new Timestamp();
 
-    class mDeadtime {
+    // mDeadtime....................................................................................
+    // Encapsulation of dead time statistics
+    class Deadtime {
         long Sum = 0L;
         long Min = -1L;
         long Max = -1L;
         long Count = 0;
 
+        // add......................................................................................
+        /**
+         * Add dead time to record
+         * @param deadtime time between frames in nanoseconds
+         */
         void add(long deadtime) {
             if (Min == -1L) {
                 Min = deadtime;
@@ -220,10 +261,19 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
             Count += 1;
         }
 
+        // getMean..................................................................................
+        /**
+         * @return mean dead time
+         */
         double getMean() {
             return Sum / (double) Count;
         }
 
+        // getString................................................................................
+        /**
+         * @return a string of dead time statistics
+         */
+        @NonNull
         String getString() {
             String out = " \n";
             out += "Deadtime [ns] \n";
@@ -234,13 +284,12 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
             return out;
         }
     }
-    private final mDeadtime mDeadtime = new mDeadtime();
+    private final Deadtime mDeadtime = new Deadtime();
 
     // mExposure....................................................................................
-    // TODO: description
-    class mExposure {
+    // Encapsulation of sensor exposure statistics
+    class Exposure {
 
-        // TODO: description
         long Total = 0L;
         long Last  = 0L;
         long Min   = -1L;
@@ -249,21 +298,19 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
 
         // add......................................................................................
         /**
-         * TODO: description, comments and logging
-         * @param result bla
+         * Add frame exposure to the record
+         * @param result capture result to add
          */
         void add(TotalCaptureResult result) {
             Long exposure = result.get(CaptureResult.SENSOR_EXPOSURE_TIME);
-            assert exposure != null;
-
-            // assert isn't reliable :-(
             if (exposure == null) {
-                // turn exposure into frame count
-                Last = 1L;
+                Log.e(Thread.currentThread().getName(), "Sensor exposure time is not available");
+                Last = 0L;
             }
             else {
                 Last = exposure;
             }
+
             Total += Last;
             Count += 1;
 
@@ -280,10 +327,19 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
             }
         }
 
+        // getMean..................................................................................
+        /**
+         * @return mean exposure
+         */
         double getMean() {
             return Total / (double) Count;
         }
 
+        // getString................................................................................
+        /**
+         * @return a string of exposure statistics
+         */
+        @NonNull
         String getString() {
             String out = " \n";
             out += "Exposure [ns] \n";
@@ -294,7 +350,15 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
             return out;
         }
     }
-    private final mExposure mExposure = new mExposure();
+    private final Exposure mExposure = new Exposure();
+
+    // For now, monitor performance (TODO: remove in the future)
+    private abstract static class StopWatches {
+        final static StopWatch ProgressedNotification = new StopWatch("captureMonitor.progressedNotification()");
+        final static StopWatch CompletedNotification  = new StopWatch("captureMonitor.completedNotification()");
+        final static StopWatch OnCaptureProgressed    = new StopWatch("captureMonitor.onCaptureProgressed()");
+        final static StopWatch OnCaptureCompleted     = new StopWatch("captureMonitor.onCaptureCompleted()");
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -303,25 +367,27 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
     // Constructors
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    // CaptureStream................................................................................
+    // captureMonitor...............................................................................
     /**
-     * TODO: description, comments and logging
+     * Effectively disabled
      */
-    private CaptureStream() {
+    private CaptureMonitor() {
         super();
     }
 
-    // CaptureStream................................................................................
+    // captureMonitor...............................................................................
     /**
-     * TODO: description, comments and logging
-     * @param frameLimit bla
+     * Set parameters for ending capture
+     * @param frameLimit Maximum number of frames to capture before stopping
+     * @param temperatureLimit Maximum temperature before stopping
      */
-    CaptureStream(int frameLimit, double temperatureLimit) {
+    CaptureMonitor(int frameLimit, double temperatureLimit) {
         this();
         mState = State.ACTIVE;
         mFrame.setLimit(frameLimit);
         mTemperature.setLimit(temperatureLimit);
-        Log.e(Thread.currentThread().getName(), "captureStream captureStream frameLimit: " + Integer.toString(frameLimit));
+        Log.e(Thread.currentThread().getName(), "Capture Frame Limit: " + NumToString.number(frameLimit)
+                + ", Capture Temperature Limit: " + NumToString.number(temperatureLimit) + " [Celsius]");
     }
 
     // Private Instance Methods
@@ -329,50 +395,54 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
 
     // progressedNotification.......................................................................
     /**
-     * TODO: description, comments and logging
-     * @param partialResult bla
+     * Displays information about a progressing capture
+     * @param partialResult Partial capture result
      */
     private void progressedNotification(@NonNull CaptureResult partialResult) {
+        StopWatches.ProgressedNotification.start();
+
         HeapMemory.logAvailableMiB();
         Long timestamp = partialResult.get(CaptureResult.SENSOR_TIMESTAMP);
         if (timestamp != null) {
-            Log.e(Thread.currentThread().getName(), "captureStream onCaptureProgressed, working on " + TimeCode.toString(timestamp));
+            Log.e(Thread.currentThread().getName(), "Capture in progress with time-code: " + TimeCode.toString(timestamp));
         }
         else {
-            Log.e(Thread.currentThread().getName(), "captureStream onCaptureProgressed (precapture)");
+            Log.e(Thread.currentThread().getName(), "Precapture sequence in progress..");
         }
+
+        StopWatches.ProgressedNotification.addTime();
     }
 
     // completedNotification........................................................................
     /**
-     * TODO: description, comments and logging
-     * @param completedResult bla
+     * Displays information about a completed capture
+     * @param completedResult Completed capture result
      */
     private void completedNotification(@NonNull TotalCaptureResult completedResult) {
-        Log.e(Thread.currentThread().getName(), "CaptureStream just posted the completed capture of " + TimeCode.toString(mTimestamp.Last));
+        StopWatches.CompletedNotification.start();
+
+        Log.e(Thread.currentThread().getName(), "Capture completed with time-code: " + TimeCode.toString(mTimestamp.Last));
 
         Long duration = completedResult.get(CaptureResult.SENSOR_FRAME_DURATION);
-        assert duration != null;
-
-        // assert isn't reliable :-(
         if (duration == null) {
-            duration = -1L;
+            Log.e(Thread.currentThread().getName(), "Frame duration time is not available, cannot compute FPS/Duty/Dead time");
         }
-
-        double fps      = 1. / (mTimestamp.Elapsed * 1e-9);
-        double duty     = 100. * mExposure.Last / (double) duration;
-        long   deadTime = mTimestamp.Elapsed - duration;
-
-        mDeadtime.add(deadTime);
-
-        Log.e(Thread.currentThread().getName(), "Frame FPS: " + NumToString.decimal(1. / (duration * 1e-9))
-                + ", Frame Exposure: " + Long.toString(mExposure.Last) + " [ns]"
-                + ", Frame Duty: " + NumToString.decimal(duty) + "%"
-                + ", Frame Dead time: " + NumToString.number(deadTime) + " [ns]");
+        else {
+            double duty     = 100. * mExposure.Last / (double) duration;
+            long   deadTime = mTimestamp.Elapsed - duration;
+            mDeadtime.add(deadTime);
+            Log.e(Thread.currentThread().getName(), "Frame FPS: " + NumToString.decimal(1. / (duration * 1e-9))
+                    + ", Frame Exposure: " + Long.toString(mExposure.Last) + " [ns]"
+                    + ", Frame Duty: " + NumToString.decimal(duty) + "%"
+                    + ", Frame Dead time: " + NumToString.number(deadTime) + " [ns]");
+        }
 
         String tempString = mTemperature.getLastString();
         if (tempString == null) {
             tempString = "UNAVAILABLE";
+        }
+        else {
+            tempString += " [Celsius]";
         }
 
         Double power = BatteryController.getInstantaneousPower();
@@ -384,8 +454,11 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
             powerString = NumToString.number(power) + " [mW]";
         }
 
-        Log.e(Thread.currentThread().getName(), "Inter-frame FPS: " + NumToString.decimal(fps)
-                + "Frame Temperature: " + tempString + ", Power: " + powerString);
+        double fps = 1. / (mTimestamp.Elapsed * 1e-9);
+        Log.e(Thread.currentThread().getName(), "Consecutive-frame effective FPS: " + NumToString.decimal(fps)
+                + ", Temperature: " + tempString + ", Power: " + powerString);
+
+        StopWatches.CompletedNotification.addTime();
     }
 
     // Public Overriding Methods
@@ -395,43 +468,43 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
     /**
      * This method is called when an image capture makes partial forward progress;
      * some (but not all) results from an image capture are available.
-     * TODO: documentation, comments and logging
-     * @param session bla
-     * @param request bla
-     * @param partialResult bla
+     * @param session Reference to camera capture session
+     * @param request Reference to capture request
+     * @param partialResult Reference to the partial capture result
      */
     @Override
     public void onCaptureProgressed(@NonNull CameraCaptureSession session,
                                     @NonNull CaptureRequest request,
                                     @NonNull CaptureResult partialResult) {
+        StopWatches.OnCaptureProgressed.start();
+
         super.onCaptureProgressed(session, request, partialResult);
+
         progressedNotification(partialResult);
         if (HeapMemory.isMemoryLow()) {
-            Log.e("DANGER LOW MEMORY", "REQUESTING PAUSE");
-            HeapMemory.logAvailableMiB();
+            Log.e(Thread.currentThread().getName(), ">>DANGER LOW MEMORY<< >>REQUESTING PAUSE<<");
             mState = State.PAUSED;
-            CaptureController.pauseCaptureSession();
+            CaptureController.pauseSession();
         }
+
+        StopWatches.OnCaptureProgressed.addTime();
     }
 
     // onCaptureCompleted...........................................................................
     /**
      * This method is called when an image capture has fully completed and all the result
      * metadata is available.
-     * TODO: documentation, comments and logging
-     * @param session bla
-     * @param request bla
-     * @param result bla
+     * @param session Reference to camera capture session
+     * @param request Reference to capture request
+     * @param result Reference to completed capture result (capture metadata)
      */
     @Override
     public void onCaptureCompleted(@NonNull CameraCaptureSession session,
                                    @NonNull CaptureRequest request,
                                    @NonNull TotalCaptureResult result) {
-        super.onCaptureCompleted(session, request, result);
+        StopWatches.OnCaptureCompleted.start();
 
-        Long time = result.get(CaptureResult.SENSOR_TIMESTAMP);
-        assert time != null;
-        Log.e(Thread.currentThread().getName(), TimeCode.toString(time) + " result sent");
+        super.onCaptureCompleted(session, request, result);
 
         DataQueue.add(result);
         mTimestamp.add(result);
@@ -440,6 +513,8 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
         mFrame.raiseFrameCount();
 
         completedNotification(result);
+
+        StopWatches.OnCaptureCompleted.addTime();
     }
 
     // onCaptureSequenceCompleted...................................................................
@@ -447,10 +522,9 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
      * This method is called independently of the others in CaptureCallback, when a capture
      * sequence finishes and all CaptureResult or CaptureFailure for it have been
      * returned via this listener.
-     * TODO: documentation, comments and logging
-     * @param session bla
-     * @param sequenceId bla
-     * @param frameNumber bla
+     * @param session Reference to camera capture session
+     * @param sequenceId Capture sequence ID
+     * @param frameNumber Ending frame number
      */
     @Override
     public void onCaptureSequenceCompleted(@NonNull CameraCaptureSession session,
@@ -460,15 +534,12 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
 
         if (mState == State.PAUSED) {
             Log.e(Thread.currentThread().getName(), "*** Capture Stream has Paused ***");
-            CaptureController.restartCaptureSession();
-            return;
+            Log.e(Thread.currentThread().getName(), "*********************************");
+            CaptureController.restartSession();
         }
         else {
-            Log.e(Thread.currentThread().getName(), "Capture Sequence Completed, N Frames = " + Integer.toString(mFrame.FrameCount));
-
-            long totalElapsed = mTimestamp.Last - mTimestamp.First;
-            double averageFps = mFrame.FrameCount / (totalElapsed * 1e-9);
-            double averageDuty = mExposure.Total/ (double) totalElapsed;
+            Log.e(Thread.currentThread().getName(), "Capture sequence has completed a total of "
+                                            + NumToString.number(mFrame.FrameCount) + " frames");
 
             DataQueue.purge();
             synchronized (this) {
@@ -489,7 +560,8 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
                         }
 
                         if (!DataQueue.isEmpty() && !AnalysisController.isBusy() && !StorageMedia.isBusy()) {
-                            Log.e(Thread.currentThread().getName(), "Anomaly, clearing queue");
+                            Log.e(Thread.currentThread().getName(), ">> Anomalous Situation! Clearing Queues! <<");
+                            Log.e(Thread.currentThread().getName(), "*******************************************");
                             DataQueue.clear();
                         }
 
@@ -502,22 +574,26 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
             }
 
             if (mState == State.FINISHED) {
+                long totalElapsed  = mTimestamp.Last - mTimestamp.First;
+                double averageFps  = mFrame.FrameCount / (totalElapsed * 1e-9);
+                double averageDuty = mExposure.Total/ (double) totalElapsed;
+
                 Log.e(Thread.currentThread().getName(), mExposure.getString());
                 Log.e(Thread.currentThread().getName(), mDeadtime.getString());
                 Log.e(Thread.currentThread().getName(), mTemperature.getString());
                 CaptureController.sessionFinished(averageFps, averageDuty);
             }
-            else {
-                CaptureController.sessionReset();
+            else { // mState == state.ACTIVE
+                // TODO: error
+                Log.e(Thread.currentThread().getName(), "Something caused this session to end prematurely");
+                MasterController.quitSafely();
             }
             // TODO: dump mTotalCaptureResult info
         }
-
     }
 
-
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    // TODO: IGNORE ////////////////////////////////////////////////////////////////////////////////
+    // Not Needed //////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     // onCaptureStarted.............................................................................
@@ -525,62 +601,55 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
      * This method is called when the camera device has started capturing the output image
      * for the request, at the beginning of image exposure, or when the camera device has
      * started processing an input image for a reprocess request.
-     * TODO: documentation, comments and logging
-     * @param session bla
-     * @param request bla
-     * @param timestamp bla
-     * @param frameNumber bla
+     * @param session Reference to capture session
+     * @param request Reference to capture request
+     * @param timestamp Sensor timestamp of capture in progress
+     * @param frameNumber Frame number of capture in progress
      */
     @Override
     public void onCaptureStarted(@NonNull CameraCaptureSession session,
                                  @NonNull CaptureRequest request,
                                  long timestamp, long frameNumber) {
         super.onCaptureStarted(session, request, timestamp, frameNumber);
-        //Log.e(Thread.currentThread().getName(), "CaptureSessionOld onCaptureStarted for: "
-        //        + TimeCode.toString(timestamp) + ", frame number: " + Long.toString(frameNumber));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    // TODO: SHUTDOWN //////////////////////////////////////////////////////////////////////////////
+    // Shutdown Conditions /////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     // onCaptureBufferLost..........................................................................
     /**
      * This method is called if a single buffer for a capture could not be sent to its
      * destination surfaces.
-     * TODO: documentation, comments and logging
-     * @param session bla
-     * @param request bla
-     * @param target bla
-     * @param frameNumber bla
+     * @param session Reference to capture session
+     * @param request Reference to capture request
+     * @param target Reference to intended output surface
+     * @param frameNumber Frame number of capture in progress
      */
     @Override
     public void onCaptureBufferLost(@NonNull CameraCaptureSession session,
                                     @NonNull CaptureRequest request,
                                     @NonNull Surface target, long frameNumber) {
         super.onCaptureBufferLost(session, request, target, frameNumber);
-        Log.e(Thread.currentThread().getName(), "captureStream onCaptureBufferLost");
-        // TODO: shutdown
-        mFrame.raiseFrameCount();
+        Log.e(Thread.currentThread().getName(), ">> CAPTURE BUFFER LOST <<");
+        CaptureController.pauseSession();
     }
 
     // onCaptureFailed..............................................................................
     /**
      * This method is called instead of onCaptureCompleted(CameraCaptureSession, captureRequest,
      * TotalCaptureResult) when the camera device failed to produce a CaptureResult for the request.
-     * TODO: documentation, comments and logging
-     * @param session bla
-     * @param request bla
-     * @param failure bla
+     * @param session Reference to capture session
+     * @param request Reference to capture request
+     * @param failure Reference to failure mode
      */
     @Override
     public void onCaptureFailed(@NonNull CameraCaptureSession session,
                                 @NonNull CaptureRequest request,
                                 @NonNull CaptureFailure failure) {
         super.onCaptureFailed(session, request, failure);
-        Log.e(Thread.currentThread().getName(), "CaptureSessionOld onCaptureFailed");
-        mFrame.raiseFrameCount();
-        /*
+        Log.e(Thread.currentThread().getName(), ">> Capture Failed <<");
+
         String reason = null;
         if (failure.getReason() == CaptureFailure.REASON_ERROR) {
             reason = "Dropped frame due to error in framework";
@@ -592,34 +661,25 @@ final class CaptureStream extends CameraCaptureSession.CaptureCallback {
                 + "\t Frame number:   " + Long.toString(failure.getFrameNumber()) + "\n"
                 + "\t Sequence ID:    " + Integer.toString(failure.getSequenceId()) + "\n"
                 + "\t Image captured: " + Boolean.toString(failure.wasImageCaptured()) + "\n";
-        Log.e("Tag", errInfo);
+        Log.e(Thread.currentThread().getName(), errInfo);
 
-        // End exposure block after EXPOSURE_DURATION_NANOS time
-        if (SystemClock.elapsedRealtimeNanos() >= MasterController.mFinishEpoch) {
-            try {
-                session.stopRepeating();
-            } catch (CameraAccessException e) {
-                MasterController.mLogger.log("ERROR: Camera Access Exception");
-            }
-        }
-        */
-        // TODO: shutdown
+        // TODO: error
+        MasterController.quitSafely();
     }
 
     // onCaptureSequenceAborted.....................................................................
     /**
      * This method is called independently of the others in CaptureCallback, when a capture
-     * sequence aborts before any CaptureResult or CaptureFailure for it have been returned
+     * sequence aborts before any CaptureResult or CaptureFailure before it has been returned
      * via this listener.
-     * TODO: documentation, comments and logging
-     * @param session bla
-     * @param sequenceId bla
+     * @param session Reference to capture session
+     * @param sequenceId capture sequence ID
      */
     @Override
     public void onCaptureSequenceAborted(@NonNull CameraCaptureSession session, int sequenceId) {
         super.onCaptureSequenceAborted(session, sequenceId);
-        Log.e(Thread.currentThread().getName(), "captureStream onCaptureSequenceAborted");
-        // TODO: shutdown
+        Log.e(Thread.currentThread().getName(), ">> Capture Sequence Aborted <<");
+        MasterController.quitSafely();
     }
 
 }

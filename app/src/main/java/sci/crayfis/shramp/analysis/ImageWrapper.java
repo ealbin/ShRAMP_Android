@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 15 April 2019
+ * @updated: 20 April 2019
  */
 
 package sci.crayfis.shramp.analysis;
@@ -20,17 +20,20 @@ import android.annotation.TargetApi;
 import android.media.Image;
 import android.media.ImageReader;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import org.jetbrains.annotations.Contract;
 
 import java.nio.ByteBuffer;
-import java.nio.ShortBuffer;
 
+import sci.crayfis.shramp.MasterController;
 import sci.crayfis.shramp.camera2.util.TimeCode;
+import sci.crayfis.shramp.util.StopWatch;
 
 /**
- * TODO: description, comments and logging
+ * Encapsulate image data received by an ImageReader.onImageAvailable() method,
+ * e.g. in ImageReaderListener
  */
 @TargetApi(21)
 public final class ImageWrapper {
@@ -38,29 +41,71 @@ public final class ImageWrapper {
     // Private Class Fields
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    // mNpixels.....................................................................................
-    // TODO: description
-    private static int mNpixels = 0;
+    // ImageMetadata................................................................................
+    // Image format properties common to all images being produced
+    private static abstract class ImageMetadata {
+        static int nPixels = 0;
+        static int nRows   = 0;
+        static int nCols   = 0;
 
-    private static int mRows = 0;
+        static boolean is8bitData  = false;
+        static boolean is16bitData = false;
 
-    private static int mCols = 0;
+        static void is8bitFormat() {
+            is8bitData  = true;
+            is16bitData = false;
+        }
 
-    // mTimestamp...................................................................................
-    // TODO: description
-    private long mTimestamp;
+        static void is16bitFormat() {
+            is8bitData  = false;
+            is16bitData = true;
+        }
 
-    //..............................................................................................
-    // TODO: description
-    private static boolean mIs8bitData  = false;
-    private static boolean mIs16bitData = false;
+        static void setRowsCols(int rows, int cols) {
+            nRows = rows;
+            nCols = cols;
+            nPixels = rows * cols;
+        }
+    }
 
-    //..............................................................................................
-    // TODO: description
-    private byte[]  mData_8bit;
-    private short[] mData_16bit;
+    // Private Instance Fields
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    private boolean mHasData = false;
+    // ImageData....................................................................................
+    // Sensor timestamp of the image and its data
+    private class ImageData {
+        long    Timestamp;
+        byte[]  Data_8bit;
+        short[] Data_16bit;
+
+        // Set the data and timestamp from an Image
+        void setData(Image image) {
+            Timestamp = image.getTimestamp();
+
+            ByteBuffer byteBuffer = image.getPlanes()[0].getBuffer();
+            int capacity          = byteBuffer.capacity();
+
+            if (ImageMetadata.is8bitData && ImageMetadata.nPixels == capacity) {
+                Data_8bit = new byte[capacity];
+                byteBuffer.get(Data_8bit);
+                Data_16bit = null;
+            }
+            else if (ImageMetadata.is16bitData && ImageMetadata.nPixels == capacity / 2){
+                Data_16bit = new short[capacity / 2];
+                byteBuffer.asShortBuffer().get(Data_16bit);
+                Data_8bit = null;
+            }
+            else {
+                // TODO: error
+                Log.e(Thread.currentThread().getName(), "Image data cannot be unknown format");
+                MasterController.quitSafely();
+            }
+        }
+    }
+    private final ImageData mImageData = new ImageData();
+
+    // For now, monitor performance (TODO: remove in the future)
+    private final static StopWatch mStopWatch = new StopWatch("new ImageWrapper()");
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -71,55 +116,37 @@ public final class ImageWrapper {
 
     // ImageWrapper.................................................................................
     /**
-     * TODO: description, comments and logging
+     * Disabled
      */
     private ImageWrapper() {}
 
     // ImageWrapper.................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param reader bla
+     * Wrap Image data to this object, and purge it from the ImageReader buffer
+     * @param reader ImageReader buffer of images
      */
     public ImageWrapper(@NonNull ImageReader reader) {
+        mStopWatch.start();
+
         Image image = null;
         try {
             image = reader.acquireNextImage();
             if (image == null) {
                 return;
             }
-            mTimestamp = image.getTimestamp();
-
-            ByteBuffer byteBuffer = image.getPlanes()[0].getBuffer();
-            long capacity         = byteBuffer.capacity();
-
-            if (mIs8bitData && mNpixels == capacity) {
-                mData_8bit = new byte[byteBuffer.capacity()];
-                byteBuffer.get(mData_8bit);
-            }
-            else if (mIs16bitData && mNpixels == capacity / 2){
-                ShortBuffer shortBuffer = byteBuffer.asShortBuffer();
-                mData_16bit = new short[shortBuffer.capacity()];
-                shortBuffer.get(mData_16bit);
-            }
-            else {
-                // TODO: error
-            }
-
+            mImageData.setData(image);
             image.close();
-            mHasData = true;
         }
         catch (IllegalStateException e) {
-            // TODO: error
             if (image != null) {
                 image.close();
             }
-            Log.e(Thread.currentThread().getName(), "!!!!!!!!! ILLEGAL STATE EXCEPTION");
-            //throw new IllegalStateException();
+            // TODO: error
+            Log.e(Thread.currentThread().getName(), "ImageReader Illegal State Exception");
+            MasterController.quitSafely();
         }
-    }
 
-    public boolean hasData() {
-        return mHasData;
+        mStopWatch.addTime();
     }
 
     // Package-private Class Methods
@@ -127,96 +154,93 @@ public final class ImageWrapper {
 
     // setAs8bitData................................................................................
     /**
-     * TODO: description, comments and logging
+     * Notify ImageWrapper that the images received will have 8-bit pixel depth (e.g. YUV_420_888)
      */
-    static void setAs8bitData() {
-        mIs8bitData  = true;
-        mIs16bitData = false;
-    }
+    static void setAs8bitData() { ImageMetadata.is8bitFormat();}
 
     // setAs16bitData...............................................................................
     /**
-     * TODO: description, comments and logging
+     * Notify ImageWrapper that the images received will have 16-bit pixel depth (
      */
-    static void setAs16bitData() {
-        mIs8bitData  = false;
-        mIs16bitData = true;
-    }
+    static void setAs16bitData() { ImageMetadata.is16bitFormat(); }
 
-    // setNpixels...................................................................................
+    // setRowsCols..................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param nRows bla
-     * @param nCols bla
+     * Notify ImageWrapper that the images received will have "rows", "cols" and n_pixels = rows * cols
+     * @param rows Number of pixel rows in an image
+     * @param cols Number of pixel columns in an image
      */
-    static void setNpixels(int nRows, int nCols) {
-        mRows = nRows;
-        mCols = nCols;
-        mNpixels = nRows * nCols;
-    }
+    static void setRowsCols(int rows, int cols) { ImageMetadata.setRowsCols(rows, cols); }
 
     // Public Instance Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // get8bitData..................................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return 8 bit data (if that's what the image is, null if it's 16 bit)
      */
+    @Nullable
     @Contract(pure = true)
-    public byte[] get8bitData() {return mData_8bit;}
+    byte[] get8bitData() {return mImageData.Data_8bit;}
 
     // get16bitData.................................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return 16 bit data (if that's what the image is, null if it's 8 bit)
      */
+    @Nullable
     @Contract(pure = true)
-    public short[] get16bitData() {return mData_16bit;}
+    short[] get16bitData() {return mImageData.Data_16bit;}
 
     // getTimestamp.................................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return Sensor timestamp for the image
      */
     @Contract(pure = true)
-    public long getTimestamp() { return mTimestamp; }
+    long getTimestamp() { return mImageData.Timestamp; }
 
     // getTimeCode..................................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return A short human-friendly character representation of the timestamp
      */
     @Contract(pure = true)
     @NonNull
-    public String getTimeCode() { return TimeCode.toString(mTimestamp); }
+    String getTimeCode() { return TimeCode.toString(mImageData.Timestamp); }
 
     // getNpixels...................................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return The number of pixels in an image
      */
     @Contract(pure = true)
-    public static int getNpixels() { return mNpixels; }
+    static int getNpixels() { return ImageMetadata.nPixels; }
 
-    public static int getNrows() { return mRows; }
+    // getNrows.....................................................................................
+    /**
+     * @return The number of rows in an image
+     */
+    @Contract(pure = true)
+    static int getNrows() { return ImageMetadata.nRows; }
 
-    public static int getNcols() { return mCols; }
+    // getNcols.....................................................................................
+    /**
+     * @return The number of columns in an image
+     */
+    @Contract(pure = true)
+    static int getNcols() { return ImageMetadata.nCols; }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     // is8bitData...................................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return True if image data is 8-bit depth, false if not
      */
     @Contract(pure = true)
-    public static boolean is8bitData() { return mIs8bitData; }
+    static boolean is8bitData() { return ImageMetadata.is8bitData; }
 
     // is16bitData..................................................................................
     /**
-     * TODO: description, comments and logging
-     * @return bla
+     * @return True if image data is 16-bit depth, false if not
      */
     @Contract(pure = true)
-    public static boolean is16bitData() { return mIs16bitData; }
+    static boolean is16bitData() { return ImageMetadata.is16bitData; }
 
 }

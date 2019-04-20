@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 15 April 2019
+ * @updated: 20 April 2019
  */
 
 package sci.crayfis.shramp;
@@ -19,18 +19,60 @@ package sci.crayfis.shramp;
 import android.annotation.TargetApi;
 import android.os.Process;
 import android.renderscript.RenderScript;
+import android.support.annotation.Nullable;
 
-import sci.crayfis.shramp.battery.BatteryController;
+import java.util.ArrayList;
+import java.util.List;
+
 import sci.crayfis.shramp.camera2.CameraController;
+import sci.crayfis.shramp.camera2.capture.CaptureConfiguration;
+import sci.crayfis.shramp.camera2.capture.CaptureController;
 
 /**
- * TODO: description, comments and logging
+ * Settings that effect all aspects of this application
  */
 @TargetApi(21)
 abstract public class GlobalSettings {
 
-    // Performance and Control
+    // Performance and Data Capture Control
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+
+    public static class FlightPlan {
+        private static final List<CaptureConfiguration> mFlightPlan = new ArrayList<>();
+
+        public FlightPlan() {
+            //addCalibrationCycle();
+            mFlightPlan.add(CaptureConfiguration.newDataSession(FPS_10, 10, TEMPERATURE_HIGH, 0., 1, false));
+        }
+
+        @Nullable
+        public CaptureConfiguration getNext() {
+            if (mFlightPlan.size() > 0) {
+                return mFlightPlan.remove(0);
+            }
+            else {
+                return null;
+            }
+        }
+
+
+        private void addCalibrationCycle() {
+            double temperature_low = Math.min(TEMPERATURE_START, 25.);
+            temperature_low = Math.max(TEMPERATURE_LOW, temperature_low);
+            mFlightPlan.add(CaptureConfiguration.newCoolDownSession(temperature_low, 10));
+            mFlightPlan.add(CaptureConfiguration.newColdFastCalibration());
+            mFlightPlan.add(CaptureConfiguration.newColdSlowCalibration());
+            mFlightPlan.add(CaptureConfiguration.newWarmUpSession(TEMPERATURE_HIGH, 10, 1000));
+            mFlightPlan.add(CaptureConfiguration.newHotFastCalibration());
+            mFlightPlan.add(CaptureConfiguration.newHotSlowCalibration());
+            mFlightPlan.add(CaptureConfiguration.newCoolDownSession(TEMPERATURE_GOAL, 10));
+        }
+    }
+
+
+
+
 
     // TODO: description
     public static final Integer FPS_LOCK_N_FRAMES    = 0;
@@ -53,14 +95,13 @@ abstract public class GlobalSettings {
     public static final Long DEFAULT_SLOW_FPS = FPS_05;
     public static final Long DEFAULT_FAST_FPS = FPS_30;
     public static final Long DEFAULT_WAIT_MS = FPS_05 / 1000000;
-    public static final Long DEFAULT_LONG_WAIT = 20 * 1000L;
+    public static final Long DEFAULT_LONG_WAIT = 60 * 1000L; // 1 minute
     public static final Boolean CONSTANT_FPS = true;
 
     public static final Double TEMPERATURE_LOW    = 20.; // C
     public static final Double TEMPERATURE_GOAL   = 30.; // C
     public static final Double TEMPERATURE_HIGH   = 40.; // C
-    public static final Double OVER_TEMPERATURE   = 10.; // C
-    public static       Double TEMPERATURE_START;
+    public static       Double TEMPERATURE_START; // set on app start, Celsius
 
     // TODO: description
     public static final Integer MAX_FRAMES_ABOVE_THRESHOLD = Math.min(
@@ -77,7 +118,7 @@ abstract public class GlobalSettings {
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // TODO: description
-    public static final Boolean DISABLE_RAW_OUTPUT      = true;
+    public static final Boolean DISABLE_RAW_OUTPUT      = false;
     public static final Boolean FORCE_CONTROL_MODE_AUTO = false;
 
     // Surface Use
@@ -123,13 +164,43 @@ abstract public class GlobalSettings {
     // Debugging
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    // TODO: description
+    // Prevent a calibration cycle.
+    // False for normal operation.
     public static final Boolean DEBUG_DISABLE_CALIBRATION = true;
-    public static final Boolean DEBUG_DISABLE_QUEUE       = false;
-    public static final Boolean DEBUG_DISABLE_PROCESSING  = false;
-    public static final Boolean DEBUG_DISABLE_SAVING      = false;
-    public static final Boolean DEBUG_SAVE_SIGNIFICANCE   = false;
-    public static final Boolean DEBUG_SAVE_MEAN           = false;
-    public static final Boolean DEBUG_SAVE_STDDEV         = false;
+
+    // Prevent queuing anything (all image data and metadata are dropped instantly).
+    // False for normal operation.
+    public static final Boolean DEBUG_DISABLE_QUEUE = false;
+
+    // Prevent image processing with RenderScript from occurring.
+    // False for normal operation.
+    public static final Boolean DEBUG_DISABLE_PROCESSING = false;
+
+    // Prevent any and all file saving.
+    // False for normal operation.
+    public static final Boolean DEBUG_DISABLE_ALL_SAVING = false;
+
+    // Save full image data every INTERVAL (provided DISABLE_ALL_SAVING isn't true).
+    // False for normal operation.
+    public static final Boolean DEBUG_ENABLE_IMAGE_SAVING   = false;
+    public static final Integer DEBUG_IMAGE_SAVING_INTERVAL = 10;
+
+    // Save a frame's pixel significance every INTERVAL (provided DISABLE_ALL_SAVING isn't true).
+    // False for normal operation.
+    public static final Boolean DEBUG_SAVE_SIGNIFICANCE            = false;
+    public static final Integer DEBUG_SIGNIFICANCE_SAVING_INTERVAL = 10;
+
+    // Save new statistics (provided DISABLE_ALL_SAVING isn't true).
+    // True for normal operation.
+    public static final Boolean DEBUG_SAVE_MEAN   = false;
+    public static final Boolean DEBUG_SAVE_STDDEV = false;
+
+    // Allow significance threshold to increase.
+    // TODO: not sure what's normal operation.
+    public static final Boolean DEBUG_ENABLE_THRESHOLD_INCREASE = false;
+
+    // TODO: vulgarity, fps max, fps step
+    // TODO: passing image metadata is no longer necessary
+
 
 }

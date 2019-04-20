@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 15 April 2019
+ * @updated: 20 April 2019
  */
 
 package sci.crayfis.shramp.util;
@@ -40,7 +40,7 @@ abstract public class HeapMemory {
 
     // mStopWatch...................................................................................
     // For now, monitoring performance -- (TODO) to be removed later
-    private static final StopWatch mStopWatch = new StopWatch();
+    private static final StopWatch mStopWatch = new StopWatch("HeapMemory.getAvailableMiB()");
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -54,6 +54,7 @@ abstract public class HeapMemory {
      * @return the amount of heap memory available to the application
      */
     public static long getAvailableMiB() {
+        mStopWatch.start();
         long maxHeapMiB = mRuntime.maxMemory() / MEBIBYTE;
         long usedMiB    = ( mRuntime.totalMemory() - mRuntime.freeMemory() ) / MEBIBYTE;
         long available = maxHeapMiB - usedMiB;
@@ -84,13 +85,6 @@ abstract public class HeapMemory {
      */
     public static boolean isMemoryLow() {
         return getAvailableMiB() < GlobalSettings.LOW_MEMORY_MiB;
-    }
-
-    /**
-     * TODO: remove
-     */
-    public static void logPerformance() {
-        Log.e(Thread.currentThread().getName(), mStopWatch.getPerformance());
     }
 
 }

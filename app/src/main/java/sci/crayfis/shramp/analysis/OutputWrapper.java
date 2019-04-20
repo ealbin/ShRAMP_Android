@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 15 April 2019
+ * @updated: 20 April 2019
  */
 
 package sci.crayfis.shramp.analysis;
@@ -19,12 +19,13 @@ package sci.crayfis.shramp.analysis;
 import android.annotation.TargetApi;
 import android.renderscript.Allocation;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import java.nio.ByteBuffer;
-import java.nio.ShortBuffer;
 
 /**
  * TODO: description, comments and logging
+ * TODO: add to wrapper, option for ascii text
  */
 @TargetApi(21)
 public final class OutputWrapper {
@@ -123,7 +124,7 @@ public final class OutputWrapper {
      * @param wrapper bla
      * @param exposure bla
      */
-    OutputWrapper(@NonNull String filename, @NonNull ImageWrapper wrapper, long exposure) {
+    OutputWrapper(@NonNull String filename, @NonNull ImageWrapper wrapper, @Nullable Long exposure) {
         mFilename = filename;
         mByteBuffer = ByteBuffer.allocate(mSensorBytes);
         mByteBuffer.put(mBitsPerPixel);
@@ -186,7 +187,7 @@ public final class OutputWrapper {
         mSensorHeader = "Number of bytes: \t " + ByteSize + " \t " + IntSize + " \t " + IntSize + " \t " + LongSize + " \t "
                 + Byte.toString(mBitsPerPixel) + "x" + Integer.toString(Npixels) + "\n";
 
-        mStatisticsHeader = "Byte order (big endian): \t Number of Rows \t Number of Columns \t Number of Stacked Images \t Statistics\n";
+        mStatisticsHeader = "Byte order (big endian): \t Number of Rows \t Number of Columns \t Number of Stacked Images \t PostProcessing\n";
         mStatisticsHeader = "Number of bytes: \t " + IntSize + " \t " + IntSize + " \t " + LongSize + " \t "
                 + FloatSize + "x" + Integer.toString(Npixels) + "\n";
     }

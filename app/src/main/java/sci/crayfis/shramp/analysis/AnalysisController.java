@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 15 April 2019
+ * @updated: 20 April 2019
  */
 
 package sci.crayfis.shramp.analysis;
@@ -135,7 +135,7 @@ public abstract class AnalysisController {
         int height = outputSize.getHeight();
         mNpixels = width * height;
 
-        ImageWrapper.setNpixels(height, width);
+        ImageWrapper.setRowsCols(height, width);
 
         // TODO: remove
         PrintAllocations.setNpixels(mNpixels);
@@ -367,7 +367,7 @@ public abstract class AnalysisController {
      */
     static void increaseSignificanceThreshold() {
         mThresholdOffset += GlobalSettings.THRESHOLD_STEP;
-        CaptureController.resetCaptureSession();
+        //CaptureController.resetSession();
     }
 
 }

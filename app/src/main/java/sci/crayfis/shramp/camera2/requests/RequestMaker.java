@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 15 April 2019
+ * @updated: 20 April 2019
  */
 
 package sci.crayfis.shramp.camera2.requests;
@@ -170,26 +170,24 @@ final public class RequestMaker extends step16_Tonemap_ {
                              @NonNull LinkedHashMap<CaptureRequest.Key, Parameter> map,
                              @Nullable List<CaptureRequest.Key<?>> keychain) {
 
-        Log.e(Thread.currentThread().getName(), ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
-        String tag = "RequestMaker";
-        if (label != null) {
-            tag = label;
+        if (label == null) {
+            label = "RequestMaker";
         }
 
-        Log.e(tag, "Camera Capture Request Summary:\n");
+        Log.e(Thread.currentThread().getName(), " \n\n\t\t" + label + " Camera Capture Request Summary:\n\n");
         for (Parameter parameter : map.values()) {
-            Log.e(tag, parameter.toString());
+            Log.e(Thread.currentThread().getName(), parameter.toString());
         }
 
         if (keychain != null) {
-            Log.e(tag, "Keys unset:\n");
+            Log.e(Thread.currentThread().getName(), "Keys unset:\n");
             for (CaptureRequest.Key<?> key : keychain) {
                 if (!map.containsKey(key)) {
-                    Log.e(tag, key.getName());
+                    Log.e(Thread.currentThread().getName(), key.getName());
                 }
             }
         }
-        Log.e(Thread.currentThread().getName(), ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
+        Log.e(Thread.currentThread().getName(), " \n\n ");
     }
 
     // Protected Overriding Instance Methods

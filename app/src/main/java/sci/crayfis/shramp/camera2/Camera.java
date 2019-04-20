@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 15 April 2019
+ * @updated: 20 April 2019
  */
 
 package sci.crayfis.shramp.camera2;
@@ -125,7 +125,7 @@ final class Camera extends CameraDevice.StateCallback{
            @NonNull CameraCharacteristics cameraCharacteristics) {
         this();
 
-        Log.e(Thread.currentThread().getName(), "New camera created: " + name + " with ID: " + cameraId);
+        Log.e(Thread.currentThread().getName(), " \n\n\t\t\tNew camera created: " + name + " with ID: " + cameraId + "\n ");
 
         mName                  = name;
         mCameraId              = cameraId;
@@ -347,22 +347,52 @@ final class Camera extends CameraDevice.StateCallback{
      * Display current Camera FPS settings
      */
     void writeFPS() {
-        Long frameDuration = mCaptureRequestBuilder.get(CaptureRequest.SENSOR_FRAME_DURATION);
-        Long exposureTime  = mCaptureRequestBuilder.get(CaptureRequest.SENSOR_EXPOSURE_TIME);
-        Range<Integer> fpsRange = mCaptureRequestBuilder.get(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE);
 
-        if (frameDuration != null) {
+        Log.e(Thread.currentThread().getName(), " \n\n" + mName + ", ID: " + mCameraId);
+
+        Integer mode = mCaptureRequestBuilder.get(CaptureRequest.CONTROL_AE_MODE);
+        if (mode == null) {
+            // TODO: error
+            Log.e(Thread.currentThread().getName(), "AE mode cannot be null");
+            MasterController.quitSafely();
+            return;
+        }
+
+        if (mOutputFormat == ImageFormat.YUV_420_888) {
+            Log.e(Thread.currentThread().getName(), ">>>>>>>>  Output format is YUV_420_888");
+        }
+        else { // mOutputFormat == ImageFormat.RAW_SENSOR
+            Log.e(Thread.currentThread().getName(), ">>>>>>>>  Output format is RAW_SENSOR");
+        }
+
+        if (mode == CameraMetadata.CONTROL_AE_MODE_ON) {
+            Range<Integer> fpsRange = mCaptureRequestBuilder.get(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE);
+
+            if (fpsRange == null) {
+                // TODO: error
+                Log.e(Thread.currentThread().getName(), "FPS range cannot be null");
+                MasterController.quitSafely();
+                return;
+            }
+
+            Log.e(Thread.currentThread().getName(), ">>>>>>>>  FPS Range: " + fpsRange.toString() + " [frames per second]");
+        }
+        else {
+            Long frameDuration = mCaptureRequestBuilder.get(CaptureRequest.SENSOR_FRAME_DURATION);
+            Long exposureTime  = mCaptureRequestBuilder.get(CaptureRequest.SENSOR_EXPOSURE_TIME);
+
+            if (frameDuration == null || exposureTime == null) {
+                // TODO: error
+                Log.e(Thread.currentThread().getName(), "Sensor exposure time and frame duration cannot be null");
+                MasterController.quitSafely();
+                return;
+            }
+
             double fps = Math.round(1e9 / (double) frameDuration);
-            Log.e(mName + ", ID: " + mCameraId, "Frame Duration: " + NumToString.decimal(fps) + " [frames per second]");
-        }
+            Log.e(Thread.currentThread().getName(), ">>>>>>>>  Frame Duration: " + NumToString.decimal(fps) + " [frames per second]");
 
-        if (exposureTime != null && frameDuration != null) {
             double duty = Math.round(100. * exposureTime / (double) frameDuration);
-            Log.e(mName + ", ID: " + mCameraId, "Exposure Duty: " + NumToString.decimal(duty) + " [%]");
-        }
-
-        if (fpsRange != null) {
-            Log.e(mName + ", ID: " + mCameraId, "FPS Range: " + fpsRange.toString() + " [frames per second]");
+            Log.e(Thread.currentThread().getName(), ">>>>>>>>  Exposure Duty: " + NumToString.decimal(duty) + " [%]");
         }
     }
 
@@ -394,7 +424,7 @@ final class Camera extends CameraDevice.StateCallback{
      */
     @Override
     public void onOpened(@NonNull CameraDevice camera) {
-        Log.e(Thread.currentThread().getName(), "Camera: " + mName + " has opened");
+        Log.e(Thread.currentThread().getName(), " \n\n\t\tCamera: " + mName + " has opened\n\n");
         mCameraDevice = camera;
 
         CameraController.cameraHasOpened(this);

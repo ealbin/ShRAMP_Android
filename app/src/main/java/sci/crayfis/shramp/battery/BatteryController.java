@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 15 April 2019
+ * @updated: 20 April 2019
  */
 
 package sci.crayfis.shramp.battery;
@@ -68,7 +68,7 @@ public class BatteryController {
 
     // mStopWatch1..................................................................................
     // For now, monitoring performance for getting temperature -- (TODO) to be removed later
-    private static final StopWatch mStopWatch = new StopWatch();
+    private static final StopWatch mStopWatch = new StopWatch("BatteryController.getCurrentTemperature()");
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::

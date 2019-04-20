@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 15 April 2019
+ * @updated: 20 April 2019
  */
 
 package sci.crayfis.shramp.surfaces;
@@ -79,13 +79,11 @@ public final class ImageReaderListener implements ImageReader.OnImageAvailableLi
     // The corresponding surface to the ImageReader object
     private Surface mSurface;
 
-    // mStopWatch1..................................................................................
-    // For now, monitoring performance -- (TODO) to be removed later
-    private static final StopWatch mStopWatch1 = new StopWatch();
-
-    // mStopWatch2..................................................................................
-    // For now, monitoring performance -- (TODO) to be removed later
-    private static final StopWatch mStopWatch2 = new StopWatch();
+    // For now, monitor performance (TODO: remove in the future)
+    private static abstract class StopWatches {
+        final static StopWatch OnImageAvailable = new StopWatch("ImageReaderListener.onImageAvailable()");
+        final static StopWatch AddImageWrapper  = new StopWatch("ImageReaderListener Queue ImageWrapper");
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -134,7 +132,7 @@ public final class ImageReaderListener implements ImageReader.OnImageAvailableLi
      */
     @Override
     public void onImageAvailable(@NonNull ImageReader reader) {
-        mStopWatch1.start();
+        StopWatches.OnImageAvailable.start();
 
         // TODO: Lock probably not necessary
         // onImageAvailable() runs on its own thread, so multiple calls from the system should
@@ -167,20 +165,12 @@ public final class ImageReaderListener implements ImageReader.OnImageAvailableLi
                 }
             }
 
-            mStopWatch2.start();
+            StopWatches.AddImageWrapper.start();
             DataQueue.add(new ImageWrapper(reader));
-            mStopWatch2.addTime();
+            StopWatches.AddImageWrapper.addTime();
         }
 
-        mStopWatch1.addTime();
-    }
-
-    /**
-     * TODO: remove
-     */
-    public static void logPerformance() {
-        Log.e(Thread.currentThread().getName(), "onImageAvailable method: " + mStopWatch1.getPerformance());
-        Log.e(Thread.currentThread().getName(), "DataQueue.add(new ImageWrapper()): " + mStopWatch2.getPerformance());
+        StopWatches.OnImageAvailable.addTime();
     }
 
 }

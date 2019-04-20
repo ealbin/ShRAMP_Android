@@ -11,56 +11,66 @@
 // @author: Eric Albin
 // @email:  Eric.K.Albin@gmail.com
 //
-// @updated: 15 April 2019
+// @updated: 20 April 2019
 //
 
 #pragma version(1)
 #pragma rs java_package_name(sci.crayfis.shramp)
+
+// TODO: check if there is substantial performance increase with relaxed
 #pragma rs_fp_full
 //#pragma rs_fp_relaxed
+
+// Enable debugging
 //#include "rs_debug.rsh"
 
 // Global Variables
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+// gMax8bitValue / gMax16bitValue...................................................................
+// Statistics (mean, stddev) are saved as normalized values, i.e. mean = gMean * gMax_bitValue
 const float gMax8bitValue  = 255.;
 const float gMax16bitValue = 1023.;
 
+// gIs8bit..........................................................................................
+// "1" to compute statistics for 8-bit data, "0" for 16-bit data
 int gIs8bit;
 
 // gNframes.........................................................................................
 // Total number of image frames
 long gNframes;
 
-// gExposureSum.....................................................................................
-// Total pixel exposure time in seconds
-//long gExposureSum;
-
 // Running Sums.....................................................................................
-// TODO: description
+// Sum of pixel value (for mean computation)
+// Sum of pixel value**2 (for standard deviation computation)
 rs_allocation gValueSum;
 rs_allocation gValue2Sum;
 
 // Statistics.......................................................................................
 // gMean:   average pixel value
-// gStdDev: standard deviation on the mean
-// gStdErr: TODO
+// gStdDev: standard deviation of the pixel value
+// gStdErr: standard deviation / sqrt(N frames)
 rs_allocation gMean;
 rs_allocation gStdDev;
 rs_allocation gStdErr;
 
+// gAnomalousStdDev.................................................................................
+// In the process of determining the mean and standard deviation, an unlikely overflow in
+// the summing variables might have occured under extreme conditions, if this happens the number of
+// pixels with this problem are recorded in this variable.
 rs_allocation gAnomalousStdDev;
 
 // RenderScript Kernels
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 // getMean......................................................................................
-// TODO: description, comments and logging
-// @param x bla
-// @param y bla
-// @return bla
+// Actually computes all the statistics at once, but returns only the mean back to Java
+// @param x row pixel coordinate
+// @param y column pixel coordinate
+// @return normalized pixel mean value (mean / gMax_bitValue)
 float RS_KERNEL getMean(uint32_t x, uint32_t y) {
 
+    // Max pixel value to normalize to
     float maxValue = gMax8bitValue;
     if (gIs8bit == 0) {
         maxValue = gMax16bitValue;
@@ -78,52 +88,57 @@ float RS_KERNEL getMean(uint32_t x, uint32_t y) {
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     uint val2_sum = rsGetElementAt_uint(gValue2Sum, x, y);
-
     double var = ( val2_sum / (double) gNframes) - ( mean_pixel_val * mean_pixel_val );
 
-    // standard deviation
-    float stddev_per_nanos;
+    float stddev;
     if (var < 0.) {
+        // An overflow has happened in one of the running sums
         long count = rsGetElementAt_long(gAnomalousStdDev, 0, 0);
         rsSetElementAt_long(gAnomalousStdDev, count + 1, 0, 0);
-        stddev_per_nanos = 0.;
+        stddev = 0.;
     }
     else {
-        stddev_per_nanos = sqrt((float) var) / maxValue;
+        // Everything is good
+        stddev = sqrt((float) var) / maxValue;
     }
 
-    rsSetElementAt_float(gStdDev, stddev_per_nanos, x, y);
+    rsSetElementAt_float(gStdDev, stddev, x, y);
 
     // Standard Error 
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    float stderr_per_nanos = stddev_per_nanos / sqrt((float) gNframes);
+    float stderr = stddev / sqrt((float) gNframes);
 
-    rsSetElementAt_float(gStdErr, stderr_per_nanos, x, y);
+    rsSetElementAt_float(gStdErr, stderr, x, y);
 
     //----------------------------------------------------------------------------------------------
 
-    return mean_pixel_val / maxValue;
+    return (float) mean_pixel_val / maxValue;
 }
 
 // getStdDev........................................................................................
-// TODO: description, comments and logging
-// @param x bla
-// @param y bla
-// @return bla
+// Transfer RenderScript Allocation back into Java
+// @param x row pixel coordinate
+// @param y column pixel coordinate
+// @return normalized pixel standard deviation (standard deviation / gMax_bitValue)
 float RS_KERNEL getStdDev(uint32_t x, uint32_t y) {
     return rsGetElementAt_float(gStdDev, x, y);
 }
 
 // getStdErr........................................................................................
-// TODO: description, comments and logging
-// @param x bla
-// @param y bla
-// @return bla
+// Transfer RenderScript Allocation back into Java
+// @param x row pixel coordinate
+// @param y column pixel coordinate
+// @return normalized pixel standard error (standard error / gMax_bitValue)
 float RS_KERNEL getStdErr(uint32_t x, uint32_t y) {
     return rsGetElementAt_float(gStdErr, x, y);
 }
 
+// getAnomalousStdDev...............................................................................
+// Transfer RenderScript Allocation back into Java
+// @param x row pixel coordinate
+// @param y column pixel coordinate
+// @return number of pixels that experianced an overflow in their running sums
 long RS_KERNEL getAnomalousStdDev(uint32_t x, uint32_t y) {
     return rsGetElementAt_long(gAnomalousStdDev, 0, 0);
 }

@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 15 April 2019
+ * @updated: 20 April 2019
  */
 
 package sci.crayfis.shramp;
@@ -155,14 +155,14 @@ public final class MasterController extends Activity {
     /**
      * Initialize analysis Allocations and RenderScripts.  This happens synchronously as there is
      * no hardware setup directly involved unlike surfaces and cameras.  When finished continue with
-     * startCaptureSession() below.
+     * startCaptureSequence() below.
      */
     public static void prepareAnalysis() {
         AnalysisController.initialize(mInstance);
         startCaptureSession();
     }
 
-    // startCaptureSession..........................................................................
+    // startCaptureSequence..........................................................................
     /**
      * This is essentially the end of the line for MasterController.
      * If there is enough memory left over after setup to support capture, pass execution control
@@ -179,7 +179,7 @@ public final class MasterController extends Activity {
         Log.e(Thread.currentThread().getName(), ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
         HeapMemory.logAvailableMiB();
 
-        CaptureController.startCaptureSession();
+        CaptureController.startCaptureSequence();
     }
 
     // quitSafely...................................................................................

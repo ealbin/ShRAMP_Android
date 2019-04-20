@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 15 April 2019
+ * @updated: 20 April 2019
  */
 
 package sci.crayfis.shramp;
@@ -104,16 +104,16 @@ public final class MaineShRAMP extends Activity { //implements AsyncResponse {
 
         // Log device info
         StructUtsname uname = Os.uname();
-        String unameString = " \n"
+        String unameString = " \n\n"
                 + "Machine:   " + uname.machine  + "\n"
                 + "Node name: " + uname.nodename + "\n"
                 + "Release:   " + uname.release  + "\n"
                 + "Sysname:   " + uname.sysname  + "\n"
-                + "Version:   " + uname.version  + "\n";
+                + "Version:   " + uname.version  + "\n\n";
         Log.e(Thread.currentThread().getName(), unameString);
 
         // Log hardware info
-        String buildDetails = " \n"
+        String buildDetails = " \n\n"
                 + "Underlying board:        " + Build.BOARD               + "\n"
                 + "Bootloader version:      " + Build.BOOTLOADER          + "\n"
                 + "Brand:                   " + Build.BRAND               + "\n"
@@ -129,7 +129,7 @@ public final class MaineShRAMP extends Activity { //implements AsyncResponse {
                 + "Build tags:              " + Build.TAGS                + "\n"
                 + "Build time:              " + Long.toString(Build.TIME) + "\n"
                 + "Build type:              " + Build.TYPE                + "\n"
-                + "User:                    " + Build.USER                + "\n";
+                + "User:                    " + Build.USER                + "\n\n";
         Log.e(Thread.currentThread().getName(), buildDetails);
 
         // if the API was 22 or below, the user would have granted permissions on start
@@ -181,7 +181,6 @@ public final class MaineShRAMP extends Activity { //implements AsyncResponse {
             Log.e(Thread.currentThread().getName(), "Some or all permissions denied");
         }
 
-        Log.e(Thread.currentThread().getName(), "permissionsGranted? return: " + Boolean.toString(allGranted));
         return allGranted;
     }
 

@@ -11,22 +11,34 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 15 April 2019
+ * @updated: 20 April 2019
  */
 
 package sci.crayfis.shramp.util;
 
 import android.annotation.TargetApi;
 import android.os.SystemClock;
+import android.support.annotation.NonNull;
 
 import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Convenient stop watch class for benchmarking performance
  */
 @TargetApi(21)
 public final class StopWatch {
+
+    // Private Class Constants
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+    // mLabeledStopWatches..........................................................................
+    // An array of every stop watch ever created (with a label)
+    private static final List<StopWatch> mLabeledStopWatches = new ArrayList<>();
 
     // Private Instance Fields
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -55,6 +67,10 @@ public final class StopWatch {
     // The shortest elapsed time measured so far
     private long mShortest;
 
+    // mLabel.......................................................................................
+    // A short label describing this StopWatch
+    private String mLabel;
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -65,8 +81,63 @@ public final class StopWatch {
     // StopWatch....................................................................................
     /**
      * Create a new stop watch, mark current system nanosecond time as start epoch
+     * (Not kept in master list of stopwatches)
      */
-    public StopWatch() { reset(); }
+    public StopWatch() {
+        mLabel = null;
+        reset();
+    }
+
+    // StopWatch....................................................................................
+    /**
+     * Create a new stop watch, mark current system nanosecond time as start epoch
+     * (A reference is kept in the master list of stopwatches)
+     * @param label A short string labeling this StopWatch
+     */
+    public StopWatch(@NonNull String label) {
+        mLabel = label;
+        mLabeledStopWatches.add(this);
+        reset();
+    }
+
+    // Public Class Methods
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+    // getLabeledPerformances...........................................................................
+    /**
+     * @return A String summarizing performance of all stop watches with labels of the format:
+     *          "Label:
+     *             Count = www, Shortest = zzzzzz [ns], Mean = xxxxx [ns], Longest = yyyyy [ns]"
+     */
+    @NonNull
+    public static String getLabeledPerformances() {
+        // Sort longest mean to shortest mean
+        Comparator<StopWatch> comparator = new Comparator<StopWatch>() {
+            @Override
+            public int compare(StopWatch o1, StopWatch o2) {
+                if (o1.mCount == 0 || o2.mCount == 0) {
+                    return Double.compare(o2.mCount, o1.mCount);
+                }
+                return Double.compare(o2.getMean(), o1.getMean());
+            }
+        };
+        Collections.sort(mLabeledStopWatches, comparator);
+        String out = " \n Stop watch results: \n\n ";
+        for (StopWatch stopwatch : mLabeledStopWatches) {
+            out += stopwatch.mLabel + ":\n" + stopwatch.getPerformance() + "\n\n";
+        }
+        return out + " ";
+    }
+
+    // resetLabeled.................................................................................
+    /**
+     * Resets all stopwatches with labels
+     */
+    public static void resetLabeled() {
+        for (StopWatch stopWatch : mLabeledStopWatches) {
+            stopWatch.reset();
+        }
+    }
 
     // Public Instance Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -162,13 +233,15 @@ public final class StopWatch {
     // getPerformance...............................................................................
     /**
      * @return A String summarizing performance from addTime() of the format:
-     *          "Mean = xxxxx [ns], Longest = yyyyy [ns], shortest = zzzzzz [ns]"
+     *          "Count = www, Shortest = zzzzzz [ns], Mean = xxxxx [ns], Longest = yyyyy [ns]"
      */
+    @NonNull
     public String getPerformance() {
-        String out = "";
-        out += "Mean = " + NumToString.number(getMean()) + " [ns]"
-                + ", Longest = " + NumToString.number(getLongest()) + " [ns]"
-                + ", Shortest = " + NumToString.number(getShortest()) + " [ns]";
+        String out = "\t";
+        out += "Count = " + NumToString.number(mCount)
+                + ", Shortest = " + NumToString.number(mShortest) + " [ns]"
+                + ", Mean = " + NumToString.number(Math.round(getMean())) + " [ns]"
+                + ", Longest = " + NumToString.number(mLongest) + " [ns]";
         return out;
     }
 

@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 15 April 2019
+ * @updated: 20 April 2019
  */
 
 package sci.crayfis.shramp.camera2.util;
@@ -73,7 +73,7 @@ abstract public class TimeCode {
 
         String temp = out;
         out = "";
-        for (int i = 6; i > 0; i--) {
+        for (int i = 6; i >= 0; i--) {
             out += temp.charAt(i);
             if (i == 6 || i == 3) {
                 out += " ";
