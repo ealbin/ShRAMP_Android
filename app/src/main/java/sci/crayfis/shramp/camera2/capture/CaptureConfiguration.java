@@ -21,7 +21,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Range;
 
-import org.jetbrains.annotations.Contract;
 
 /**
  * Object representing a captureMonitor sequence to perform
@@ -42,8 +41,7 @@ public class CaptureConfiguration {
     private static final Range<Double>  TEMPERATURE_BOUNDS = new Range<>(0., 50.);
     private static final Range<Integer> FRAME_BOUNDS       = new Range<>(0, 2000);
     private static final Range<Long>    EXPOSURE_BOUNDS    = new Range<>(FPS_30, FPS_05);
-    private static final Range<Double>  DUTY_BOUNDS        = new Range<>(0., 100.);
-    private static final Range<Integer> ATTEMPT_BOUNDS     = new Range<>(0, 1000);
+    private static final Range<Integer> ATTEMPT_BOUNDS     = new Range<>(1, 1000);
 
     // Package-Private Instance Fields
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -64,11 +62,6 @@ public class CaptureConfiguration {
     // TemperatureLimit.............................................................................
     // If this temperature (in Celsius) is exceeded, captureMonitor will end
     double TemperatureLimit;
-
-    // DutyThreshold................................................................................
-    // Automatically adjust sensor exposure / frame rate until an effective duty cycle is met between
-    // exposure time and dead time (not possible for devices that do not support manual control)
-    Double DutyThreshold;
 
     // AttemptLimit.................................................................................
     // Be it attempts at matching the duty cycle, or just repeating the captureMonitor sequence,
@@ -110,7 +103,6 @@ public class CaptureConfiguration {
         instance.TargetExposure     = EXPOSURE_BOUNDS.getLower();
         instance.FrameLimit         = setFrameLimit(frameLimit);
         instance.TemperatureLimit   = setTemperatureLimit(temperatureLimit);
-        instance.DutyThreshold      = null;
         instance.AttemptLimit       = setAttemptLimit(attemptLimit);
         instance.EnableSignificance = false;
 
@@ -133,7 +125,6 @@ public class CaptureConfiguration {
         instance.TargetExposure     = 0;
         instance.FrameLimit         = 0;
         instance.TemperatureLimit   = setTemperatureLimit(temperatureLimit);
-        instance.DutyThreshold      = null;
         instance.AttemptLimit       = setAttemptLimit(attemptLimit);
         instance.EnableSignificance = false;
 
@@ -154,8 +145,7 @@ public class CaptureConfiguration {
 
         instance.TargetExposure     = EXPOSURE_BOUNDS.getLower();
         instance.FrameLimit         = DEFAULT_FRAME_LIMIT;
-        instance.TemperatureLimit   = 30.;
-        instance.DutyThreshold      = null;
+        instance.TemperatureLimit   = DEFAULT_TEMPERATURE_LIMIT;
         instance.AttemptLimit       = 1;
         instance.EnableSignificance = false;
 
@@ -176,8 +166,7 @@ public class CaptureConfiguration {
 
         instance.TargetExposure     = EXPOSURE_BOUNDS.getUpper();
         instance.FrameLimit         = DEFAULT_FRAME_LIMIT;
-        instance.TemperatureLimit   = 30.;
-        instance.DutyThreshold      = null;
+        instance.TemperatureLimit   = DEFAULT_TEMPERATURE_LIMIT;
         instance.AttemptLimit       = 1;
         instance.EnableSignificance = false;
 
@@ -198,8 +187,7 @@ public class CaptureConfiguration {
 
         instance.TargetExposure     = EXPOSURE_BOUNDS.getLower();
         instance.FrameLimit         = DEFAULT_FRAME_LIMIT;
-        instance.TemperatureLimit   = 50.;
-        instance.DutyThreshold      = null;
+        instance.TemperatureLimit   = TEMPERATURE_BOUNDS.getUpper();
         instance.AttemptLimit       = 1;
         instance.EnableSignificance = false;
 
@@ -220,9 +208,30 @@ public class CaptureConfiguration {
 
         instance.TargetExposure     = EXPOSURE_BOUNDS.getUpper();
         instance.FrameLimit         = DEFAULT_FRAME_LIMIT;
-        instance.TemperatureLimit   = 50.;
-        instance.DutyThreshold      = null;
+        instance.TemperatureLimit   = TEMPERATURE_BOUNDS.getUpper();
         instance.AttemptLimit       = 1;
+        instance.EnableSignificance = false;
+
+        return instance;
+    }
+
+    // newOptimizationSession.......................................................................
+    /**
+     * Create a new OPTIMIZE_DUTY_CYCLE session.
+     * Discovers sensor exposure / frame rate that maximizes the duty cycle between
+     * exposure time and dead time (not possible for devices that do not support manual control)
+     * @param temperatureLimit (Optional) Maximum temperature to end the session (default is 40 C)
+     * @return A captureMonitor configuration object ready for use
+     */
+    @NonNull
+    public static CaptureConfiguration newOptimizationSession(@Nullable Double temperatureLimit) {
+        CaptureConfiguration instance = new CaptureConfiguration();
+        instance.Mode = CaptureController.Mode.OPTIMIZE_DUTY_CYCLE;
+
+        instance.TargetExposure     = EXPOSURE_BOUNDS.getLower();
+        instance.FrameLimit         = 100;
+        instance.TemperatureLimit   = setTemperatureLimit(temperatureLimit);
+        instance.AttemptLimit       = 10;
         instance.EnableSignificance = false;
 
         return instance;
@@ -231,18 +240,17 @@ public class CaptureConfiguration {
     // newDataSession...............................................................................
     /**
      * Create a new DATA session
-     * @param targetExposure Desired sensor exposure in nanoseconds
      * @param frameLimit End captureMonitor after this many frames
+     * @param targetExposure (Optional) Desired sensor exposure in nanoseconds (default is optimum fps)
      * @param temperatureLimit (Optional) Maximum temperature to end the session (default is 40 C)
-     * @param dutyThreshold (Optional) Automatically adjust targetExposure to meet duty threshold
      * @param attemptLimit (Optional) Repeat this many times (default is 1)
      * @param enableSignificance (Optional) Enables statistical significance (default is true)
      * @return A captureMonitor configuration object ready for use
      */
     @NonNull
-    public static CaptureConfiguration newDataSession(long targetExposure, int frameLimit,
+    public static CaptureConfiguration newDataSession(int frameLimit,
+                                                      @Nullable Long targetExposure,
                                                       @Nullable Double temperatureLimit,
-                                                      @Nullable Double dutyThreshold,
                                                       @Nullable Integer attemptLimit,
                                                       @Nullable Boolean enableSignificance) {
         CaptureConfiguration instance = new CaptureConfiguration();
@@ -251,7 +259,6 @@ public class CaptureConfiguration {
         instance.TargetExposure   = setTargetExposure(targetExposure);
         instance.FrameLimit       = setFrameLimit(frameLimit);
         instance.TemperatureLimit = setTemperatureLimit(temperatureLimit);
-        instance.DutyThreshold    = setDutyThreshold(dutyThreshold);
         instance.AttemptLimit     = setAttemptLimit(attemptLimit);
 
         if (enableSignificance == null) {
@@ -271,11 +278,16 @@ public class CaptureConfiguration {
     /**
      * Make sure requested targetExposure is within bounds
      * @param targetExposure Optionally null for default setting
-     * @return Default is longest exposure (5 FPS), otherwise clipped between EXPOSURE_BOUNDS low and high
+     * @return Default is optimized duty fps if available, longest exposure (5 FPS) if not,
+     *         otherwise clipped between EXPOSURE_BOUNDS low and high
      */
     private static long setTargetExposure(@Nullable Long targetExposure) {
         if (targetExposure == null) {
-            return EXPOSURE_BOUNDS.getUpper();
+            Long optimalExposure = CaptureController.getOptimalExposure();
+            if (optimalExposure == null) {
+                return EXPOSURE_BOUNDS.getUpper();
+            }
+            return optimalExposure;
         }
 
         if (targetExposure > EXPOSURE_BOUNDS.getUpper()) {
@@ -331,30 +343,6 @@ public class CaptureConfiguration {
         }
 
         return temperatureLimit;
-    }
-
-    // setDutyThreshold.............................................................................
-    /**
-     * Make sure requested dutyThreshold is within bounds
-     * @param dutyThreshold Optionally null for default setting
-     * @return Default is disabled, otherwise clipped between DUTY_BOUNDS low and high
-     */
-    @Nullable
-    @Contract("null -> null")
-    private static Double setDutyThreshold(@Nullable Double dutyThreshold) {
-        if (dutyThreshold == null) {
-            return null;
-        }
-
-        if (dutyThreshold > DUTY_BOUNDS.getUpper()) {
-            return DUTY_BOUNDS.getUpper();
-        }
-
-        if (dutyThreshold < DUTY_BOUNDS.getLower()) {
-            return DUTY_BOUNDS.getLower();
-        }
-
-        return dutyThreshold;
     }
 
     // setAttemptLimit..............................................................................

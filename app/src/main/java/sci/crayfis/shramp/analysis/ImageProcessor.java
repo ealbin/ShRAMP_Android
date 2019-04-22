@@ -461,15 +461,15 @@ abstract class ImageProcessor {
                         DataQueue.add(new OutputWrapper(filename, mSignificance, 1));
                     }
 
-                    // TODO: hopefully remove in the future
-                    if (GlobalSettings.DEBUG_ENABLE_THRESHOLD_INCREASE && mCountAboveThresholdArray[0] > 0L) {
-                        int nFrames = mFramesAboveThreshold.incrementAndGet();
-                        if (nFrames >= GlobalSettings.MAX_FRAMES_ABOVE_THRESHOLD) {
-                            Log.e(Thread.currentThread().getName(), ":::::: REQUESTING THRESHOLD INCREASE :::::::");
-                            AnalysisController.increaseSignificanceThreshold();
-                            mFramesAboveThreshold.set(0);
-                        }
-                    }
+                    // TODO: remove in the future / figuring out threshold details
+                    //if (GlobalSettings.DEBUG_ENABLE_THRESHOLD_INCREASE && mCountAboveThresholdArray[0] > 0L) {
+                        //int nFrames = mFramesAboveThreshold.incrementAndGet();
+                        //if (nFrames >= GlobalSettings.MAX_FRAMES_ABOVE_THRESHOLD) {
+                        //    Log.e(Thread.currentThread().getName(), ":::::: REQUESTING THRESHOLD INCREASE :::::::");
+                        //    AnalysisController.increaseSignificanceThreshold();
+                        //    mFramesAboveThreshold.set(0);
+                        //}
+                    //}
                 }
 
                 Log.e(Thread.currentThread().getName(), "Image processor backlog: " + NumToString.number(mBacklog.decrementAndGet()));

@@ -365,9 +365,9 @@ public abstract class AnalysisController {
     /**
      * TODO: remove in the future, fudge-factor for controlling significance rate
      */
-    static void increaseSignificanceThreshold() {
-        mThresholdOffset += GlobalSettings.THRESHOLD_STEP;
+    //static void increaseSignificanceThreshold() {
+        //mThresholdOffset += GlobalSettings.THRESHOLD_STEP;
         //CaptureController.resetSession();
-    }
+    //}
 
 }

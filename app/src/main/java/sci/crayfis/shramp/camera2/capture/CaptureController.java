@@ -66,6 +66,7 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
         CALIBRATION_COLD_SLOW,  // Perform a calibration run
         CALIBRATION_HOT_FAST,   // Perform a calibration run
         CALIBRATION_HOT_SLOW,   // Perform a calibration run
+        OPTIMIZE_DUTY_CYCLE,    // Discover fps for optimum duty cycle
         DATA                    // Perform a data run
     }
 
@@ -88,6 +89,10 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
 
     // Private Class Fields
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+    // mOptimalExposure.............................................................................
+    // Exposure time for minimal dead time in capture
+    private static Long mOptimalExposure;
 
     // mSession.....................................................................................
     // Encapsulation of captureMonitor session objects and group actions on them
@@ -146,10 +151,45 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
 
             // Quit the app successfully condition
             if (configuration == null) {
-                Log.e(Thread.currentThread().getName(), "Mission Accomplished.  Shutting down..");
+                Log.e(Thread.currentThread().getName(), " \n\n\t\t\tMission Accomplished.  Shutting down..\n ");
                 reset();
                 MasterController.quitSafely();
                 return;
+            }
+
+            switch (configuration.Mode) {
+                case COOLDOWN: {
+                    Log.e(Thread.currentThread().getName(), " \n\n\t\t\t >> STARTING COOL-DOWN SESSION <<\n ");
+                    break;
+                }
+                case WARMUP: {
+                    Log.e(Thread.currentThread().getName(), " \n\n\t\t\t >> STARTING WARM-UP SESSION <<\n ");
+                    break;
+                }
+                case CALIBRATION_COLD_FAST: {
+                    Log.e(Thread.currentThread().getName(), " \n\n\t\t\t >> STARTING COLD-FAST CALIBRATION SESSION <<\n ");
+                    break;
+                }
+                case CALIBRATION_COLD_SLOW: {
+                    Log.e(Thread.currentThread().getName(), " \n\n\t\t\t >> STARTING COLD-SLOW CALIBRATION SESSION <<\n ");
+                    break;
+                }
+                case CALIBRATION_HOT_FAST: {
+                    Log.e(Thread.currentThread().getName(), " \n\n\t\t\t >> STARTING HOT-FAST CALIBRATION SESSION <<\n ");
+                    break;
+                }
+                case CALIBRATION_HOT_SLOW: {
+                    Log.e(Thread.currentThread().getName(), " \n\n\t\t\t >> STARTING HOT-SLOW CALIBRATION SESSION <<\n ");
+                    break;
+                }
+                case OPTIMIZE_DUTY_CYCLE: {
+                    Log.e(Thread.currentThread().getName(), " \n\n\t\t\t >> STARTING EXPOSURE OPTIMIZATION SESSION <<\n ");
+                    break;
+                }
+                case DATA: {
+                    Log.e(Thread.currentThread().getName(), " \n\n\t\t\t >> STARTING DATA SESSION <<\n ");
+                    break;
+                }
             }
 
             if (configuration.Mode == Mode.COOLDOWN) {
@@ -221,8 +261,7 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
                     }
                 }
             }
-            Log.e(Thread.currentThread().getName(), ">> STARTING CAPTURE <<");
-            Log.e(Thread.currentThread().getName(), "<><><><><><><><><><><>");
+            Log.e(Thread.currentThread().getName(), " \n\n\t\t\t>> STARTING CAPTURE <<\n ");
         }
 
         // hasStarted...............................................................................
@@ -254,7 +293,7 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
                     }
 
                     // Sometimes the garbage collector just needs a kick
-                    Log.e(Thread.currentThread().getName(), ">> Forcing Restart <<");
+                    Log.e(Thread.currentThread().getName(), " \n\n\t\t\t>> Forcing Restart <<\n ");
                 }
 
                 try {
@@ -376,10 +415,19 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
                             + " > " + NumToString.number(coolTemperature) + " [Celsius], update in 1 minute..");
                     mInstance.wait(GlobalSettings.DEFAULT_LONG_WAIT);
 
+                    temperature = BatteryController.getCurrentTemperature();
+                    if (temperature == null) {
+                        Log.e(Thread.currentThread().getName(), "Temperature is unknown, shutting down for safety");
+                        MasterController.quitSafely();
+                        return;
+                    }
+
                     attemptCount += 1;
-                    if (attemptCount > mSession.configuration.AttemptLimit) {
+                    if (attemptCount >= mSession.configuration.AttemptLimit) {
                         Log.e(Thread.currentThread().getName(), "Cool down cycle exceeding attempt limit: "
                                 + NumToString.number(attemptCount) + ", breaking from cool down");
+                        Log.e(Thread.currentThread().getName(), "Ending temperature: " + NumToString.number(temperature)
+                                + " [Celsius]");
                         break;
                     }
                 }
@@ -406,6 +454,15 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
         mSession.startCapture();
     }
 
+    // isOptimalExposureSet.........................................................................
+    /**
+     * @return Optimal exposure for minimal dead time, null if optimize duty cycle session has not been run
+     */
+    @Nullable
+    static Long getOptimalExposure() {
+        return mOptimalExposure;
+    }
+
     // sessionFinished..............................................................................
     /**
      * Called by CaptureMonitor when the session has finished.
@@ -424,8 +481,76 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
                 + " out of " + NumToString.number(mSession.configuration.AttemptLimit) + "\n";
         Log.e(Thread.currentThread().getName(), string);
 
+        if (mSession.configuration.Mode == Mode.OPTIMIZE_DUTY_CYCLE) {
+            mOptimalExposure = (long) (Math.floor(1e9 / averageFps));
+            Log.e(Thread.currentThread().getName(), "New optimal fps: "
+                    + NumToString.decimal(1. / ( mOptimalExposure * 1e-9) )
+                    + " [frames / sec]");
+            mSession.configuration.TargetExposure = mOptimalExposure;
+            mSession.captureRequest = buildCaptureRequest();
+
+            Integer mode = mSession.captureRequest.get(CaptureRequest.CONTROL_AE_MODE);
+            if (mode == null) {
+                // TODO: error
+                Log.e(Thread.currentThread().getName(), "AE mode cannot be null");
+                MasterController.quitSafely();
+                return;
+            }
+
+            if ( (averageDuty >= .999)
+                    || (mode == CameraMetadata.CONTROL_AE_MODE_ON && mSession.attemptCount > 3)) {
+                Log.e(Thread.currentThread().getName(), " \n\n\t\t>> Ending Attempts Early, Goals Met <<\n ");
+                Log.e(Thread.currentThread().getName(), " \n" + StopWatch.getLabeledPerformances());
+                StopWatch.resetLabeled();
+                mSession.renewSession();
+                return;
+            }
+        }
+
+        if (mSession.configuration.Mode == Mode.WARMUP) {
+            Double currentTemperature = BatteryController.getCurrentTemperature();
+            if (currentTemperature == null) {
+                // TODO: error
+                Log.e(Thread.currentThread().getName(), "Cannot get temperature, shutting down for safety");
+                MasterController.quitSafely();
+                return;
+            }
+
+            if (currentTemperature >= mSession.configuration.TemperatureLimit) {
+                Log.e(Thread.currentThread().getName(), " \n\n\t\t>> Ending Attempts Early, Goals Met <<\n ");
+                Log.e(Thread.currentThread().getName(), " \n" + StopWatch.getLabeledPerformances());
+                StopWatch.resetLabeled();
+                mSession.renewSession();
+                return;
+            }
+        }
+
+        if (mSession.configuration.Mode == Mode.DATA
+                && mSession.attemptCount < mSession.configuration.AttemptLimit) {
+            Double currentTemperature = BatteryController.getCurrentTemperature();
+            if (currentTemperature == null) {
+                // TODO: error
+                Log.e(Thread.currentThread().getName(), "Cannot get temperature, shutting down for safety");
+                MasterController.quitSafely();
+                return;
+            }
+
+            if (currentTemperature >= mSession.configuration.TemperatureLimit) {
+                Log.e(Thread.currentThread().getName(), " \n\n\t\t>> Over Temperature, Cooling Down <<\n ");
+                Log.e(Thread.currentThread().getName(), " \n" + StopWatch.getLabeledPerformances());
+                StopWatch.resetLabeled();
+                coolDown(GlobalSettings.TEMPERATURE_GOAL, 10);
+                Log.e(Thread.currentThread().getName(), " \n\n\t\t>> Reducing FPS by 80% To Avoid Over Temperature <<\n ");
+                mSession.configuration.TargetExposure = (long) Math.round(mSession.configuration.TargetExposure / 0.8);
+                mSession.captureRequest = buildCaptureRequest();
+                mSession.repeatSession();
+                return;
+            }
+        }
+
         if (mSession.attemptCount < mSession.configuration.AttemptLimit) {
-            StopWatch.getLabeledPerformances();
+            Log.e(Thread.currentThread().getName(), " \n" + StopWatch.getLabeledPerformances());
+            StopWatch.resetLabeled();
             mSession.repeatSession();
             return;
         }
@@ -450,19 +575,6 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
         Log.e(Thread.currentThread().getName(), " \n" + StopWatch.getLabeledPerformances());
         StopWatch.resetLabeled();
         mSession.renewSession();
-
-        /*
-        if (mSession.configuration.DutyThreshold != null) {
-            // TODO: duty lock
-        }
-
-        if (!GlobalSettings.CONSTANT_FPS) {
-            mTarget.ExposureNanos = (long) (Math.floor(1e9 / averageFps));
-        }
-        Log.e(Thread.currentThread().getName(), "Start next session with frame rate target: "
-                + NumToString.decimal(1. / ( mTarget.ExposureNanos * 1e-9) )
-                + " [frames / sec]");
-        */
 
     }
 

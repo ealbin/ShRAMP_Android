@@ -188,8 +188,7 @@ public final class MasterController extends Activity {
      * cameras, surfaces etc, end all running threads and exit the app completely.
      */
     public static void quitSafely() {
-        Log.e(Thread.currentThread().getName(), ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
-        Log.e(Thread.currentThread().getName(), "MasterController quitSafely");
+        Log.e(Thread.currentThread().getName(), " \n\n\t\t\t>> MasterController quitSafely <<\n ");
         CameraController.closeCamera();
         BatteryController.shutdown();
         HandlerManager.finish();

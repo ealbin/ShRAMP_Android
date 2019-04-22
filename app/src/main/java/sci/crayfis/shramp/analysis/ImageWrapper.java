@@ -82,17 +82,27 @@ public final class ImageWrapper {
         void setData(Image image) {
             Timestamp = image.getTimestamp();
 
+            StopWatches.ByteBuffer.start();
             ByteBuffer byteBuffer = image.getPlanes()[0].getBuffer();
             int capacity          = byteBuffer.capacity();
+            StopWatches.ByteBuffer.addTime();
 
             if (ImageMetadata.is8bitData && ImageMetadata.nPixels == capacity) {
+                StopWatches.NewArray.start();
                 Data_8bit = new byte[capacity];
+                StopWatches.NewArray.addTime();
+                StopWatches.LoadBuffer.start();
                 byteBuffer.get(Data_8bit);
+                StopWatches.LoadBuffer.addTime();
                 Data_16bit = null;
             }
             else if (ImageMetadata.is16bitData && ImageMetadata.nPixels == capacity / 2){
+                StopWatches.NewArray.start();
                 Data_16bit = new short[capacity / 2];
+                StopWatches.NewArray.addTime();
+                StopWatches.LoadBuffer.start();
                 byteBuffer.asShortBuffer().get(Data_16bit);
+                StopWatches.LoadBuffer.addTime();
                 Data_8bit = null;
             }
             else {
@@ -105,7 +115,14 @@ public final class ImageWrapper {
     private final ImageData mImageData = new ImageData();
 
     // For now, monitor performance (TODO: remove in the future)
-    private final static StopWatch mStopWatch = new StopWatch("new ImageWrapper()");
+    abstract private static class StopWatches {
+        private final static StopWatch NewImageWrapper  = new StopWatch("new ImageWrapper()");
+        private final static StopWatch AcquireNextImage = new StopWatch("new ImageWrapper()->reader.acquireNextImage()");
+        private final static StopWatch SetData          = new StopWatch("new ImageWrapper()->setData()");
+        private final static StopWatch ByteBuffer       = new StopWatch("ImageWrapper->image.getPlanes()[0].getBuffer()");
+        private final static StopWatch NewArray         = new StopWatch("ImageWrapper->new byte[]");
+        private final static StopWatch LoadBuffer       = new StopWatch("ImageWrapper->byteBuffer.get()");
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -126,15 +143,19 @@ public final class ImageWrapper {
      * @param reader ImageReader buffer of images
      */
     public ImageWrapper(@NonNull ImageReader reader) {
-        mStopWatch.start();
+        StopWatches.NewImageWrapper.start();
 
         Image image = null;
         try {
+            StopWatches.AcquireNextImage.start();
             image = reader.acquireNextImage();
+            StopWatches.AcquireNextImage.addTime();
             if (image == null) {
                 return;
             }
+            StopWatches.SetData.start();
             mImageData.setData(image);
+            StopWatches.SetData.addTime();
             image.close();
         }
         catch (IllegalStateException e) {
@@ -146,7 +167,7 @@ public final class ImageWrapper {
             MasterController.quitSafely();
         }
 
-        mStopWatch.addTime();
+        StopWatches.NewImageWrapper.addTime();
     }
 
     // Package-private Class Methods
@@ -181,7 +202,7 @@ public final class ImageWrapper {
      */
     @Nullable
     @Contract(pure = true)
-    byte[] get8bitData() {return mImageData.Data_8bit;}
+    byte[] get8bitData() { return mImageData.Data_8bit; }
 
     // get16bitData.................................................................................
     /**

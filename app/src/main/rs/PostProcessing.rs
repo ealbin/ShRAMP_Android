@@ -142,3 +142,5 @@ float RS_KERNEL getStdErr(uint32_t x, uint32_t y) {
 long RS_KERNEL getAnomalousStdDev(uint32_t x, uint32_t y) {
     return rsGetElementAt_long(gAnomalousStdDev, 0, 0);
 }
+
+// TODO: cuts

@@ -286,13 +286,18 @@ abstract public class DataQueue {
     // clear........................................................................................
     /**
      * Wipe/reset all queues clean and start fresh -- use only when all hope is lost.
-     * Action is performed on calling method's thread.
+     * Action is performed on data queue thread.
      */
     public static void clear() {
-        synchronized (ACCESS_LOCK) {
-            mCaptureResultQueue.clear();
-            mImageQueue.clear();
-        }
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (ACCESS_LOCK) {
+                    mCaptureResultQueue.clear();
+                    mImageQueue.clear();
+                }
+            }
+        });
     }
 
     // isEmpty......................................................................................
@@ -313,6 +318,61 @@ abstract public class DataQueue {
 
         StopWatches.IsEmpty.addTime();
         return (resultSize == 0) && (imageSize == 0) && (outputSize == 0);
+    }
+
+    // logQueueSizes................................................................................
+    /**
+     * Display number of items in each queue.
+     * Note: called on caller's thread, there could be a delay if queue is in use already
+     */
+    public static void logQueueSizes() {
+        synchronized (ACCESS_LOCK) {
+            int resultSize = mCaptureResultQueue.size();
+            int imageSize  = mImageQueue.size();
+            int outputSize = mOutputQueue.size();
+
+            Log.e(Thread.currentThread().getName(), "Items in queue (metadata, image data, output) = ("
+            + NumToString.number(resultSize) + ", " + NumToString.number(imageSize) + ", " + NumToString.number(outputSize) + ")");
+        }
+    }
+
+    // logQueueContents.............................................................................
+    /**
+     * Display a listing of queue contents.
+     * Note: called on caller's thread, there could be a delay if queue is in use already
+     */
+    public static void logQueueContents() {
+        synchronized (ACCESS_LOCK) {
+            String metaString   = "";
+            String imageString  = "";
+            String outputString = "";
+
+            for (TotalCaptureResult result : mCaptureResultQueue) {
+                Long timestamp = result.get(CaptureResult.SENSOR_TIMESTAMP);
+                if (timestamp == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Timestamp cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
+                metaString += " " + TimeCode.toString(timestamp) + " ";
+            }
+
+            for (ImageWrapper wrapper : mImageQueue) {
+                imageString += " " + wrapper.getTimeCode() + " ";
+            }
+
+            for (OutputWrapper wrapper : mOutputQueue) {
+                outputString += " " + wrapper.getFilename() + " ";
+            }
+
+            String out = " \n\n";
+            out += "\tMetadata time-codes: " + metaString + "\n";
+            out += "\tImage time-codes:    " + imageString + "\n";
+            out += "\tOutput time-codes:   " + outputString + "\n ";
+
+            Log.e(Thread.currentThread().getName(), out);
+        }
     }
 
     // purge........................................................................................

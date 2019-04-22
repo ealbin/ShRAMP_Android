@@ -31,6 +31,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import sci.crayfis.shramp.GlobalSettings;
 import sci.crayfis.shramp.MasterController;
 import sci.crayfis.shramp.camera2.util.Parameter;
 import sci.crayfis.shramp.camera2.util.ParameterFormatter;
@@ -58,21 +59,6 @@ import sci.crayfis.shramp.util.ArrayToList;
 @TargetApi(21)
 @SuppressWarnings("unchecked")
 abstract class Control_ extends Color_ {
-
-    // Private Class Constants
-    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-    // MAX_FPS......................................................................................
-    // Maximum FPS this app will support
-    private static final int MAX_FPS = 30;
-
-    // MAX_FPS_DIFF................................................................................
-    // Maximum FPS range acceptable for this app, e.g. FPS range [10,12] has a range of 2
-    private static final int MAX_FPS_DIFF = 2;
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Protected Overriding Instance Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -237,8 +223,8 @@ abstract class Control_ extends Color_ {
 
                 List<Range<Integer>> keep = new ArrayList<>();
                 for (Range<Integer> range : fpsRanges) {
-                    if (range.getUpper() - range.getLower() <= MAX_FPS_DIFF
-                        && range.getUpper() <= MAX_FPS) {
+                    if (range.getUpper() - range.getLower() <= GlobalSettings.MAX_FPS_DIFF
+                        && range.getUpper() <= GlobalSettings.MAX_FPS) {
                         keep.add(range);
                     }
                 }

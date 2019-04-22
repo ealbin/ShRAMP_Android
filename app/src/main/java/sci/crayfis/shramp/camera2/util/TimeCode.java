@@ -21,16 +21,14 @@ import android.support.annotation.NonNull;
 
 import org.jetbrains.annotations.Contract;
 
+import sci.crayfis.shramp.GlobalSettings;
+
 /**
  * For human readability, convert a timestamp in nanoseconds into a short string of characters
  * e.g. 123,456,789 [ns] -> (1 and 2 are dropped) "D EFG HIJ"
  */
 @TargetApi(21)
 abstract public class TimeCode {
-
-    // VULGARITY....................................................................................
-    // If false characters are {0-9} = {A-J}, if true characters are chosen to maximize vulgarity
-    private static final boolean VULGARITY = true;
 
     /**
      * Convert timestamp in nanoseconds into a 7-character time code
@@ -43,7 +41,7 @@ abstract public class TimeCode {
         double time = (double) timestamp;
         String out = "";
 
-        if (!VULGARITY) {
+        if (!GlobalSettings.ENABLE_VULGARITY) {
             for (int i = 0; i < 7; i++) {
                 time /= 10.;
                 long iPart = (long) time;
@@ -75,7 +73,7 @@ abstract public class TimeCode {
         out = "";
         for (int i = 6; i >= 0; i--) {
             out += temp.charAt(i);
-            if (i == 6 || i == 3) {
+            if (i == 3) {
                 out += " ";
             }
         }

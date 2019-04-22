@@ -393,26 +393,6 @@ final class CaptureMonitor extends CameraCaptureSession.CaptureCallback {
     // Private Instance Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    // progressedNotification.......................................................................
-    /**
-     * Displays information about a progressing capture
-     * @param partialResult Partial capture result
-     */
-    private void progressedNotification(@NonNull CaptureResult partialResult) {
-        StopWatches.ProgressedNotification.start();
-
-        HeapMemory.logAvailableMiB();
-        Long timestamp = partialResult.get(CaptureResult.SENSOR_TIMESTAMP);
-        if (timestamp != null) {
-            Log.e(Thread.currentThread().getName(), "Capture in progress with time-code: " + TimeCode.toString(timestamp));
-        }
-        else {
-            Log.e(Thread.currentThread().getName(), "Precapture sequence in progress..");
-        }
-
-        StopWatches.ProgressedNotification.addTime();
-    }
-
     // completedNotification........................................................................
     /**
      * Displays information about a completed capture
@@ -480,9 +460,11 @@ final class CaptureMonitor extends CameraCaptureSession.CaptureCallback {
 
         super.onCaptureProgressed(session, request, partialResult);
 
-        progressedNotification(partialResult);
+        HeapMemory.logAvailableMiB();
+        Log.e(Thread.currentThread().getName(), "Capture in progress..");
+
         if (HeapMemory.isMemoryLow()) {
-            Log.e(Thread.currentThread().getName(), ">>DANGER LOW MEMORY<< >>REQUESTING PAUSE<<");
+            Log.e(Thread.currentThread().getName(), " \n\n\t\t\t>>DANGER LOW MEMORY<<\t\t>>REQUESTING PAUSE<<\n ");
             mState = State.PAUSED;
             CaptureController.pauseSession();
         }
@@ -533,13 +515,22 @@ final class CaptureMonitor extends CameraCaptureSession.CaptureCallback {
         super.onCaptureSequenceCompleted(session, sequenceId, frameNumber);
 
         if (mState == State.PAUSED) {
-            Log.e(Thread.currentThread().getName(), "*** Capture Stream has Paused ***");
-            Log.e(Thread.currentThread().getName(), "*********************************");
+            Log.e(Thread.currentThread().getName(), " \n\n\t\t\t>> Capture Stream has Paused <<\n ");
             CaptureController.restartSession();
         }
         else {
             Log.e(Thread.currentThread().getName(), "Capture sequence has completed a total of "
                                             + NumToString.number(mFrame.FrameCount) + " frames");
+
+            // Wait briefly for stragglers to come in
+            synchronized (this) {
+                try {
+                    this.wait(5 * GlobalSettings.DEFAULT_WAIT_MS);
+                }
+                catch (InterruptedException e) {
+                    // TODO: error
+                }
+            }
 
             DataQueue.purge();
             synchronized (this) {
@@ -562,6 +553,8 @@ final class CaptureMonitor extends CameraCaptureSession.CaptureCallback {
                         if (!DataQueue.isEmpty() && !AnalysisController.isBusy() && !StorageMedia.isBusy()) {
                             Log.e(Thread.currentThread().getName(), ">> Anomalous Situation! Clearing Queues! <<");
                             Log.e(Thread.currentThread().getName(), "*******************************************");
+                            DataQueue.logQueueSizes();
+                            DataQueue.logQueueContents();
                             DataQueue.clear();
                         }
 
@@ -613,10 +606,6 @@ final class CaptureMonitor extends CameraCaptureSession.CaptureCallback {
         super.onCaptureStarted(session, request, timestamp, frameNumber);
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    // Shutdown Conditions /////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
     // onCaptureBufferLost..........................................................................
     /**
      * This method is called if a single buffer for a capture could not be sent to its
@@ -631,9 +620,13 @@ final class CaptureMonitor extends CameraCaptureSession.CaptureCallback {
                                     @NonNull CaptureRequest request,
                                     @NonNull Surface target, long frameNumber) {
         super.onCaptureBufferLost(session, request, target, frameNumber);
-        Log.e(Thread.currentThread().getName(), ">> CAPTURE BUFFER LOST <<");
-        CaptureController.pauseSession();
+        Log.e(Thread.currentThread().getName(), " \n\n\t\t\t>> CAPTURE BUFFER LOST <<"
+                + " >> Frame Number: " + NumToString.number(frameNumber) + " <<\n ");
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Shutdown Conditions /////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     // onCaptureFailed..............................................................................
     /**
