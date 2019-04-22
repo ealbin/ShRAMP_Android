@@ -37,7 +37,7 @@ import sci.crayfis.shramp.util.HeapMemory;
 import sci.crayfis.shramp.util.NumToString;
 import sci.crayfis.shramp.util.StopWatch;
 import sci.crayfis.shramp.util.StorageMedia;
-import sci.crayfis.shramp.util.TimeManager;
+import sci.crayfis.shramp.util.Datestamp;
 
 /**
  * Monitors capture stream on a frame by frame basis, receiving capture metadata
@@ -221,7 +221,7 @@ final class CaptureMonitor extends CameraCaptureSession.CaptureCallback {
 
             if (First == 0L) {
                 First = timestamp;
-                TimeManager.resetElapsedNanos(timestamp);
+                Datestamp.resetElapsedNanos(timestamp);
             }
             else {
                 Elapsed = timestamp - Last;

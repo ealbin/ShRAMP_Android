@@ -102,7 +102,7 @@ public final class MasterController extends Activity {
         // In the future, this will be removed.  For now, just start clean for simplicity.
         if (GlobalSettings.START_FROM_SCRATCH) {
             Log.e(Thread.currentThread().getName(), "Clearing ShRAMP data directory, starting from scratch");
-            StorageMedia.cleanAll();
+            StorageMedia.cleanSlate();
         }
 
         // Set up ShRAMP data directory

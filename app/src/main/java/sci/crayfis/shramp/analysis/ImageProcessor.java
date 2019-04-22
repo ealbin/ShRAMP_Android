@@ -19,7 +19,6 @@ package sci.crayfis.shramp.analysis;
 import android.annotation.TargetApi;
 import android.hardware.camera2.TotalCaptureResult;
 import android.os.Handler;
-import android.provider.Settings;
 import android.renderscript.Allocation;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -34,10 +33,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import sci.crayfis.shramp.GlobalSettings;
 import sci.crayfis.shramp.ScriptC_PostProcessing;
 import sci.crayfis.shramp.ScriptC_LiveProcessing;
+import sci.crayfis.shramp.util.Datestamp;
 import sci.crayfis.shramp.util.HandlerManager;
 import sci.crayfis.shramp.util.NumToString;
 import sci.crayfis.shramp.util.StopWatch;
-import sci.crayfis.shramp.util.TimeManager;
 
 /**
  * Oversees both live and post image processing with RenderScript
@@ -410,7 +409,7 @@ abstract class ImageProcessor {
                         && RunningTotal.Nframes % GlobalSettings.DEBUG_IMAGE_SAVING_INTERVAL == 0) {
                     // filename = [frame number]_[nanoseconds since start].frame
                     String filename = String.format(Locale.US,"%05d", RunningTotal.Nframes);
-                    filename += "_" + String.format(Locale.US, "%015d", TimeManager.getElapsedNanos(Wrapper.getTimestamp()));
+                    filename += "_" + String.format(Locale.US, "%015d", Datestamp.getElapsedTimestampNanos(Wrapper.getTimestamp()));
                     filename += ".frame";
                     // TODO: exposure
                     DataQueue.add(new OutputWrapper(filename, Wrapper, null));
@@ -443,7 +442,7 @@ abstract class ImageProcessor {
                         //mLiveScript.forEach_getSignificance(mSignificance);
                         // filename = [frame number]_[nanoseconds since start].signif
                         //String filename = String.format(Locale.US, "%05d", RunningTotal.Nframes);
-                        //filename += "_" + String.format(Locale.US, "%015d", TimeManager.getElapsedNanos(Wrapper.getTimestamp()));
+                        //filename += "_" + String.format(Locale.US, "%015d", Datestamp.getElapsedTimestampNanos(Wrapper.getTimestamp()));
                         //filename += ".signif";
                         //DataQueue.add(new OutputWrapper(filename, mSignificance, 1));
                     }
@@ -456,7 +455,7 @@ abstract class ImageProcessor {
                         mLiveScript.forEach_getSignificance(mSignificance);
                         // filename = [frame number]_[nanoseconds since start].signif
                         String filename = String.format(Locale.US, "%05d", RunningTotal.Nframes);
-                        filename += "_" + String.format(Locale.US, "%015d", TimeManager.getElapsedNanos(Wrapper.getTimestamp()));
+                        filename += "_" + String.format(Locale.US, "%015d", Datestamp.getElapsedTimestampNanos(Wrapper.getTimestamp()));
                         filename += ".signif";
                         DataQueue.add(new OutputWrapper(filename, mSignificance, 1));
                     }

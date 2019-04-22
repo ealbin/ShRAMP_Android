@@ -78,19 +78,33 @@ abstract public class GlobalSettings {
         }
 
         /**
-         * A complete calibration cycle
+         * A complete calibration cycle typically takes around 30 minutes
          */
         private void addCalibrationCycle() {
             double temperature_low = Math.min(TEMPERATURE_START, TEMPERATURE_GOAL);
             temperature_low = Math.max(TEMPERATURE_LOW, temperature_low);
+
+            // Warm up if the phone is too cold
             mFlightPlan.add(CaptureConfiguration.newWarmUpSession(temperature_low, 10, 1000));
+
+            // Cool down if the phone is too hot
             mFlightPlan.add(CaptureConfiguration.newCoolDownSession(temperature_low, 10));
+
+            // Calibrate Cold-Fast/Slow
             mFlightPlan.add(CaptureConfiguration.newColdFastCalibration());
             mFlightPlan.add(CaptureConfiguration.newColdSlowCalibration());
+
+            // Warm up to Hot
             mFlightPlan.add(CaptureConfiguration.newWarmUpSession(TEMPERATURE_HIGH, 10, 1000));
+
+            // Calibrate Hot-Fast/Slow
             mFlightPlan.add(CaptureConfiguration.newHotFastCalibration());
             mFlightPlan.add(CaptureConfiguration.newHotSlowCalibration());
+
+            // Cool down to data taking temperature
             mFlightPlan.add(CaptureConfiguration.newCoolDownSession(TEMPERATURE_GOAL, 10));
+
+            // Discover optimal frame rate for data taking
             mFlightPlan.add(CaptureConfiguration.newOptimizationSession(null));
         }
     }
@@ -100,6 +114,9 @@ abstract public class GlobalSettings {
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // Force device to use YUV_420_888 output format, and/or automatic exposure/white balance/focus
+    // FYI, max effective fps for RAW_SENSOR is normally around 15 fps depending on the phone (hardware limited),
+    //      max effective fps for YUV_420_888 is normal around 20 fps (buffering limited)
+    //      also FYI, RenderScript runs around 15 fps or so for both
     public static final Boolean DISABLE_RAW_OUTPUT      = false;
     public static final Boolean FORCE_CONTROL_MODE_AUTO = false;
 

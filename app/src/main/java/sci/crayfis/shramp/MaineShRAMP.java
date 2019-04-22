@@ -30,6 +30,7 @@ import android.util.Log;
 
 import sci.crayfis.shramp.util.BuildString;
 import sci.crayfis.shramp.error.FailManager;
+import sci.crayfis.shramp.util.Datestamp;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //                         (TODO)      UNDER CONSTRUCTION      (TODO)
@@ -97,6 +98,9 @@ public final class MaineShRAMP extends Activity { //implements AsyncResponse {
 
         Log.e(Thread.currentThread().getName(), "Welcome to the Shower Reconstruction Application for Mobile Phones");
         Log.e(Thread.currentThread().getName(), "or \"ShRAMP\" for short");
+
+        // Log date
+        Datestamp.logStartDate();
 
         // Log build info
         String buildString = BuildString.get();

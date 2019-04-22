@@ -1,0 +1,15 @@
+sci.crayfis.shramp
+sci.crayfis.shramp.analysis
+sci.crayfis.shramp.battery
+sci.crayfis.shramp.camera2
+sci.crayfis.shramp.camera2.capture
+sci.crayfis.shramp.camera2.characteristics
+sci.crayfis.shramp.camera2.requests
+sci.crayfis.shramp.camera2.util
+sci.crayfis.shramp.error
+sci.crayfis.shramp.logging
+sci.crayfis.shramp.sensor
+sci.crayfis.shramp.ssh
+sci.crayfis.shramp.surfaces
+sci.crayfis.shramp.ui
+sci.crayfis.shramp.util
