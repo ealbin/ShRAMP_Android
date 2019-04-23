@@ -142,6 +142,7 @@ abstract class ImageProcessor {
         static Allocation Mean;
         static Allocation StdDev;
         static Allocation StdErr;
+        static Allocation Mask;
         static float      SignificanceThreshold;
     }
 
@@ -245,6 +246,14 @@ abstract class ImageProcessor {
         return Statistics.StdErr;
     }
 
+    // getMask......................................................................................
+    /**
+     * @return RenderScript Allocation of pixel mask currently being used
+     */
+    @Contract(pure = true)
+    @NonNull
+    static Allocation getMask() { return Statistics.Mask; }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     // getValueSum..................................................................................
@@ -318,13 +327,16 @@ abstract class ImageProcessor {
      * @param mean Initialized RenderScript Allocation to contain pixel means
      * @param stdDev Initialized RenderScript Allocation to contain pixel standard deviations
      * @param stdErr Initialized RenderScript Allocation to contain pixel standard errors
+     * @param mask Initialized RenderScript Allocation to contain pixel mask
      */
     static void setStatistics(@NonNull Allocation mean,
                               @NonNull Allocation stdDev,
-                              @NonNull Allocation stdErr) {
+                              @NonNull Allocation stdErr,
+                              @NonNull Allocation  mask) {
         Statistics.Mean   = mean;
         Statistics.StdDev = stdDev;
         Statistics.StdErr = stdErr;
+        Statistics.Mask   = mask;
     }
 
     // setSignificanceThreshold.....................................................................
@@ -361,6 +373,7 @@ abstract class ImageProcessor {
 
         mLiveScript.set_gMean(Statistics.Mean);
         mLiveScript.set_gStdDev(Statistics.StdDev);
+        mLiveScript.set_gMask(Statistics.Mask);
 
         // Values are set in RenderScript LiveProcessing.rs
         mLiveScript.set_gSignificance(mSignificance);
@@ -415,7 +428,7 @@ abstract class ImageProcessor {
                     // filename = [frame number]_[nanoseconds since start].frame
                     String filename = String.format(Locale.US,"%05d", RunningTotal.Nframes);
                     filename += "_" + String.format(Locale.US, "%015d", Datestamp.getElapsedTimestampNanos(Wrapper.getTimestamp()));
-                    filename += ".frame";
+                    filename += GlobalSettings.IMAGE_FILE;
                     Long exposure = Result.get(CaptureResult.SENSOR_EXPOSURE_TIME);
                     Double temperature = BatteryController.getCurrentTemperature();
                     if (temperature == null) {
@@ -452,7 +465,7 @@ abstract class ImageProcessor {
                         // filename = [frame number]_[nanoseconds since start].signif
                         //String filename = String.format(Locale.US, "%05d", RunningTotal.Nframes);
                         //filename += "_" + String.format(Locale.US, "%015d", Datestamp.getElapsedTimestampNanos(Wrapper.getTimestamp()));
-                        //filename += ".signif";
+                        //filename += GlobalSettings.SIGNIF_FILE;
                         //DataQueue.add(new OutputWrapper(filename, mSignificance, 1));
                     }
 
@@ -465,7 +478,7 @@ abstract class ImageProcessor {
                         // filename = [frame number]_[nanoseconds since start].signif
                         String filename = String.format(Locale.US, "%05d", RunningTotal.Nframes);
                         filename += "_" + String.format(Locale.US, "%015d", Datestamp.getElapsedTimestampNanos(Wrapper.getTimestamp()));
-                        filename += ".signif";
+                        filename += GlobalSettings.SIGNIF_FILE;
                         Double temperature = BatteryController.getCurrentTemperature();
                         if (temperature == null) {
                             temperature = Double.NaN;
@@ -565,10 +578,10 @@ abstract class ImageProcessor {
                 }
 
                 if (GlobalSettings.DEBUG_SAVE_MEAN) {
-                    StorageMedia.writeCalibration(new OutputWrapper(mFilename + ".mean", Statistics.Mean, RunningTotal.Nframes, temperature.floatValue()));
+                    StorageMedia.writeCalibration(new OutputWrapper(mFilename + GlobalSettings.MEAN_FILE, Statistics.Mean, RunningTotal.Nframes, temperature.floatValue()));
                 }
                 if (GlobalSettings.DEBUG_SAVE_STDDEV) {
-                    StorageMedia.writeCalibration(new OutputWrapper(mFilename + ".stddev", Statistics.StdDev, RunningTotal.Nframes, temperature.floatValue()));
+                    StorageMedia.writeCalibration(new OutputWrapper(mFilename + GlobalSettings.STDDEV_FILE, Statistics.StdDev, RunningTotal.Nframes, temperature.floatValue()));
                 }
 
                 mBacklog.decrementAndGet();

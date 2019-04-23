@@ -37,6 +37,7 @@ rs_allocation gValue2Sum;
 // Used for determining pixel significance = (value - mean) / stddev
 rs_allocation gMean;
 rs_allocation gStdDev;
+rs_allocation gMask;
 rs_allocation gSignificance;
 
 // gMax8bitValue / gMax16bitValue...................................................................
@@ -191,6 +192,22 @@ long RS_KERNEL getCountAboveThreshold(uint32_t x, uint32_t y) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// zeroUIntAllocation...............................................................................
+// @param x row pixel coordinate
+// @param y column pixel coordinate
+// @return 0
+uint RS_KERNEL zeroUIntAllocation(uint32_t x, uint32_t y) {
+    return 0;
+}
+
+// zeroFloatAllocation..............................................................................
+// @param x row pixel coordinate
+// @param y column pixel coordinate
+// @return 0.f
+float RS_KERNEL zeroFloatAllocation(uint32_t x, uint32_t y) {
+    return 0.f;
+}
+
 // zeroDoubleAllocation.............................................................................
 // @param x row pixel coordinate
 // @param y column pixel coordinate
@@ -199,10 +216,18 @@ double RS_KERNEL zeroDoubleAllocation(uint32_t x, uint32_t y) {
     return 0.;
 }
 
-// zeroUIntAllocation...............................................................................
+// oneFloatAllocation...............................................................................
 // @param x row pixel coordinate
 // @param y column pixel coordinate
-// @return 0
-uint RS_KERNEL zeroUIntAllocation(uint32_t x, uint32_t y) {
-    return 0;
+// @return 1.f
+float RS_KERNEL oneFloatAllocation(uint32_t x, uint32_t y) {
+    return 1.f;
+}
+
+// oneCharAllocation................................................................................
+// @param x row pixel coordinate
+// @param y column pixel coordinate
+// @return 1
+uchar RS_KERNEL oneCharAllocation(uint32_t x, uint32_t y) {
+    return 1;
 }

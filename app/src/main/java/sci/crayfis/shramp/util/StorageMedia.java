@@ -23,11 +23,22 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import org.jetbrains.annotations.Contract;
+
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import sci.crayfis.shramp.GlobalSettings;
@@ -417,6 +428,77 @@ abstract public class StorageMedia {
         }
 
         mHandler.post(new DataSaver(path, wrapper));
+    }
+
+    /**
+     * @param head options include "cold_fast", "cold_slow", "hot_fast" and "hot_slow"
+     * @param extension options include "mean" or "stddev"
+     * @return Returns the absolute path of the most recent calibration file matching the parameters,
+     *         or null if one cannot be found
+     */
+    @Nullable
+    @Contract(pure = true)
+    public static String findRecentCalibration(@NonNull String head, @NonNull String extension) {
+        if (!head.equals("cold_fast") && !head.equals("cold_slow") && !head.equals("hot_fast") && !head.equals("hot_slow")) {
+            Log.e(Thread.currentThread().getName(), "Unable to find calibration by this heading: " + head);
+            return null;
+        }
+
+        if (!extension.equals(GlobalSettings.MEAN_FILE) && !extension.equals(GlobalSettings.STDDEV_FILE)) {
+            Log.e(Thread.currentThread().getName(), "Unable to find calibration by this extension: " + extension);
+            return null;
+        }
+
+        File calibrations = new File(Path.Calibrations);
+
+        // Filename filter
+        class CalibrationFilter implements FilenameFilter {
+            private String Head;
+            private String Extension;
+
+            private CalibrationFilter(@NonNull String head, @NonNull String extension) {
+                Head = head;
+                Extension = extension;
+            }
+
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.startsWith(Head) && name.endsWith(Extension);
+            }
+        }
+
+        // Order files by datestamp
+        class LatestDateFirst implements Comparator<String> {
+            private int HeadLen;
+            private int ExtLen;
+            private SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.US);
+
+            private LatestDateFirst(@NonNull String head, @NonNull String extension) {
+                HeadLen = head.length() + 1;
+                ExtLen  = extension.length();
+            }
+
+            @Override
+            public int compare(String o1, String o2) {
+                try {
+                    Date date1 = format.parse(o1.substring(HeadLen, o1.length() - ExtLen));
+                    Date date2 = format.parse(o2.substring(HeadLen, o2.length() - ExtLen));
+                    return date1.compareTo(date2);
+                }
+                catch (ParseException e) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Parse exception, cannot sort files");
+                    return 0;
+                }
+            }
+        }
+
+        // Sort found files
+        List<String> sortedFiles = ArrayToList.convert(calibrations.list(new CalibrationFilter(head, extension)));
+        Collections.sort( sortedFiles, new LatestDateFirst(head, extension) );
+
+        File foundFile = new File(sortedFiles.get(0));
+        return foundFile.getAbsolutePath();
     }
 
 }

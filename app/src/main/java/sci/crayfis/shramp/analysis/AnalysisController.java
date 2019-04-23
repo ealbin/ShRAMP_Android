@@ -41,6 +41,7 @@ import sci.crayfis.shramp.util.NumToString;
 
 /**
  * Public interface to the analysis (ImageProcessor) code
+ * TODO: char is 16 bits in Java and 8 bits in RenderScript!  Double check stuff
  */
 @TargetApi(21)
 public abstract class AnalysisController {
@@ -113,8 +114,10 @@ public abstract class AnalysisController {
                                             GlobalSettings.RENDER_SCRIPT_FLAGS);
         mRS.setPriority(GlobalSettings.RENDER_SCRIPT_PRIORITY);
 
-        ImageProcessor.setLiveProcessor(new ScriptC_LiveProcessing(mRS));
-        ImageProcessor.setPostProcessor(new ScriptC_PostProcessing(mRS));
+        ScriptC_LiveProcessing liveProcessing = new ScriptC_LiveProcessing(mRS);
+        ScriptC_PostProcessing postProcessing = new ScriptC_PostProcessing(mRS);
+        ImageProcessor.setLiveProcessor(liveProcessing);
+        ImageProcessor.setPostProcessor(postProcessing);
 
         Element ucharElement  = Element.U8(mRS);
         Element ushortElement = Element.U16(mRS);
@@ -181,7 +184,18 @@ public abstract class AnalysisController {
         // TODO: Check for existing calibrations
         // if none, set need calibration flag and load empty Allocations into statistics
         mNeedsCalibration = true;
-        ImageProcessor.setStatistics(newFloatAllocation(), newFloatAllocation(), newFloatAllocation());
+
+        Allocation mean   = newFloatAllocation();
+        Allocation stddev = newFloatAllocation();
+        Allocation stderr = newFloatAllocation();
+        Allocation mask   = newUCharAllocation();
+
+        liveProcessing.forEach_zeroFloatAllocation(mean);
+        liveProcessing.forEach_oneFloatAllocation(stddev);
+        liveProcessing.forEach_zeroFloatAllocation(stderr);
+        liveProcessing.forEach_oneCharAllocation(mask);
+
+        ImageProcessor.setStatistics(mean, stddev, stderr, mask);
 
         ImageProcessor.setSignificanceAllocation(newFloatAllocation());
         ImageProcessor.setCountAboveThresholdAllocation(newSimpleLongAllocation());

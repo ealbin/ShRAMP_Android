@@ -217,6 +217,17 @@ abstract public class GlobalSettings {
     public static final int MAX_FPS_DIFF = 2;
 
 
+    // File extensions
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+    public static final String MEAN_FILE   = ".mean";
+    public static final String STDDEV_FILE = ".stddev";
+    public static final String STDERR_FILE = ".stderr";
+    public static final String MASK_FILE   = ".mask";
+    public static final String SIGNIF_FILE = ".signif";
+    public static final String IMAGE_FILE  = ".frame";
+
+
     // Debugging
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
