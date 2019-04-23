@@ -17,6 +17,7 @@
 package sci.crayfis.shramp.analysis;
 
 import android.annotation.TargetApi;
+import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
 import android.os.Handler;
 import android.renderscript.Allocation;
@@ -33,10 +34,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 import sci.crayfis.shramp.GlobalSettings;
 import sci.crayfis.shramp.ScriptC_PostProcessing;
 import sci.crayfis.shramp.ScriptC_LiveProcessing;
+import sci.crayfis.shramp.battery.BatteryController;
 import sci.crayfis.shramp.util.Datestamp;
 import sci.crayfis.shramp.util.HandlerManager;
 import sci.crayfis.shramp.util.NumToString;
 import sci.crayfis.shramp.util.StopWatch;
+import sci.crayfis.shramp.util.StorageMedia;
+
+import static sci.crayfis.shramp.battery.BatteryController.getCurrentTemperature;
 
 /**
  * Oversees both live and post image processing with RenderScript
@@ -411,8 +416,12 @@ abstract class ImageProcessor {
                     String filename = String.format(Locale.US,"%05d", RunningTotal.Nframes);
                     filename += "_" + String.format(Locale.US, "%015d", Datestamp.getElapsedTimestampNanos(Wrapper.getTimestamp()));
                     filename += ".frame";
-                    // TODO: exposure
-                    DataQueue.add(new OutputWrapper(filename, Wrapper, null));
+                    Long exposure = Result.get(CaptureResult.SENSOR_EXPOSURE_TIME);
+                    Double temperature = BatteryController.getCurrentTemperature();
+                    if (temperature == null) {
+                        temperature = Double.NaN;
+                    }
+                    StorageMedia.writeInternalStorage(new OutputWrapper(filename, Wrapper, exposure, temperature.floatValue()), null);
                 }
 
                 // Zero count of number of pixels above threshold
@@ -457,7 +466,11 @@ abstract class ImageProcessor {
                         String filename = String.format(Locale.US, "%05d", RunningTotal.Nframes);
                         filename += "_" + String.format(Locale.US, "%015d", Datestamp.getElapsedTimestampNanos(Wrapper.getTimestamp()));
                         filename += ".signif";
-                        DataQueue.add(new OutputWrapper(filename, mSignificance, 1));
+                        Double temperature = BatteryController.getCurrentTemperature();
+                        if (temperature == null) {
+                            temperature = Double.NaN;
+                        }
+                        StorageMedia.writeInternalStorage(new OutputWrapper(filename, mSignificance, 1, temperature.floatValue()), null);
                     }
 
                     // TODO: remove in the future / figuring out threshold details
@@ -546,11 +559,16 @@ abstract class ImageProcessor {
                 Log.e(Thread.currentThread().getName(), "Anomalous Std Dev Count: "
                                                     + NumToString.number(mAnomalousStdDevArray[0]));
 
+                Double temperature = BatteryController.getCurrentTemperature();
+                if (temperature == null) {
+                    temperature = Double.NaN;
+                }
+
                 if (GlobalSettings.DEBUG_SAVE_MEAN) {
-                    DataQueue.add(new OutputWrapper(mFilename + ".mean", Statistics.Mean, RunningTotal.Nframes));
+                    StorageMedia.writeCalibration(new OutputWrapper(mFilename + ".mean", Statistics.Mean, RunningTotal.Nframes, temperature.floatValue()));
                 }
                 if (GlobalSettings.DEBUG_SAVE_STDDEV) {
-                    DataQueue.add(new OutputWrapper(mFilename + ".stddev", Statistics.StdDev, RunningTotal.Nframes));
+                    StorageMedia.writeCalibration(new OutputWrapper(mFilename + ".stddev", Statistics.StdDev, RunningTotal.Nframes, temperature.floatValue()));
                 }
 
                 mBacklog.decrementAndGet();

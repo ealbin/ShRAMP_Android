@@ -58,10 +58,75 @@ abstract public class StorageMedia {
     private static final Handler mHandler = HandlerManager.newHandler(THREAD_NAME,
                                                     GlobalSettings.STORAGE_MEDIA_THREAD_PRIORITY);
 
-
-    private static final Object READ_WRITE_LOCK = new Object();
-
+    // mBacklog.....................................................................................
+    // Thread-safe count of files to be written
     private static final AtomicInteger mBacklog = new AtomicInteger();
+
+    /**
+     * Runnable for saving files on the Storage Media Thread
+     */
+    private static class DataSaver implements Runnable {
+
+        // Payload
+        private String mPath;
+        private OutputWrapper mOutputWrapper;
+
+        // Constructor
+        private DataSaver(String path, OutputWrapper wrapper) {
+            mPath = path;
+            mOutputWrapper = wrapper;
+        }
+
+        // Action
+        public void run() {
+            Log.e(Thread.currentThread().getName(), " \n\n\t\t\t>> WRITING: " + mPath
+                    + File.pathSeparator + mOutputWrapper.getFilename() + " <<\n ");
+
+            // Check for enough disk space
+            File file = new File(mPath);
+            long freeSpace  = file.getFreeSpace();
+            long totalSpace = file.getTotalSpace();
+            float usage = 1.f - (freeSpace / (float) totalSpace);
+
+            if (usage > 0.9) {
+                // TODO: error
+                Log.e(Thread.currentThread().getName(), " \n\n\t\t\t>> ERROR: OUT OF MEMORY, CANNOT SAVE DATA <<\n ");
+                MasterController.quitSafely();
+                return;
+            }
+
+            OutputStream outputStream = null;
+            try {
+                outputStream = new FileOutputStream(mPath + File.pathSeparator + mOutputWrapper.getFilename());
+                outputStream.write(mOutputWrapper.getByteBuffer().array());
+            }
+            catch (FileNotFoundException e) {
+                // TODO: error
+                Log.e(Thread.currentThread().getName(), " \n\n\t\t\t>> ERROR: INVALID PATH, CANNOT SAVE DATA <<\n ");
+                MasterController.quitSafely();
+                return;
+            }
+            catch (IOException e) {
+                // TODO: error
+                Log.e(Thread.currentThread().getName(), " \n\n\t\t\t>> ERROR: IO EXCEPTION, CANNOT SAVE DATA <<\n ");
+                MasterController.quitSafely();
+                return;
+            }
+            finally {
+                if (outputStream != null) {
+                    try {
+                        outputStream.close();
+                    }
+                    catch (IOException e) {
+                        // TODO: error
+                        Log.e(Thread.currentThread().getName(), " \n\n\t\t\t>> ERROR: IO EXCEPTION, CANNOT CLOSE OUTPUT STREAM <<\n ");
+                        MasterController.quitSafely();
+                    }
+                }
+            }
+            mBacklog.decrementAndGet();
+        }
+    }
 
     // Path.........................................................................................
     // Handy absolute path links
@@ -72,6 +137,13 @@ abstract public class StorageMedia {
         static String Calibrations;
         static String WorkingDirectory;
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // Public Class Methods
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // setUpShrampDirectory.........................................................................
     /**
@@ -288,121 +360,63 @@ abstract public class StorageMedia {
         Path.WorkingDirectory = createDirectory(path);
     }
 
-    // newCalibration...............................................................................
-    /**
-     * Create a new directory under ShRAMP/Calibrations/ and sets WorkingDirectory to this.
-     * @param name If null, makes a new directory with the current date Datestamp.
-     *             If not an absolute path, assumes its relative to ShRAMP/Calibrations/.
-     *             If directory already exists, takes no action besides setting WorkingDirectory to this.
-     */
-    public static void newCalibration(@Nullable String name) {
-        String path;
-        if (name == null) {
-            path = Path.Calibrations + File.pathSeparator + Datestamp.getDate();
-        }
-        else if (!name.contains(Path.Calibrations)) {
-            path = Path.Calibrations + File.pathSeparator + name;
-        }
-        else {
-            path = name;
-        }
-        File newDirectory = new File(path);
-
-        if (newDirectory.exists()) {
-            Log.e(Thread.currentThread().getName(), "Directory " + name + " already exists, making it the working directory");
-            Path.WorkingDirectory = path;
-            return;
-        }
-
-        Path.WorkingDirectory = createDirectory(path);
-    }
-    
     // TODO: method for moving/tarballing directory or files to Transmittable
     //public static void makeTransmittable(...)
 
-
-
-
-
-
-
-
+    // isBusy.......................................................................................
+    /**
+     * @return True if files are currently being written, false if in idle
+     */
     public static boolean isBusy() {
         return mBacklog.get() > 0;
     }
 
+    // getBacklog...................................................................................
+    /**
+     * @return The number of files in backlog to be / are being written
+     */
     public static int getBacklog() {
         return mBacklog.get();
     }
 
-    public static void writeWorkingDirectory(@NonNull OutputWrapper wrapper, @Nullable String subpath) {
-        mBacklog.incrementAndGet();
-        String path = Path.InProgress;//Path.WorkingDirectory;
-        if (subpath != null) {
-            path = createDirectory(Path.WorkingDirectory + "/" + subpath);
-        }
-        mHandler.post(new DataSaver(path, wrapper));
-    }
-
+    // writeCalibration.............................................................................
+    /**
+     * Writes a new calibration file to the Calibrations directory
+     * @param wrapper Calibration data (e.g. mean, stddev, etc)
+     */
     public static void writeCalibration(@NonNull OutputWrapper wrapper) {
         mBacklog.incrementAndGet();
         mHandler.post(new DataSaver(Path.Calibrations, wrapper));
     }
 
     /**
-     * TODO: description, comments and logging
+     * Writes OutputWrapper in the current working directory (if path is null), or to the specified path.
+     * Path can be relative to /ShRAMP (i.e. "mydir" translates to /ShRAMP/mydir).
+     * Caution: existing files with the same name will be overwritten.
+     * Note: writing occurs on the storage media thread, so the calling thread will not be burdened.
+     * @param wrapper OutputWrapper to be written
+     * @param path (Optional) If null, writes to working directory, if specified, writes to that
      */
-    private static class DataSaver extends Thread {
+    public static void writeInternalStorage(@NonNull OutputWrapper wrapper, @Nullable String path) {
+        mBacklog.incrementAndGet();
 
-        private String mPath;
-        private OutputWrapper mOutputWrapper;
-
-        private DataSaver(String path, OutputWrapper wrapper) {
-            mPath = path;
-            mOutputWrapper = wrapper;
+        String outpath;
+        if (path == null) {
+            outpath = Path.WorkingDirectory;
+        }
+        else if (!path.contains(Path.Home)) {
+            outpath = Path.Home + File.pathSeparator + path;
+        }
+        else {
+            outpath = path;
         }
 
-        public void run() {
-            synchronized (READ_WRITE_LOCK) {
-
-                Log.e(Thread.currentThread().getName(), "___WRITING: " + mPath + "/" + mOutputWrapper.getFilename());
-
-                File file = new File(mPath);
-                long freeSpace  = file.getFreeSpace();
-                long totalSpace = file.getTotalSpace();
-                float usage = 1.f - (freeSpace / (float) totalSpace);
-
-                if (usage > 0.9) {
-                    Log.e(Thread.currentThread().getName(), "ERROR: OUT OF MEMORY, CANNOT SAVE DATA");
-                    // TODO: shutdown
-                    mBacklog.decrementAndGet();
-                    return;
-                }
-
-                OutputStream outputStream = null;
-                try {
-                    outputStream = new FileOutputStream(mPath + "/" + mOutputWrapper.getFilename());
-                    outputStream.write(mOutputWrapper.getByteBuffer().array());
-                }
-                catch (FileNotFoundException e) {
-                    // TODO: error
-                }
-                catch (IOException e) {
-                    // TODO: error
-                }
-                finally {
-                    if (outputStream != null) {
-                        try {
-                            outputStream.close();
-                        }
-                        catch (IOException e) {
-                            // TODO: error
-                        }
-                    }
-                }
-                mBacklog.decrementAndGet();
-            }
+        File outfile = new File(outpath + File.pathSeparator + wrapper.getFilename());
+        if (outfile.exists()) {
+            Log.e(Thread.currentThread().getName(), "WARNING: " + outfile.getAbsolutePath() + " already exists and will be OVERWRITTEN");
         }
+
+        mHandler.post(new DataSaver(path, wrapper));
     }
 
 }

@@ -42,6 +42,7 @@ import sci.crayfis.shramp.camera2.CameraController;
 import sci.crayfis.shramp.camera2.requests.RequestMaker;
 import sci.crayfis.shramp.camera2.util.Parameter;
 import sci.crayfis.shramp.surfaces.SurfaceController;
+import sci.crayfis.shramp.util.Datestamp;
 import sci.crayfis.shramp.util.HandlerManager;
 import sci.crayfis.shramp.util.HeapMemory;
 import sci.crayfis.shramp.util.NumToString;
@@ -556,19 +557,19 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
         }
 
         if (mSession.configuration.Mode == Mode.CALIBRATION_HOT_SLOW) {
-            AnalysisController.runStatistics("hot_slow");
+            AnalysisController.runStatistics("hot_slow_" + Datestamp.getDate());
             // PrintAllocations.printMeanAndErr();
         }
         if (mSession.configuration.Mode == Mode.CALIBRATION_HOT_FAST) {
-            AnalysisController.runStatistics("hot_fast");
+            AnalysisController.runStatistics("hot_fast_" + Datestamp.getDate());
             // PrintAllocations.printMeanAndErr();
         }
         if (mSession.configuration.Mode == Mode.CALIBRATION_COLD_SLOW) {
-            AnalysisController.runStatistics("cold_slow");
+            AnalysisController.runStatistics("cold_slow_" + Datestamp.getDate());
             // PrintAllocations.printMeanAndErr();
         }
         if (mSession.configuration.Mode == Mode.CALIBRATION_COLD_FAST) {
-            AnalysisController.runStatistics("cold_fast");
+            AnalysisController.runStatistics("cold_fast_" + Datestamp.getDate());
             // PrintAllocations.printMeanAndErr();
         }
 

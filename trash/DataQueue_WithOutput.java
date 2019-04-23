@@ -14,7 +14,7 @@
  * @updated: 20 April 2019
  */
 
-package sci.crayfis.shramp.analysis;
+package recycle_bin;
 
 import android.annotation.TargetApi;
 import android.hardware.camera2.CaptureResult;
@@ -28,6 +28,9 @@ import java.util.List;
 
 import sci.crayfis.shramp.GlobalSettings;
 import sci.crayfis.shramp.MasterController;
+import sci.crayfis.shramp.analysis.ImageProcessor;
+import sci.crayfis.shramp.analysis.ImageWrapper;
+import sci.crayfis.shramp.analysis.OutputWrapper;
 import sci.crayfis.shramp.camera2.util.TimeCode;
 import sci.crayfis.shramp.util.HandlerManager;
 import sci.crayfis.shramp.util.NumToString;
@@ -35,10 +38,10 @@ import sci.crayfis.shramp.util.StopWatch;
 import sci.crayfis.shramp.util.StorageMedia;
 
 /**
- * Intermediate queue between receiving image data and its processing
+ * Intermediate queue between receiving image data and its processing, or writing to disk
  */
 @TargetApi(21)
-abstract public class DataQueue {
+abstract public class DataQueue_WithOutput {
 
     // Private Class Constants
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -65,6 +68,10 @@ abstract public class DataQueue {
     // Queue for the actual pixel image data
     private static final List<ImageWrapper> mImageQueue = new ArrayList<>();
 
+    // mOutputQueue.................................................................................
+    // Queue for images to be written to disk
+    private static final List<OutputWrapper> mOutputQueue = new ArrayList<>();
+
     // ProcessNextImage.............................................................................
     // Runnable for queue to process itself on its own thread when called from another thread
     private static class ProcessNextImage implements Runnable {
@@ -75,12 +82,12 @@ abstract public class DataQueue {
         // explicitly clearing the queues.
         static boolean nPurge = false;
 
-        DataQueue.ProcessNextImage setPurge() {
+        DataQueue_WithOutput.ProcessNextImage setPurge() {
             nPurge = true;
             return this;
         }
 
-        DataQueue.ProcessNextImage unsetPurge() {
+        DataQueue_WithOutput.ProcessNextImage unsetPurge() {
             nPurge = false;
             return this;
         }
@@ -100,15 +107,31 @@ abstract public class DataQueue {
             }
         }
     }
-    private static final DataQueue.ProcessNextImage ProcessNextImage = new ProcessNextImage();
+    private static final DataQueue_WithOutput.ProcessNextImage ProcessNextImage = new ProcessNextImage();
+
+    // PurgeOutputQueue.............................................................................
+    // Runnable for queue to process itself on its own thread when called from another thread
+    private static final Runnable PurgeOutputQueue = new Runnable() {
+        @Override
+        public void run() {
+            // Runs writeOutput() until the output queue is empty
+            while (writeOutput()) {
+                Log.e(Thread.currentThread().getName(),
+                        "Output Queue Size: " + NumToString.number(mOutputQueue.size())
+                        + ", I/O Backlog: "        + NumToString.number(StorageMedia.getBacklog()));
+            }
+        }
+    };
 
     // For now, monitor performance (TODO: remove in the future)
     private abstract static class StopWatches {
         final static StopWatch AddTotalCaptureResult = new StopWatch("DataQueue.addTotalCaptureResult()");
         final static StopWatch AddImageWrapper       = new StopWatch("DataQueue.addImageWrapper()");
+        final static StopWatch AddOutputWrapper      = new StopWatch("DataQueue.addOutputWrapper()");
         final static StopWatch IsEmpty               = new StopWatch("DataQueue.isEmpty()");
         final static StopWatch ProcessImageQueues    = new StopWatch("DataQueue.processImageQueues() (no problems)");
         final static StopWatch ProcessImageQueues2   = new StopWatch("DataQueue.processImageQueues() (problems)");
+        final static StopWatch WriteOutput           = new StopWatch("DataQueue.writeOuput()");
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -218,6 +241,49 @@ abstract public class DataQueue {
         StopWatches.AddImageWrapper.addTime();
     }
 
+    // add..........................................................................................
+    /**
+     * Add data to the end of the OutputWrapper queue.
+     * (Usually called from a method in ImageProcessor, but potentially could come from anywhere)
+     * Doesn't directly add to queue, but rather queues (posts) the add operation itself onto the
+     * QueueThread Handler to return from this method ASAP
+     * @param wrapper OutputWrapper containing data to write to disk
+     */
+    public static void add(@NonNull OutputWrapper wrapper) {
+        StopWatches.AddOutputWrapper.start();
+
+        if (GlobalSettings.DEBUG_DISABLE_QUEUE) {
+            Log.e(Thread.currentThread().getName(), "[DISABLED] Filename of data to queue for writing: " + wrapper.getFilename());
+            return;
+        }
+        Log.e(Thread.currentThread().getName(), "Filename of data to queue for writing: " + wrapper.getFilename());
+
+        // Runnable action to add data to OutputWrapper queue using the QueueThread
+        class Add implements Runnable {
+            // Payload
+            private OutputWrapper mWrapper;
+
+            // Constructor
+            private Add(OutputWrapper wrapper) {
+                mWrapper = wrapper;
+            }
+
+            // Action
+            @Override
+            public void run() {
+                mOutputQueue.add(mWrapper);
+            }
+        }
+
+        // Execute Add action on QueueThread when the opportunity arises
+        mHandler.post(new Add(wrapper));
+
+        // Purge output queue on QueueThread when the opportunity arises
+        mHandler.post(PurgeOutputQueue);
+
+        StopWatches.AddOutputWrapper.addTime();
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     // clear........................................................................................
@@ -251,9 +317,10 @@ abstract public class DataQueue {
             resultSize = mCaptureResultQueue.size();
             imageSize = mImageQueue.size();
         }
+        int outputSize = mOutputQueue.size();
 
         StopWatches.IsEmpty.addTime();
-        return (resultSize == 0) && (imageSize == 0);
+        return (resultSize == 0) && (imageSize == 0) && (outputSize == 0);
     }
 
     // logQueueSizes................................................................................
@@ -265,9 +332,10 @@ abstract public class DataQueue {
         synchronized (ACCESS_LOCK) {
             int resultSize = mCaptureResultQueue.size();
             int imageSize  = mImageQueue.size();
+            int outputSize = mOutputQueue.size();
 
-            Log.e(Thread.currentThread().getName(), "Items in queue (metadata, image data) = ("
-            + NumToString.number(resultSize) + ", " + NumToString.number(imageSize) + ")");
+            Log.e(Thread.currentThread().getName(), "Items in queue (metadata, image data, output) = ("
+            + NumToString.number(resultSize) + ", " + NumToString.number(imageSize) + ", " + NumToString.number(outputSize) + ")");
         }
     }
 
@@ -280,6 +348,7 @@ abstract public class DataQueue {
         synchronized (ACCESS_LOCK) {
             String metaString   = "";
             String imageString  = "";
+            String outputString = "";
 
             for (TotalCaptureResult result : mCaptureResultQueue) {
                 Long timestamp = result.get(CaptureResult.SENSOR_TIMESTAMP);
@@ -296,9 +365,14 @@ abstract public class DataQueue {
                 imageString += " " + wrapper.getTimeCode() + " ";
             }
 
+            for (OutputWrapper wrapper : mOutputQueue) {
+                outputString += " " + wrapper.getFilename() + " ";
+            }
+
             String out = " \n\n";
             out += "\tMetadata time-codes: " + metaString + "\n";
             out += "\tImage time-codes:    " + imageString + "\n";
+            out += "\tOutput time-codes:   " + outputString + "\n ";
 
             Log.e(Thread.currentThread().getName(), out);
         }
@@ -312,7 +386,9 @@ abstract public class DataQueue {
         if (isEmpty()) {
             return;
         }
+
         mHandler.post(ProcessNextImage.setPurge());
+        mHandler.post(PurgeOutputQueue);
     }
 
     // Private Class Methods
@@ -486,6 +562,36 @@ abstract public class DataQueue {
             }
 
         }
+    }
+
+    // writeOutput..................................................................................
+    /**
+     * Writes the next data staged in the OutputWrapper queue
+     * @return True if OutputWrapper queue has more data staged for writing, false if queue is empty
+     */
+    private static boolean writeOutput() {
+        StopWatches.WriteOutput.start();
+
+        int queueSize = mOutputQueue.size();
+
+        if (queueSize > 0) {
+            OutputWrapper wrapper = mOutputQueue.remove(0);
+
+            if (GlobalSettings.DEBUG_DISABLE_ALL_SAVING) {
+                Log.e(Thread.currentThread().getName(), "[DISABLED] Writing output filename: " + wrapper.getFilename());
+                return (queueSize != 1);
+            }
+            Log.e(Thread.currentThread().getName(), "Writing output filename: " + wrapper.getFilename());
+
+            // TODO: specify destination, i.e. calibration or subpath
+            StorageMedia.writeInternalStorage(wrapper, null);
+
+            Log.e(Thread.currentThread().getName(), "Output queue remaining: " + Integer.toString(queueSize - 1));
+            StopWatches.WriteOutput.addTime();
+            return (queueSize != 1);
+        }
+
+        return false;
     }
 
 }

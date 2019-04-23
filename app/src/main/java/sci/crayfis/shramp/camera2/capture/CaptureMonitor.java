@@ -221,6 +221,7 @@ final class CaptureMonitor extends CameraCaptureSession.CaptureCallback {
 
             if (First == 0L) {
                 First = timestamp;
+                StorageMedia.newInProgress(Datestamp.getDate());
                 Datestamp.resetElapsedNanos(timestamp);
             }
             else {

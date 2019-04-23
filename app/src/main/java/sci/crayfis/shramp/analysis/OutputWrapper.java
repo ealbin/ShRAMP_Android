@@ -100,17 +100,20 @@ public final class OutputWrapper {
 
     // OutputWrapper................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param filename bla
-     * @param statistics bla
-     * @param Nframes bla
+     * Create an output wrapper for float-type RenderScript Allocation data, e.g. statistics
+     * @param filename Filename for data (no path, just filename)
+     * @param statistics Float-type RenderScript Allocation data, e.g. mean, stddev, significance, etc
+     * @param Nframes The number of frames that went into making this data,
+     *                e.g. significance would be 1, mean and stddev would be 1000 for example
+     * @param temperature The approximate temperature when the data was taken in Celsius
      */
-    OutputWrapper(@NonNull String filename, @NonNull Allocation statistics, long Nframes) {
+    OutputWrapper(@NonNull String filename, @NonNull Allocation statistics, long Nframes, float temperature) {
         mFilename = filename;
         mByteBuffer = ByteBuffer.allocate(mStatisticsBytes);
         mByteBuffer.putInt(mRows);
         mByteBuffer.putInt(mColumns);
         mByteBuffer.putLong(Nframes);
+        mByteBuffer.putFloat(temperature);
         synchronized (CACHE_LOCK) {
             statistics.copyTo(mFloatCache);
             mByteBuffer.asFloatBuffer().put(mFloatCache);
@@ -119,18 +122,23 @@ public final class OutputWrapper {
 
     // OutputWrapper................................................................................
     /**
-     * TODO: description, comments and logging
-     * @param filename bla
-     * @param wrapper bla
-     * @param exposure bla
+     * Create an output wrapper for 8 or 16-bit image data
+     * @param filename Filename for data (no path, just filename)
+     * @param wrapper ImageWrapper containing image data
+     * @param exposure (Optional) Sensor exposure in nanoseconds if available, if null defaults to 0
+     * @param temperature Temperature data was taken at in Celsius
      */
-    OutputWrapper(@NonNull String filename, @NonNull ImageWrapper wrapper, @Nullable Long exposure) {
+    OutputWrapper(@NonNull String filename, @NonNull ImageWrapper wrapper, @Nullable Long exposure, float temperature) {
         mFilename = filename;
         mByteBuffer = ByteBuffer.allocate(mSensorBytes);
         mByteBuffer.put(mBitsPerPixel);
         mByteBuffer.putInt(mRows);
         mByteBuffer.putInt(mColumns);
+        if (exposure == null) {
+            exposure = 0L;
+        }
         mByteBuffer.putLong(exposure);
+        mByteBuffer.putFloat(temperature);
         if (ImageWrapper.is8bitData()) {
             mByteBuffer.put(wrapper.get8bitData());
         }
@@ -183,12 +191,16 @@ public final class OutputWrapper {
         // Frames count
         mStatisticsBytes += Long.SIZE / 8;
 
-        mSensorHeader = "Byte order (big endian): \t Bits-per-pixel \t Number of Rows \t Number of Columns \t Sensor Exposure [ns] \t Pixel data\n";
-        mSensorHeader = "Number of bytes: \t " + ByteSize + " \t " + IntSize + " \t " + IntSize + " \t " + LongSize + " \t "
+        // Temperature
+        mSensorBytes     += Float.SIZE / 8;
+        mStatisticsBytes += Float.SIZE / 8;
+
+        mSensorHeader = "Byte order (big endian): \t Bits-per-pixel \t Number of Rows \t Number of Columns \t Sensor Exposure [ns] \t Temperature [C] \t Pixel data\n";
+        mSensorHeader = "Number of bytes: \t " + ByteSize + " \t " + IntSize + " \t " + IntSize + " \t " + LongSize + " \t " + FloatSize + "\t"
                 + Byte.toString(mBitsPerPixel) + "x" + Integer.toString(Npixels) + "\n";
 
-        mStatisticsHeader = "Byte order (big endian): \t Number of Rows \t Number of Columns \t Number of Stacked Images \t PostProcessing\n";
-        mStatisticsHeader = "Number of bytes: \t " + IntSize + " \t " + IntSize + " \t " + LongSize + " \t "
+        mStatisticsHeader = "Byte order (big endian): \t Number of Rows \t Number of Columns \t Number of Stacked Images \t Temperature [C] \t PostProcessing\n";
+        mStatisticsHeader = "Number of bytes: \t " + IntSize + " \t " + IntSize + " \t " + LongSize + " \t " + FloatSize + "\t"
                 + FloatSize + "x" + Integer.toString(Npixels) + "\n";
     }
 
