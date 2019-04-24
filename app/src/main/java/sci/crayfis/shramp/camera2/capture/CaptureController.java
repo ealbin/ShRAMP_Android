@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 20 April 2019
+ * @updated: 24 April 2019
  */
 
 package sci.crayfis.shramp.camera2.capture;
@@ -29,6 +29,8 @@ import android.util.Log;
 import android.util.Range;
 import android.view.Surface;
 
+import org.jetbrains.annotations.Contract;
+
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -36,7 +38,6 @@ import sci.crayfis.shramp.MasterController;
 import sci.crayfis.shramp.GlobalSettings;
 import sci.crayfis.shramp.analysis.AnalysisController;
 import sci.crayfis.shramp.analysis.DataQueue;
-import sci.crayfis.shramp.analysis.PrintAllocations;
 import sci.crayfis.shramp.battery.BatteryController;
 import sci.crayfis.shramp.camera2.CameraController;
 import sci.crayfis.shramp.camera2.requests.RequestMaker;
@@ -68,7 +69,8 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
         CALIBRATION_HOT_FAST,   // Perform a calibration run
         CALIBRATION_HOT_SLOW,   // Perform a calibration run
         OPTIMIZE_DUTY_CYCLE,    // Discover fps for optimum duty cycle
-        DATA                    // Perform a data run
+        DATA,                   // Perform a data run
+        TASK                   // For tasks between runs
     }
 
     // THREAD_NAME..................................................................................
@@ -191,10 +193,23 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
                     Log.e(Thread.currentThread().getName(), " \n\n\t\t\t >> STARTING DATA SESSION <<\n ");
                     break;
                 }
+                case TASK: {
+                    Log.e(Thread.currentThread().getName(), " \n\n\t\t\t >> STARTING TASK SESSION <<\n ");
+                    break;
+                }
             }
 
             if (configuration.Mode == Mode.COOLDOWN) {
                 coolDown(configuration.TemperatureLimit, configuration.AttemptLimit);
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        renewSession();
+                    }
+                });
+            }
+            else if (configuration.Mode == Mode.TASK) {
+                mHandler.post(configuration.Task);
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
@@ -210,6 +225,14 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
                 }
                 else {
                     AnalysisController.disableSignificance();
+                }
+                if (configuration.Mode == Mode.DATA && configuration.TargetExposure == null) {
+                    if (mOptimalExposure == null) {
+                        configuration.TargetExposure = CaptureConfiguration.EXPOSURE_BOUNDS.getLower() * 2;
+                    }
+                    else {
+                        configuration.TargetExposure = mOptimalExposure;
+                    }
                 }
                 captureRequest = buildCaptureRequest();
                 captureMonitor = new CaptureMonitor(configuration.FrameLimit, configuration.TemperatureLimit);
@@ -364,6 +387,13 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
         CameraController.createCaptureSession(mSession.surfaceList, mInstance, mHandler);
     }
 
+    // isOptimalExposureSet.........................................................................
+    /**
+     * @return True if optimal exposure is known, false if not
+     */
+    @Contract(pure = true)
+    public static boolean isOptimalExposureSet() { return mOptimalExposure != null; }
+
     // Public Overriding Instance Methods
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
@@ -455,11 +485,12 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
         mSession.startCapture();
     }
 
-    // isOptimalExposureSet.........................................................................
+    // getOptimalExposure...........................................................................
     /**
      * @return Optimal exposure for minimal dead time, null if optimize duty cycle session has not been run
      */
     @Nullable
+    @Contract(pure = true)
     static Long getOptimalExposure() {
         return mOptimalExposure;
     }
@@ -498,7 +529,7 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
                 return;
             }
 
-            if ( (averageDuty >= .999)
+            if ( (averageDuty >= GlobalSettings.OPTIMAL_DUTY_THRESHOLD)
                     || (mode == CameraMetadata.CONTROL_AE_MODE_ON && mSession.attemptCount > 3)) {
                 Log.e(Thread.currentThread().getName(), " \n\n\t\t>> Ending Attempts Early, Goals Met <<\n ");
                 Log.e(Thread.currentThread().getName(), " \n" + StopWatch.getLabeledPerformances());

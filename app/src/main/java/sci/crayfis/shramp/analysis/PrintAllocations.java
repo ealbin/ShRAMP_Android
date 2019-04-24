@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 20 April 2019
+ * @updated: 24 April 2019
  */
 
 package sci.crayfis.shramp.analysis;
@@ -20,11 +20,10 @@ import android.annotation.TargetApi;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-import sci.crayfis.shramp.util.HeapMemory;
 import sci.crayfis.shramp.util.NumToString;
 
 /**
- * TODO: remove
+ * TODO: remove this whole file once I'm confident everything is working as it should
  * Used for debugging, i.e. displaying contents of Allocations
  */
 @TargetApi(21)

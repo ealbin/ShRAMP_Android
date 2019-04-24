@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 20 April 2019
+ * @updated: 24 April 2019
  */
 
 package sci.crayfis.shramp.analysis;
@@ -41,7 +41,6 @@ import sci.crayfis.shramp.util.NumToString;
 import sci.crayfis.shramp.util.StopWatch;
 import sci.crayfis.shramp.util.StorageMedia;
 
-import static sci.crayfis.shramp.battery.BatteryController.getCurrentTemperature;
 
 /**
  * Oversees both live and post image processing with RenderScript

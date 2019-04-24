@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 20 April 2019
+ * @updated: 24 April 2019
  */
 
 package sci.crayfis.shramp;
@@ -211,7 +211,7 @@ public final class MaineShRAMP extends Activity { //implements AsyncResponse {
     }
 
 
-    // TODO: SSH stuff works, but isn't used at this moment as I work on the StorageMeda details
+    // TODO: SSH stuff works, but isn't used at this moment as I work on getting stats and cuts working right
     // Also, probably going to to move this out of MaineShRAMP..
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 

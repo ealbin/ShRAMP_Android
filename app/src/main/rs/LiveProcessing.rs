@@ -11,7 +11,7 @@
 // @author: Eric Albin
 // @email:  Eric.K.Albin@gmail.com
 //
-// @updated: 20 April 2019
+// @updated: 24 April 2019
 //
 
 #pragma version(1)
@@ -86,19 +86,20 @@ void RS_KERNEL process8bitData(uchar val, uint32_t x, uint32_t y) {
         // Disabled
         significance = 0.f;
     }
-    else {
-        // Enabled                                           this is the only difference
+    else { // Enabled
+        //                                                   this is the only difference
         float mean   = rsGetElementAt_float(gMean,   x, y) * gMax8bitValue;
         float stddev = rsGetElementAt_float(gStdDev, x, y) * gMax8bitValue;
 
         if (stddev == 0.f) {
-            // avoid 0./0.
+            // positive infinity, avoid 0./0.
             significance = 1./0.;
         }
         else {
             significance = ( ((float) val) - mean ) / stddev;
 
-            if (significance >= gSignificanceThreshold) {
+            uchar mask = rsGetElementAt_uchar(gMask, x, y);
+            if (mask == 1 && significance >= gSignificanceThreshold) {
                 long count = rsGetElementAt_long(gCountAboveThreshold, 0, 0);
                 rsSetElementAt_long(gCountAboveThreshold, count + 1, 0, 0);
             }
@@ -131,19 +132,20 @@ void RS_KERNEL process16bitData(ushort val, uint32_t x, uint32_t y) {
         // Disabled
         significance = 0.f;
     }
-    else {
-        // Enabled                                           this is the only difference
+    else { // Enabled
+        //                                                   this is the only difference
         float mean   = rsGetElementAt_float(gMean,   x, y) * gMax16bitValue;
         float stddev = rsGetElementAt_float(gStdDev, x, y) * gMax16bitValue;
 
         if (stddev == 0.f) {
-            // avoid 0./0.
+            // positive infinity, avoid 0./0.
             significance = 1./0.;
         }
         else {
             significance = ( ((float) val) - mean ) / stddev;
 
-            if (significance >= gSignificanceThreshold) {
+            uchar mask = rsGetElementAt_uchar(gMask, x, y);
+            if (mask == 1 && significance >= gSignificanceThreshold) {
                 long count = rsGetElementAt_long(gCountAboveThreshold, 0, 0);
                 rsSetElementAt_long(gCountAboveThreshold, count + 1, 0, 0);
             }

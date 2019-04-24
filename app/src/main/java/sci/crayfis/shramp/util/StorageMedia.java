@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 20 April 2019
+ * @updated: 24 April 2019
  */
 
 package sci.crayfis.shramp.util;
@@ -26,7 +26,6 @@ import android.util.Log;
 import org.jetbrains.annotations.Contract;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
@@ -49,6 +48,7 @@ import sci.crayfis.shramp.analysis.OutputWrapper;
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //                         (TODO)      UNDER CONSTRUCTION      (TODO)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+// Mostly complete, I think I'll have this operate the SSH interface in the future ..
 
 
 /**
@@ -90,8 +90,16 @@ abstract public class StorageMedia {
 
         // Action
         public void run() {
+
+            if (GlobalSettings.DEBUG_DISABLE_ALL_SAVING) {
+                Log.e(Thread.currentThread().getName(), " \n\n\t\t\t>> WRITING DISABLED FOR: " + mPath
+                        + File.separator + mOutputWrapper.getFilename() + " <<\n ");
+                mBacklog.decrementAndGet();
+                return;
+            }
+
             Log.e(Thread.currentThread().getName(), " \n\n\t\t\t>> WRITING: " + mPath
-                    + File.pathSeparator + mOutputWrapper.getFilename() + " <<\n ");
+                    + File.separator + mOutputWrapper.getFilename() + " <<\n ");
 
             // Check for enough disk space
             File file = new File(mPath);
@@ -108,7 +116,7 @@ abstract public class StorageMedia {
 
             OutputStream outputStream = null;
             try {
-                outputStream = new FileOutputStream(mPath + File.pathSeparator + mOutputWrapper.getFilename());
+                outputStream = new FileOutputStream(mPath + File.separator + mOutputWrapper.getFilename());
                 outputStream.write(mOutputWrapper.getByteBuffer().array());
             }
             catch (FileNotFoundException e) {
@@ -142,7 +150,7 @@ abstract public class StorageMedia {
     // Path.........................................................................................
     // Handy absolute path links
     abstract private static class Path {
-        static final String Home = Environment.getExternalStorageDirectory() + File.pathSeparator + "ShRAMP";
+        static final String Home = Environment.getExternalStorageDirectory() + File.separator + "ShRAMP";
         static String Transmittable;
         static String InProgress;
         static String Calibrations;
@@ -203,7 +211,7 @@ abstract public class StorageMedia {
             path = Path.Home;
         }
         else if (!name.contains(Path.Home)) {
-            path = Path.Home + File.pathSeparator + name;
+            path = Path.Home + File.separator + name;
         }
         else {
             path = name;
@@ -254,7 +262,7 @@ abstract public class StorageMedia {
             path = Path.Home;
         }
         else if (!name.contains(Path.Home)) {
-            path = Path.Home + File.pathSeparator + name;
+            path = Path.Home + File.separator + name;
         }
         else {
             path = name;
@@ -288,7 +296,7 @@ abstract public class StorageMedia {
             path = Path.Home;
         }
         else if (!name.contains(Path.Home)) {
-            path = Path.Home + File.pathSeparator + name;
+            path = Path.Home + File.separator + name;
         }
         else {
             path = name;
@@ -318,7 +326,7 @@ abstract public class StorageMedia {
             path = Path.Home;
         }
         else if (!startDirectory.contains(Path.Home)) {
-            path = Path.Home + File.pathSeparator + startDirectory;
+            path = Path.Home + File.separator + startDirectory;
         }
         else {
             path = startDirectory;
@@ -352,10 +360,10 @@ abstract public class StorageMedia {
     public static void newInProgress(@Nullable String name) {
         String path;
         if (name == null) {
-            path = Path.InProgress + File.pathSeparator + Datestamp.getDate();
+            path = Path.InProgress + File.separator + Datestamp.getDate();
         }
         else if (!name.contains(Path.InProgress)) {
-            path = Path.InProgress + File.pathSeparator + name;
+            path = Path.InProgress + File.separator + name;
         }
         else {
             path = name;
@@ -416,13 +424,13 @@ abstract public class StorageMedia {
             outpath = Path.WorkingDirectory;
         }
         else if (!path.contains(Path.Home)) {
-            outpath = Path.Home + File.pathSeparator + path;
+            outpath = Path.Home + File.separator + path;
         }
         else {
             outpath = path;
         }
 
-        File outfile = new File(outpath + File.pathSeparator + wrapper.getFilename());
+        File outfile = new File(outpath + File.separator + wrapper.getFilename());
         if (outfile.exists()) {
             Log.e(Thread.currentThread().getName(), "WARNING: " + outfile.getAbsolutePath() + " already exists and will be OVERWRITTEN");
         }
@@ -431,20 +439,25 @@ abstract public class StorageMedia {
     }
 
     /**
-     * @param head options include "cold_fast", "cold_slow", "hot_fast" and "hot_slow"
-     * @param extension options include "mean" or "stddev"
+     * @param head options include "cold_fast", "cold_slow", "hot_fast", "hot_slow",
+     *             "mean", "stddev", "stderr", and "mask"
+     * @param extension options include "mean", "stddev", "stderr", and "mask"
      * @return Returns the absolute path of the most recent calibration file matching the parameters,
      *         or null if one cannot be found
      */
+    // TODO: (PRIORITY) double check it's sorting correctly
     @Nullable
     @Contract(pure = true)
     public static String findRecentCalibration(@NonNull String head, @NonNull String extension) {
-        if (!head.equals("cold_fast") && !head.equals("cold_slow") && !head.equals("hot_fast") && !head.equals("hot_slow")) {
+        if (!head.equals("cold_fast") && !head.equals("cold_slow") && !head.equals("hot_fast")
+                && !head.equals("hot_slow") && !head.equals("mean") && !head.equals("stddev")
+                && !head.equals("stderr") && !head.equals("mask")) {
             Log.e(Thread.currentThread().getName(), "Unable to find calibration by this heading: " + head);
             return null;
         }
 
-        if (!extension.equals(GlobalSettings.MEAN_FILE) && !extension.equals(GlobalSettings.STDDEV_FILE)) {
+        if (!extension.equals(GlobalSettings.MEAN_FILE) && !extension.equals(GlobalSettings.STDDEV_FILE)
+                && !extension.equals(GlobalSettings.STDERR_FILE) && !extension.equals(GlobalSettings.MASK_FILE)) {
             Log.e(Thread.currentThread().getName(), "Unable to find calibration by this extension: " + extension);
             return null;
         }
@@ -497,7 +510,11 @@ abstract public class StorageMedia {
         List<String> sortedFiles = ArrayToList.convert(calibrations.list(new CalibrationFilter(head, extension)));
         Collections.sort( sortedFiles, new LatestDateFirst(head, extension) );
 
-        File foundFile = new File(sortedFiles.get(0));
+        if (sortedFiles.size() == 0) {
+            return null;
+        }
+
+        File foundFile = new File(Path.Calibrations + File.separator + sortedFiles.get(0));
         return foundFile.getAbsolutePath();
     }
 

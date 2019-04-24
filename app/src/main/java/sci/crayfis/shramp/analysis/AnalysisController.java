@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 20 April 2019
+ * @updated: 24 April 2019
  */
 
 package sci.crayfis.shramp.analysis;
@@ -36,12 +36,13 @@ import sci.crayfis.shramp.MasterController;
 import sci.crayfis.shramp.ScriptC_PostProcessing;
 import sci.crayfis.shramp.ScriptC_LiveProcessing;
 import sci.crayfis.shramp.camera2.CameraController;
-import sci.crayfis.shramp.camera2.capture.CaptureController;
 import sci.crayfis.shramp.util.NumToString;
+import sci.crayfis.shramp.util.StorageMedia;
 
 /**
  * Public interface to the analysis (ImageProcessor) code
- * TODO: char is 16 bits in Java and 8 bits in RenderScript!  Double check stuff
+ * TODO: char is 16 bits in Java and 8 bits in RenderScript!  Double check stuff.. checks out
+ * TODO: triple check it
  */
 @TargetApi(21)
 public abstract class AnalysisController {
@@ -59,6 +60,14 @@ public abstract class AnalysisController {
     // mRS..........................................................................................
     // System RenderScript object
     private static RenderScript mRS;
+
+    // mLiveProcessing..............................................................................
+    // Reference to LiveProcessing.rs RenderScript
+    private static ScriptC_LiveProcessing mLiveProcessing;
+
+    // mPostProcessing..............................................................................
+    // Reference to PostProcessing.rs RenderScript
+    private static ScriptC_PostProcessing mPostProcessing;
 
     // mUCharType...................................................................................
     // RenderScript Allocation unsigned char type [width x height pixels]
@@ -114,10 +123,10 @@ public abstract class AnalysisController {
                                             GlobalSettings.RENDER_SCRIPT_FLAGS);
         mRS.setPriority(GlobalSettings.RENDER_SCRIPT_PRIORITY);
 
-        ScriptC_LiveProcessing liveProcessing = new ScriptC_LiveProcessing(mRS);
-        ScriptC_PostProcessing postProcessing = new ScriptC_PostProcessing(mRS);
-        ImageProcessor.setLiveProcessor(liveProcessing);
-        ImageProcessor.setPostProcessor(postProcessing);
+        mLiveProcessing = new ScriptC_LiveProcessing(mRS);
+        mPostProcessing = new ScriptC_PostProcessing(mRS);
+        ImageProcessor.setLiveProcessor(mLiveProcessing);
+        ImageProcessor.setPostProcessor(mPostProcessing);
 
         Element ucharElement  = Element.U8(mRS);
         Element ushortElement = Element.U16(mRS);
@@ -181,27 +190,83 @@ public abstract class AnalysisController {
         // TODO: maybe make it so it can be set at the same time?
         OutputWrapper.configure();
 
-        // TODO: Check for existing calibrations
-        // if none, set need calibration flag and load empty Allocations into statistics
-        mNeedsCalibration = true;
-
-        Allocation mean   = newFloatAllocation();
-        Allocation stddev = newFloatAllocation();
-        Allocation stderr = newFloatAllocation();
-        Allocation mask   = newUCharAllocation();
-
-        liveProcessing.forEach_zeroFloatAllocation(mean);
-        liveProcessing.forEach_oneFloatAllocation(stddev);
-        liveProcessing.forEach_zeroFloatAllocation(stderr);
-        liveProcessing.forEach_oneCharAllocation(mask);
-
-        ImageProcessor.setStatistics(mean, stddev, stderr, mask);
+        importLatestCalibration();
 
         ImageProcessor.setSignificanceAllocation(newFloatAllocation());
         ImageProcessor.setCountAboveThresholdAllocation(newSimpleLongAllocation());
         ImageProcessor.setAnomalousStdDevAllocation(newSimpleLongAllocation());
         ImageProcessor.disableSignificance();
         ImageProcessor.resetTotals();
+    }
+
+    // importLatestCalibration......................................................................
+    /**
+     * Check for existing calibration data and import it
+     */
+    public static void importLatestCalibration() {
+
+        String meanPath   = StorageMedia.findRecentCalibration("mean",   GlobalSettings.MEAN_FILE);
+        String stddevPath = StorageMedia.findRecentCalibration("stddev", GlobalSettings.STDDEV_FILE);
+        String stderrPath = StorageMedia.findRecentCalibration("stderr", GlobalSettings.STDERR_FILE);
+        String maskPath   = StorageMedia.findRecentCalibration("mask",   GlobalSettings.MASK_FILE);
+
+        Allocation mean   = newFloatAllocation();
+        Allocation stddev = newFloatAllocation();
+        Allocation stderr = newFloatAllocation();
+        Allocation mask   = newUCharAllocation();
+
+        boolean hasMean = false;
+        if (meanPath != null) {
+            mean.copyFrom( new InputWrapper(meanPath).getStatisticsData() );
+            hasMean = true;
+        }
+        else {
+            mLiveProcessing.forEach_zeroFloatAllocation(mean);
+        }
+
+        boolean hasStdDev = false;
+        if (stddevPath != null) {
+            stddev.copyFrom( new InputWrapper(stddevPath).getStatisticsData() );
+            hasStdDev = true;
+        }
+        else {
+            mLiveProcessing.forEach_oneFloatAllocation(stddev);
+        }
+
+        boolean hasStdErr = false;
+        if (stderrPath != null) {
+            stderr.copyFrom( new InputWrapper(stderrPath).getStatisticsData() );
+            hasStdErr = true;
+        }
+        else {
+            mLiveProcessing.forEach_zeroFloatAllocation(stderr);
+        }
+
+        boolean hasMask = false;
+        if (maskPath != null) {
+            mask.copyFrom( new InputWrapper(maskPath).getMaskData() );
+            hasMask = true;
+        }
+        else {
+            mLiveProcessing.forEach_oneCharAllocation(mask);
+        }
+
+        // Doesn't formally need stderr
+        mNeedsCalibration = !(hasMean && hasStdDev && hasMask);
+        ImageProcessor.setStatistics(mean, stddev, stderr, mask);
+        ImageProcessor.resetTotals();
+    }
+
+    // makePixelMask................................................................................
+    /**
+     * Loads most recent calibration files from ShRAMP/Calibrations, and generates/saves a pixel mask
+     * of what pixels should be used in significance computation.
+     * Also computes/saves an estimate for the mean, stddev and stderr at 10 fps and 35 Celsius.
+     * Note: assumes "hot" is hotter than "cold" and "fast" is faster than "slow"
+     * TODO: return true if successful, false if not
+     */
+    public static void makePixelMask() {
+        ApplyCuts.makePixelMask();
     }
 
     // needsCalibration.............................................................................
@@ -249,10 +314,12 @@ public abstract class AnalysisController {
 
         double probabilityThreshold = n_chanceAboveThreshold / n_samples;
 
-        double threshold = Math.sqrt(2.) * Erf.erfInv(1. - 2. * probabilityThreshold);
+        // TODO: threshold still a work in progress
+        //double threshold = Math.sqrt(2.) * Erf.erfInv(1. - 2. * probabilityThreshold);
+        double threshold = Math.sqrt(2.) * Erf.erfInv(1. - probabilityThreshold) + 1.;
 
         // TODO: remove in the future
-        threshold += mThresholdOffset;
+        //threshold += mThresholdOffset;
 
         ImageProcessor.setSignificanceThreshold((float) threshold);
         Log.e(Thread.currentThread().getName(), "Significance threshold level: "

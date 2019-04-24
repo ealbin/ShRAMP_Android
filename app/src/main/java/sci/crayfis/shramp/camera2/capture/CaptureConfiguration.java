@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 20 April 2019
+ * @updated: 24 April 2019
  */
 
 package sci.crayfis.shramp.camera2.capture;
@@ -23,7 +23,7 @@ import android.util.Range;
 
 
 /**
- * Object representing a captureMonitor sequence to perform
+ * Object representing a capture sequence to perform
  */
 @TargetApi(21)
 public class CaptureConfiguration {
@@ -40,37 +40,48 @@ public class CaptureConfiguration {
 
     private static final Range<Double>  TEMPERATURE_BOUNDS = new Range<>(0., 50.);
     private static final Range<Integer> FRAME_BOUNDS       = new Range<>(0, 2000);
-    private static final Range<Long>    EXPOSURE_BOUNDS    = new Range<>(FPS_30, FPS_05);
     private static final Range<Integer> ATTEMPT_BOUNDS     = new Range<>(1, 1000);
+
+    // Public Class Constant
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+    // TODO: consider adding fps to the OutputWrapper file header
+    public static final Range<Long> EXPOSURE_BOUNDS = new Range<>(FPS_30, FPS_05);
 
     // Package-Private Instance Fields
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // Mode.........................................................................................
-    // captureMonitor mode category for this captureMonitor sequence
+    // capture mode category for this capture sequence
     CaptureController.Mode Mode;
 
     // TargetExposure...............................................................................
     // Requested sensor exposure (in nanoseconds), depending on the ability of the device the
-    // actual exposure used may differ from that requested
-    long TargetExposure;
+    // actual exposure used may differ from that requested, if null, CaptureController will attempt
+    // to set it to the optimal exposure that minimizes dead time if possible, otherwise it will
+    // be set at EXPOSURE_BOUNDS.getLower() * 2, i.e. half the fps of maxium (usually 15 fps)
+    Long TargetExposure;
 
     // FrameLimit...................................................................................
     // Request this number of captured frames before ending the session
     int FrameLimit;
 
     // TemperatureLimit.............................................................................
-    // If this temperature (in Celsius) is exceeded, captureMonitor will end
+    // If this temperature (in Celsius) is exceeded, capture will end
     double TemperatureLimit;
 
     // AttemptLimit.................................................................................
-    // Be it attempts at matching the duty cycle, or just repeating the captureMonitor sequence,
+    // Be it attempts at matching the duty cycle, or just repeating the capture sequence,
     // terminate this sequence once attempt limit is met
     int AttemptLimit;
 
     // EnableSignificance...........................................................................
     // Only applicable for data sessions, enables computation of pixel value significance
     boolean EnableSignificance;
+
+    // Task.........................................................................................
+    // For any odd-ball tasks to be done between capture sessions
+    Runnable Task;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -90,8 +101,8 @@ public class CaptureConfiguration {
      * Create a new WARMUP session.
      * @param temperatureLimit Maximum temperature to end the session
      * @param attemptLimit (Optional) Attempts to heat up (default is 1)
-     * @param frameLimit (Optional) End captureMonitor after this many frames (default is 1000)
-     * @return A captureMonitor configuration object ready for use
+     * @param frameLimit (Optional) End capture after this many frames (default is 1000)
+     * @return A capture configuration object ready for use
      */
     @NonNull
     public static CaptureConfiguration newWarmUpSession(double temperatureLimit,
@@ -105,6 +116,7 @@ public class CaptureConfiguration {
         instance.TemperatureLimit   = setTemperatureLimit(temperatureLimit);
         instance.AttemptLimit       = setAttemptLimit(attemptLimit);
         instance.EnableSignificance = false;
+        instance.Task               = null;
 
         return instance;
     }
@@ -114,7 +126,7 @@ public class CaptureConfiguration {
      * Create a new COOLDOWN session
      * @param temperatureLimit Minimum temperature to end the session
      * @param attemptLimit (Optional) Attempts to cool down (default is 1) [minutes]
-     * @return A captureMonitor configuration object ready for use
+     * @return A capture configuration object ready for use
      */
     @NonNull
     public static CaptureConfiguration newCoolDownSession(double temperatureLimit,
@@ -122,11 +134,12 @@ public class CaptureConfiguration {
         CaptureConfiguration instance = new CaptureConfiguration();
         instance.Mode = CaptureController.Mode.COOLDOWN;
 
-        instance.TargetExposure     = 0;
+        instance.TargetExposure     = 0L;
         instance.FrameLimit         = 0;
         instance.TemperatureLimit   = setTemperatureLimit(temperatureLimit);
         instance.AttemptLimit       = setAttemptLimit(attemptLimit);
         instance.EnableSignificance = false;
+        instance.Task               = null;
 
         return instance;
     }
@@ -136,7 +149,7 @@ public class CaptureConfiguration {
      * Create a new CALIBRATION_COLD_FAST session.
      * Exposure is automatically set to fastest fps, frame limit is the default (1000),
      * temperature limit is 30 Celsius and it is a single attempt.
-     * @return A captureMonitor configuration object ready for use
+     * @return A capture configuration object ready for use
      */
     @NonNull
     public static CaptureConfiguration newColdFastCalibration() {
@@ -148,6 +161,7 @@ public class CaptureConfiguration {
         instance.TemperatureLimit   = DEFAULT_TEMPERATURE_LIMIT;
         instance.AttemptLimit       = 1;
         instance.EnableSignificance = false;
+        instance.Task               = null;
 
         return instance;
     }
@@ -157,7 +171,7 @@ public class CaptureConfiguration {
      * Create a new CALIBRATION_COLD_SLOW session.
      * Exposure is automatically set to slowest fps, frame limit is the default (1000),
      * temperature limit is 30 Celsius and it is a single attempt.
-     * @return A captureMonitor configuration object ready for use
+     * @return A capture configuration object ready for use
      */
     @NonNull
     public static CaptureConfiguration newColdSlowCalibration() {
@@ -169,6 +183,7 @@ public class CaptureConfiguration {
         instance.TemperatureLimit   = DEFAULT_TEMPERATURE_LIMIT;
         instance.AttemptLimit       = 1;
         instance.EnableSignificance = false;
+        instance.Task               = null;
 
         return instance;
     }
@@ -178,7 +193,7 @@ public class CaptureConfiguration {
      * Create a new CALIBRATION_HOT_FAST session.
      * Exposure is automatically set to fastest fps, frame limit is the default (1000),
      * temperature limit is 50 Celsius and it is a single attempt.
-     * @return A captureMonitor configuration object ready for use
+     * @return A capture configuration object ready for use
      */
     @NonNull
     public static CaptureConfiguration newHotFastCalibration() {
@@ -190,6 +205,7 @@ public class CaptureConfiguration {
         instance.TemperatureLimit   = TEMPERATURE_BOUNDS.getUpper();
         instance.AttemptLimit       = 1;
         instance.EnableSignificance = false;
+        instance.Task               = null;
 
         return instance;
     }
@@ -199,7 +215,7 @@ public class CaptureConfiguration {
      * Create a new CALIBRATION_HOT_SLOW session.
      * Exposure is automatically set to slowest fps, frame limit is the default (1000),
      * temperature limit is 50 Celsius and it is a single attempt.
-     * @return A captureMonitor configuration object ready for use
+     * @return A capture configuration object ready for use
      */
     @NonNull
     public static CaptureConfiguration newHotSlowCalibration() {
@@ -211,6 +227,7 @@ public class CaptureConfiguration {
         instance.TemperatureLimit   = TEMPERATURE_BOUNDS.getUpper();
         instance.AttemptLimit       = 1;
         instance.EnableSignificance = false;
+        instance.Task               = null;
 
         return instance;
     }
@@ -221,7 +238,7 @@ public class CaptureConfiguration {
      * Discovers sensor exposure / frame rate that maximizes the duty cycle between
      * exposure time and dead time (not possible for devices that do not support manual control)
      * @param temperatureLimit (Optional) Maximum temperature to end the session (default is 40 C)
-     * @return A captureMonitor configuration object ready for use
+     * @return A capture configuration object ready for use
      */
     @NonNull
     public static CaptureConfiguration newOptimizationSession(@Nullable Double temperatureLimit) {
@@ -233,6 +250,7 @@ public class CaptureConfiguration {
         instance.TemperatureLimit   = setTemperatureLimit(temperatureLimit);
         instance.AttemptLimit       = 10;
         instance.EnableSignificance = false;
+        instance.Task               = null;
 
         return instance;
     }
@@ -240,12 +258,12 @@ public class CaptureConfiguration {
     // newDataSession...............................................................................
     /**
      * Create a new DATA session
-     * @param frameLimit End captureMonitor after this many frames
+     * @param frameLimit End capture after this many frames
      * @param targetExposure (Optional) Desired sensor exposure in nanoseconds (default is optimum fps)
      * @param temperatureLimit (Optional) Maximum temperature to end the session (default is 40 C)
      * @param attemptLimit (Optional) Repeat this many times (default is 1)
      * @param enableSignificance (Optional) Enables statistical significance (default is true)
-     * @return A captureMonitor configuration object ready for use
+     * @return A capture configuration object ready for use
      */
     @NonNull
     public static CaptureConfiguration newDataSession(int frameLimit,
@@ -260,6 +278,7 @@ public class CaptureConfiguration {
         instance.FrameLimit       = setFrameLimit(frameLimit);
         instance.TemperatureLimit = setTemperatureLimit(temperatureLimit);
         instance.AttemptLimit     = setAttemptLimit(attemptLimit);
+        instance.Task             = null;
 
         if (enableSignificance == null) {
             instance.EnableSignificance = true;
@@ -267,6 +286,26 @@ public class CaptureConfiguration {
         else {
             instance.EnableSignificance = enableSignificance;
         }
+
+        return instance;
+    }
+
+    // newTaskSession...............................................................................
+    /**
+     * Create a new TASK session
+     * @param task A Runnable to perform a task between sessions
+     * @return A capture configuration object ready for use
+     */
+    public static CaptureConfiguration newTaskSession(Runnable task) {
+        CaptureConfiguration instance = new CaptureConfiguration();
+        instance.Mode = CaptureController.Mode.TASK;
+
+        instance.FrameLimit         = 0;
+        instance.TargetExposure     = setTargetExposure(null);
+        instance.TemperatureLimit   = setTemperatureLimit(null);
+        instance.AttemptLimit       = 0;
+        instance.EnableSignificance = false;
+        instance.Task               = task;
 
         return instance;
     }
@@ -281,13 +320,10 @@ public class CaptureConfiguration {
      * @return Default is optimized duty fps if available, longest exposure (5 FPS) if not,
      *         otherwise clipped between EXPOSURE_BOUNDS low and high
      */
-    private static long setTargetExposure(@Nullable Long targetExposure) {
+    @Nullable
+    private static Long setTargetExposure(@Nullable Long targetExposure) {
         if (targetExposure == null) {
-            Long optimalExposure = CaptureController.getOptimalExposure();
-            if (optimalExposure == null) {
-                return EXPOSURE_BOUNDS.getUpper();
-            }
-            return optimalExposure;
+            return null;
         }
 
         if (targetExposure > EXPOSURE_BOUNDS.getUpper()) {

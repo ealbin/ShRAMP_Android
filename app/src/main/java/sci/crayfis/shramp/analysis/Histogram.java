@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 20 April 2019
+ * @updated: 24 April 2019
  */
 
 package sci.crayfis.shramp.analysis;
@@ -96,10 +96,12 @@ public class Histogram {
       if (bin == -1) {
           mUnderflow++;
       }
-      if (bin == mNbins) {
+      else if (bin == mNbins) {
           mOverflow++;
       }
-      mValues[bin]++;
+      else {
+          mValues[bin]++;
+      }
       return bin;
     }
 
@@ -168,7 +170,7 @@ public class Histogram {
 
     // getMaxStdDev.................................................................................
     /**
-     * @return The standard deviation surrounding the max bin
+     * @return The standard deviation immediately surrounding the max bin (+/- 10 pixel values)
      */
     public double getMaxStdDev() {
         int delta   = 10;
@@ -176,12 +178,14 @@ public class Histogram {
         int lowBin  = Math.max(0, maxBin - delta);
         int highbin = Math.min(mNbins - 1, maxBin + delta);
 
-        int maxValue = getValue(maxBin);
+        int N = 0;
         double stddev = 0.;
         for (int i = lowBin; i <= highbin; i++) {
-            stddev += (getValue(i) - maxValue)^2;
+            int val = getValue(i);
+            stddev += val * (getBinCenter(i) - getBinCenter(maxBin)) * (getBinCenter(i) - getBinCenter(maxBin));
+            N += val;
         }
-        return Math.sqrt( stddev / ( (double) highbin - lowBin + 1.) );
+        return Math.sqrt( stddev / ( (double) N) );
     }
 
     // reset........................................................................................

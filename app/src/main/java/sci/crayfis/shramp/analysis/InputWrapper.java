@@ -11,15 +11,12 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 20 April 2019
+ * @updated: 24 April 2019
  */
 
 package sci.crayfis.shramp.analysis;
 
 import android.annotation.TargetApi;
-import android.provider.ContactsContract;
-import android.renderscript.Allocation;
-import android.renderscript.Element;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -29,22 +26,18 @@ import org.jetbrains.annotations.Contract;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
-import java.sql.DataTruncation;
 
 import sci.crayfis.shramp.GlobalSettings;
-import sci.crayfis.shramp.MasterController;
 
 /**
  * Encapsulates metadata and statistical, image or mask data that is read in from disk.
  * TODO: option for ascii text?  ..or should that just go to logger?
- * TODO: read in data overwrites OutputWrapper static members, possibly a bug if settings are changed
+ * TODO: read in data overwrites OutputWrapper static members, this is possibly a bug if global
+ * TODO: settings are changed between runs, but therefore not a problem in the final release..
  */
 @TargetApi(21)
 public final class InputWrapper extends OutputWrapper {
@@ -90,6 +83,7 @@ public final class InputWrapper extends OutputWrapper {
     // InputWrapper................................................................................
     /**
      * Create an input wrapper for image, statistical, or mask data
+     * Note: reading is done on the calling thread
      * @param filepath Absolute file path for data, data type is inferred from the extension
      */
     InputWrapper(@NonNull String filepath) {
@@ -134,11 +128,11 @@ public final class InputWrapper extends OutputWrapper {
 
         // Read into ByteBuffer
         int bytesRead;
-        InputStream inputStream = null;
+        FileInputStream inputStream = null;
         try {
             super.mByteBuffer = ByteBuffer.allocateDirect(length);
             inputStream = new FileInputStream(filepath);
-            bytesRead = inputStream.read(super.mByteBuffer.array());
+            bytesRead = inputStream.getChannel().read(super.mByteBuffer);
         }
         catch (FileNotFoundException e) {
             // TODO: error
@@ -168,9 +162,10 @@ public final class InputWrapper extends OutputWrapper {
             return;
         }
 
-        // Set buffer to beginning and read data
+        // Decode binary data
         //------------------------------------------------------------------------------------------
 
+        // Reset buffer position to 0 and set limit to length
         super.mByteBuffer.flip();
 
         OutputWrapper.mBitsPerPixel = super.mByteBuffer.get();
@@ -190,24 +185,24 @@ public final class InputWrapper extends OutputWrapper {
         }
         else {
             mMaskData = new byte[super.mByteBuffer.remaining()];
-            super.mByteBuffer.get(mMaskData, super.mByteBuffer.position(), super.mByteBuffer.remaining());
+            super.mByteBuffer.get(mMaskData, 0, super.mByteBuffer.remaining());
         }
 
         if (super.mDatatype == Datatype.IMAGE) {
             if (OutputWrapper.mBitsPerPixel == 8) {
                 mImage8bit = new byte[super.mByteBuffer.remaining()];
-                super.mByteBuffer.get(mImage8bit, super.mByteBuffer.position(), super.mByteBuffer.remaining());
+                super.mByteBuffer.get(mImage8bit, 0, super.mByteBuffer.remaining());
             }
             else { // OutputWrapper.mBitsPerPixel == 16
                 ShortBuffer shortBuffer = super.mByteBuffer.asShortBuffer();
                 mImage16bit = new short[shortBuffer.remaining()];
-                shortBuffer.get(mImage16bit, shortBuffer.position(), shortBuffer.remaining());
+                shortBuffer.get(mImage16bit, 0, shortBuffer.remaining());
             }
         }
         else if (super.mDatatype == Datatype.STATISTICS) {
             FloatBuffer floatBuffer = super.mByteBuffer.asFloatBuffer();
             mStatisticsData = new float[floatBuffer.remaining()];
-            floatBuffer.get(mStatisticsData, floatBuffer.position(), floatBuffer.remaining());
+            floatBuffer.get(mStatisticsData, 0, floatBuffer.remaining());
         }
 
         // Free memory

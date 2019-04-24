@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 20 April 2019
+ * @updated: 24 April 2019
  */
 
 package sci.crayfis.shramp.analysis;
@@ -32,7 +32,6 @@ import sci.crayfis.shramp.camera2.util.TimeCode;
 import sci.crayfis.shramp.util.HandlerManager;
 import sci.crayfis.shramp.util.NumToString;
 import sci.crayfis.shramp.util.StopWatch;
-import sci.crayfis.shramp.util.StorageMedia;
 
 /**
  * Intermediate queue between receiving image data and its processing
