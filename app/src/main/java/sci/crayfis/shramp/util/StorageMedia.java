@@ -30,7 +30,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
@@ -114,10 +113,10 @@ abstract public class StorageMedia {
                 return;
             }
 
-            OutputStream outputStream = null;
+            FileOutputStream outputStream = null;
             try {
                 outputStream = new FileOutputStream(mPath + File.separator + mOutputWrapper.getFilename());
-                outputStream.write(mOutputWrapper.getByteBuffer().array());
+                outputStream.getChannel().write(mOutputWrapper.getByteBuffer());
             }
             catch (FileNotFoundException e) {
                 // TODO: error

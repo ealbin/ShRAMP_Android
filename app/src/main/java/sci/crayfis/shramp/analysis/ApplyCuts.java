@@ -120,8 +120,8 @@ abstract class ApplyCuts {
 
         String coldFastMeanPath = StorageMedia.findRecentCalibration("cold_fast", GlobalSettings.MEAN_FILE);
         String coldSlowMeanPath = StorageMedia.findRecentCalibration("cold_slow", GlobalSettings.MEAN_FILE);
-        String hotFastMeanPath = StorageMedia.findRecentCalibration("hot_fast", GlobalSettings.MEAN_FILE);
-        String hotSlowMeanPath = StorageMedia.findRecentCalibration("hot_slow", GlobalSettings.MEAN_FILE);
+        String hotFastMeanPath  = StorageMedia.findRecentCalibration("hot_fast",  GlobalSettings.MEAN_FILE);
+        String hotSlowMeanPath  = StorageMedia.findRecentCalibration("hot_slow",  GlobalSettings.MEAN_FILE);
 
         boolean allFilesPresent = true;
 

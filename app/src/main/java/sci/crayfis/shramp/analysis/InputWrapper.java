@@ -117,7 +117,7 @@ public final class InputWrapper extends OutputWrapper {
                 return;
             }
         }
-        else { // .mean, .stddev, or .signif
+        else { // .mean, .stddev, .stderr or .signif
             super.mDatatype = Datatype.STATISTICS;
             if (length != OutputWrapper.mStatisticsBytes) {
                 // TODO: error
@@ -130,7 +130,7 @@ public final class InputWrapper extends OutputWrapper {
         int bytesRead;
         FileInputStream inputStream = null;
         try {
-            super.mByteBuffer = ByteBuffer.allocateDirect(length);
+            super.mByteBuffer = ByteBuffer.allocate(length);
             inputStream = new FileInputStream(filepath);
             bytesRead = inputStream.getChannel().read(super.mByteBuffer);
         }
