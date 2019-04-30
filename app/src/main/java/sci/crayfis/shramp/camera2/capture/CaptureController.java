@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 24 April 2019
+ * @updated: 29 April 2019
  */
 
 package sci.crayfis.shramp.camera2.capture;
@@ -34,6 +34,7 @@ import org.jetbrains.annotations.Contract;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import sci.crayfis.shramp.FlightPlan;
 import sci.crayfis.shramp.MasterController;
 import sci.crayfis.shramp.GlobalSettings;
 import sci.crayfis.shramp.analysis.AnalysisController;
@@ -88,7 +89,7 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
 
     // mFlightPlan..................................................................................
     // Capture sequence to execute
-    private static final GlobalSettings.FlightPlan mFlightPlan = new GlobalSettings.FlightPlan();
+    private static final FlightPlan mFlightPlan = new FlightPlan();
 
     // Private Class Fields
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::

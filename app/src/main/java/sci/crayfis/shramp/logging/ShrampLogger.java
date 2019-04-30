@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 24 April 2019
+ * @updated: 29 April 2019
  */
 
 package sci.crayfis.shramp.logging;

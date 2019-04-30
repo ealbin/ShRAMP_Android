@@ -8,7 +8,7 @@ import struct
 
 __author__  = 'Eric Albin'
 __email__   = 'Eric.K.Albin@gmail.com'
-__updated__ = '24 April 2019'
+__updated__ = '29 April 2019'
 
 
 def image(filename, reshape=False):

@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 24 April 2019
+ * @updated: 29 April 2019
  */
 
 package sci.crayfis.shramp;
@@ -19,21 +19,11 @@ package sci.crayfis.shramp;
 import android.annotation.TargetApi;
 import android.os.Process;
 import android.renderscript.RenderScript;
-import android.support.annotation.Nullable;
-import android.util.Log;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import sci.crayfis.shramp.analysis.AnalysisController;
 import sci.crayfis.shramp.camera2.CameraController;
-import sci.crayfis.shramp.camera2.capture.CaptureConfiguration;
-import sci.crayfis.shramp.camera2.capture.CaptureController;
-import sci.crayfis.shramp.util.StorageMedia;
 
 /**
- * Settings that effect all aspects of this application, the most important one is "FlightPlan"
- * in "Performance and Data Capture Control" immediately below
+ * Settings that effect all aspects of this application
  *
  * TODO: A general app todo-note, passing image metadata isn't technically necessary anymore, in the future
  * TODO: consider removing DataQueue and updating ImageProcessor.  However, leaving it in does not
@@ -41,115 +31,6 @@ import sci.crayfis.shramp.util.StorageMedia;
  */
 @TargetApi(21)
 abstract public class GlobalSettings {
-
-
-    // Performance and Data Capture Control
-    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-    /**
-     * The device will run the operations listed in FlightPlan()
-     */
-    public static class FlightPlan {
-
-        // TODO: in the future, this will be a state machine
-        private static final List<CaptureConfiguration> mFlightPlan = new ArrayList<>();
-
-        /**
-         * ___________________________________________________________________
-         * !!!!!!!!!!!!!!!!!!!!!!    >> Edit this <<    !!!!!!!!!!!!!!!!!!!!!!
-         * *******************************************************************
-         * The device will run the operations listed.
-         * e.g. mFlightPlan.add( CaptureConfiguration.newXXX() )
-         *      where XXX can be "CoolDownSession", "WarmUpSession", "DataSession", etc...
-         *      See CaptureConfiguration for what's available
-         */
-        public FlightPlan() {
-
-            // Calibrate if needed
-            if (AnalysisController.needsCalibration()) {
-                addCalibrationCycle();
-            }
-
-            // Optimize FPS if needed
-            if (!CaptureController.isOptimalExposureSet()) {
-                mFlightPlan.add(CaptureConfiguration.newOptimizationSession(null));
-            }
-
-            // Take a data run
-            mFlightPlan.add(CaptureConfiguration.newDataSession(1000, null, null, 1, true));
-        }
-
-        /**
-         * @return The next operation to execute
-         */
-        @Nullable
-        public CaptureConfiguration getNext() {
-            if (mFlightPlan.size() > 0) {
-                return mFlightPlan.remove(0);
-            }
-            else {
-                return null;
-            }
-        }
-
-        /**
-         * A complete calibration cycle typically takes around 30 minutes
-         */
-        private void addCalibrationCycle() {
-            int heatUpTime   = 10; // minutes
-            int coolDownTime = 15; // minutes
-
-            double temperature_low = Math.min(TEMPERATURE_START, TEMPERATURE_GOAL);
-            temperature_low = Math.max(TEMPERATURE_LOW, temperature_low);
-
-            // Warm up if the phone is too cold
-            mFlightPlan.add(CaptureConfiguration.newWarmUpSession(temperature_low, heatUpTime, 1000));
-
-            // Cool down if the phone is too hot
-            mFlightPlan.add(CaptureConfiguration.newCoolDownSession(temperature_low, coolDownTime));
-
-            // Calibrate Cold-Fast/Slow
-            mFlightPlan.add(CaptureConfiguration.newColdFastCalibration());
-            mFlightPlan.add(CaptureConfiguration.newColdSlowCalibration());
-
-            // Warm up to Hot
-            mFlightPlan.add(CaptureConfiguration.newWarmUpSession(TEMPERATURE_HIGH, heatUpTime, 1000));
-
-            // Calibrate Hot-Fast/Slow
-            mFlightPlan.add(CaptureConfiguration.newHotFastCalibration());
-            mFlightPlan.add(CaptureConfiguration.newHotSlowCalibration());
-
-            // Cool down to data taking temperature
-            mFlightPlan.add(CaptureConfiguration.newCoolDownSession(TEMPERATURE_GOAL, coolDownTime));
-
-            // Compute mask and import calibration
-            Runnable task = new Runnable() {
-                @Override
-                public void run() {
-                    AnalysisController.makePixelMask();
-
-                    // Wait for writing to finish
-                    synchronized (this) {
-                        while (StorageMedia.isBusy()) {
-                            try {
-                                Log.e(Thread.currentThread().getName(), "Waiting for writing to finish..");
-                                this.wait(5 * GlobalSettings.DEFAULT_WAIT_MS);
-                            }
-                            catch (InterruptedException e) {
-                                // TODO: error
-                            }
-                        }
-                    }
-                    AnalysisController.importLatestCalibration();
-                }
-            };
-            mFlightPlan.add(CaptureConfiguration.newTaskSession(task));
-
-            // Discover optimal frame rate for data taking
-            mFlightPlan.add(CaptureConfiguration.newOptimizationSession(null));
-        }
-    }
-
 
     // Feature Locks
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
