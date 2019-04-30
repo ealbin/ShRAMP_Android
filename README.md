@@ -16,8 +16,21 @@
 
 # Features
 
+* Self-calibrating (vaidation in progress)
+* Captures in raw or yuv from any camera
+* Easy to set capture preferences
+* Can save camera frames and statistics for python analysis
+* Overtemperture / low battery detection
+* Optimal FPS locking for minimum dead time at fastest frame rate
+* Buffered streams with parallelized CPU and GPU processing 
+
 # Using
 
+
 # Documentation
+[Java Docs for this application: ./JavaDocs/index.html](./JavaDocs)
+
+[PyDocs for reading binary files from this application: ./python/pydoc/shramp.html](./python/pydoc)
+
 
 # Priority Todo's
