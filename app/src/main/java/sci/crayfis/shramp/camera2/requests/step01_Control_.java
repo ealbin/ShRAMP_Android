@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 29 April 2019
+ * @updated: 3 May 2019
  */
 
 package sci.crayfis.shramp.camera2.requests;
@@ -30,6 +30,8 @@ import org.apache.commons.math3.exception.MathInternalError;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+
+import javax.microedition.khronos.opengles.GL;
 
 import sci.crayfis.shramp.GlobalSettings;
 import sci.crayfis.shramp.MasterController;
@@ -376,6 +378,17 @@ abstract class step01_Control_ {
                     setting = new Parameter<>(name, true, null, formatter);
                 }
 
+                if (GlobalSettings.FORCE_WORST_CONFIGURATION) {
+                    formatter = new ParameterFormatter<Boolean>() {
+                        @NonNull
+                        @Override
+                        public String formatValue(@NonNull Boolean value) {
+                            return "NOT LOCKED (WORST CONFIGURATION)";
+                        }
+                    };
+                    setting = new Parameter<>(name, false, null, formatter);
+                }
+
                 builder.set(rKey, setting.getValue());
             }
             else {
@@ -672,6 +685,17 @@ abstract class step01_Control_ {
                     setting = new Parameter<>(name, true, null, formatter);
                 }
 
+                if (GlobalSettings.FORCE_WORST_CONFIGURATION) {
+                    formatter = new ParameterFormatter<Boolean>() {
+                        @NonNull
+                        @Override
+                        public String formatValue(@NonNull Boolean value) {
+                            return "NOT LOCKED (WORST CONFIGURATION)";
+                        }
+                    };
+                    setting = new Parameter<>(name, false, null, formatter);
+                }
+
                 builder.set(rKey, setting.getValue());
             }
             else {
@@ -761,7 +785,7 @@ abstract class step01_Control_ {
                     return;
                 }
 
-                if (mode.toString().contains("AUTO")) {
+                if (mode.toString().contains("AUTO") || GlobalSettings.FORCE_WORST_CONFIGURATION) {
                     CameraCharacteristics.Key<int[]> cKey;
 
                     cKey = CameraCharacteristics.CONTROL_AE_AVAILABLE_ANTIBANDING_MODES;
@@ -812,7 +836,7 @@ abstract class step01_Control_ {
                     return;
                 }
 
-                if (mode.toString().contains("AUTO")) {
+                if (mode.toString().contains("AUTO") || GlobalSettings.FORCE_WORST_CONFIGURATION) {
                     CameraCharacteristics.Key<Range<Integer>> cKey;
 
                     cKey = CameraCharacteristics.CONTROL_AE_COMPENSATION_RANGE;

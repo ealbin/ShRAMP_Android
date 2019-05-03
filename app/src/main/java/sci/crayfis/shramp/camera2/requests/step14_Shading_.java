@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 29 April 2019
+ * @updated: 3 May 2019
  */
 
 package sci.crayfis.shramp.camera2.requests;
@@ -26,6 +26,7 @@ import android.util.Log;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import sci.crayfis.shramp.GlobalSettings;
 import sci.crayfis.shramp.MasterController;
 import sci.crayfis.shramp.camera2.CameraController;
 import sci.crayfis.shramp.camera2.util.Parameter;
@@ -81,11 +82,16 @@ abstract class step14_Shading_ extends step13_Sensor_ {
             if (supportedKeys.contains(rKey)) {
 
                 Integer OFF          = CameraMetadata.SHADING_MODE_OFF;
-                //Integer FAST         = CameraMetadata.SHADING_MODE_FAST;
+                Integer FAST         = CameraMetadata.SHADING_MODE_FAST;
                 //Integer HIGH_QUALITY = CameraMetadata.SHADING_MODE_HIGH_QUALITY;
 
                 value = OFF;
                 valueString = "OFF (PREFERRED)";
+
+                if (GlobalSettings.FORCE_WORST_CONFIGURATION) {
+                    value = FAST;
+                    valueString = "FAST (WORST CONFIGURATION)";
+                }
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
                     @NonNull

@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 29 April 2019
+ * @updated: 3 May 2019
  */
 
 package sci.crayfis.shramp;
@@ -113,7 +113,7 @@ public final class MaineShRAMP extends Activity { //implements AsyncResponse {
                 + "Node name: " + uname.nodename + "\n"
                 + "Release:   " + uname.release  + "\n"
                 + "Sysname:   " + uname.sysname  + "\n"
-                + "Version:   " + uname.version  + "\n\n";
+                + "Version:   " + uname.version  + "\n ";
         Log.e(Thread.currentThread().getName(), unameString);
 
         // Log hardware info
@@ -133,7 +133,7 @@ public final class MaineShRAMP extends Activity { //implements AsyncResponse {
                 + "Build tags:              " + Build.TAGS                + "\n"
                 + "Build time:              " + Long.toString(Build.TIME) + "\n"
                 + "Build type:              " + Build.TYPE                + "\n"
-                + "User:                    " + Build.USER                + "\n\n";
+                + "User:                    " + Build.USER                + "\n ";
         Log.e(Thread.currentThread().getName(), buildDetails);
 
         // if the API was 22 or below, the user would have granted permissions on start

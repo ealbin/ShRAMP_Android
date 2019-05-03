@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 29 April 2019
+ * @updated: 3 May 2019
  */
 
 package sci.crayfis.shramp.analysis;
@@ -131,10 +131,9 @@ public abstract class AnalysisController {
         Element ucharElement  = Element.U8(mRS);
         Element ushortElement = Element.U16(mRS);
         Element uintElement   = Element.U32(mRS);
+        Element ulongElement  = Element.U64(mRS);
         Element floatElement  = Element.F32(mRS);
         Element doubleElement = Element.F64(mRS);
-
-        Element simpleLongElement = Element.I64(mRS);
 
         Size outputSize = CameraController.getOutputSize();
         if (outputSize == null) {
@@ -158,7 +157,7 @@ public abstract class AnalysisController {
         mFloatType  = new Type.Builder(mRS, floatElement ).setX(width).setY(height).create();
         mDoubleType = new Type.Builder(mRS, doubleElement).setX(width).setY(height).create();
 
-        mSimpleLongType = new Type.Builder(mRS, simpleLongElement).setX(1).setY(1).create();
+        mSimpleLongType = new Type.Builder(mRS, ulongElement).setX(1).setY(1).create();
 
         Integer outputFormat = CameraController.getOutputFormat();
         if (outputFormat == null) {

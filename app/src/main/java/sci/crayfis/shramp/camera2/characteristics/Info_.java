@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 29 April 2019
+ * @updated: 3 May 2019
  */
 
 package sci.crayfis.shramp.camera2.characteristics;
@@ -107,8 +107,10 @@ abstract class Info_ extends Hot_ {
                     }
 
                     case (CameraMetadata.INFO_SUPPORTED_HARDWARE_LEVEL_EXTERNAL): {
-                        value = CameraMetadata.INFO_SUPPORTED_HARDWARE_LEVEL_EXTERNAL;
-                        valueString = "EXTERNAL";
+                        if (Build.VERSION.SDK_INT >= 28) {
+                            value = CameraMetadata.INFO_SUPPORTED_HARDWARE_LEVEL_EXTERNAL;
+                            valueString = "EXTERNAL";
+                        }
                         break;
                     }
                 }
@@ -143,7 +145,7 @@ abstract class Info_ extends Hot_ {
             String name;
             String value;
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            if (Build.VERSION.SDK_INT >= 28) {
                 key  = CameraCharacteristics.INFO_VERSION;//////////////////////////////////////////
                 name = key.getName();
 

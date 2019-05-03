@@ -11,7 +11,7 @@ __institution__ = 'University of California, Irvine'
 __department__  = 'Physics and Astronomy'
 __author__      = 'Eric Albin'
 __email__       = 'Eric.K.Albin@gmail.com'
-__updated__     = '29 April 2019'
+__updated__     = '3 May 2019'
 
-from . import reader
+from . import read
                                                    

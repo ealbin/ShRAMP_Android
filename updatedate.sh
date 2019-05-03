@@ -1,7 +1,7 @@
 #!/bin/env bash
 
-old="24 April"
-new="29 April"
+old="30 April"
+new="3 May"
 
 find ./                -name '*.md'   | xargs sed -i 's/'"$old"'/'"$new"'/'
 

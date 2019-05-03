@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 29 April 2019
+ * @updated: 3 May 2019
  */
 
 package sci.crayfis.shramp.camera2.characteristics;
@@ -124,7 +124,7 @@ abstract class Statistics_ extends Shading_ {
                     return;
                 }
 
-                value = (Boolean[]) ArrayToList.convert(modes).toArray(new Boolean[0]);
+                value = ArrayToList.convert(modes).toArray(new Boolean[0]);
                 if (value == null) {
                     // TODO: error
                     Log.e(Thread.currentThread().getName(), "Hot pixel map modes cannot be null");
@@ -182,7 +182,7 @@ abstract class Statistics_ extends Shading_ {
                         MasterController.quitSafely();
                         return;
                     }
-                    List<Integer> options = ArrayToList.convert(modes);
+                    //List<Integer> options = ArrayToList.convert(modes);
 
                     Integer OFF = CameraMetadata.STATISTICS_LENS_SHADING_MAP_MODE_OFF;
                     //Integer ON  = CameraMetadata.STATISTICS_LENS_SHADING_MAP_MODE_ON;
@@ -228,7 +228,7 @@ abstract class Statistics_ extends Shading_ {
                         MasterController.quitSafely();
                         return;
                     }
-                    List<Integer> options = ArrayToList.convert(modes);
+                    //List<Integer> options = ArrayToList.convert(modes);
 
                     Integer OFF = CameraMetadata.STATISTICS_OIS_DATA_MODE_OFF;
                     //Integer ON  = CameraMetadata.STATISTICS_OIS_DATA_MODE_ON;

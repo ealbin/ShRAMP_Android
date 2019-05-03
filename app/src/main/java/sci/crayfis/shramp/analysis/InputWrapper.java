@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 29 April 2019
+ * @updated: 3 May 2019
  */
 
 package sci.crayfis.shramp.analysis;
@@ -32,12 +32,14 @@ import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
 import sci.crayfis.shramp.GlobalSettings;
+import sci.crayfis.shramp.util.NumToString;
 
 /**
  * Encapsulates metadata and statistical, image or mask data that is read in from disk.
  * TODO: option for ascii text?  ..or should that just go to logger?
  * TODO: read in data overwrites OutputWrapper static members, this is possibly a bug if global
  * TODO: settings are changed between runs, but therefore not a problem in the final release..
+ * TODO: (PRIORITY) read in a few bytes as needed instead of the whole file
  */
 @TargetApi(21)
 public final class InputWrapper extends OutputWrapper {

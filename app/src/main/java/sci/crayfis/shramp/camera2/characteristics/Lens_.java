@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 29 April 2019
+ * @updated: 3 May 2019
  */
 
 package sci.crayfis.shramp.camera2.characteristics;
@@ -26,6 +26,7 @@ import android.util.Log;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import sci.crayfis.shramp.GlobalSettings;
 import sci.crayfis.shramp.MasterController;
 import sci.crayfis.shramp.camera2.util.Parameter;
 import sci.crayfis.shramp.camera2.util.ParameterFormatter;
@@ -186,6 +187,7 @@ abstract class Lens_ extends Jpeg_ {
 
             String name;
             Float  value;
+            String valueString;
             String units;
 
             key   = CameraCharacteristics.LENS_INFO_AVAILABLE_APERTURES;////////////////////////////
@@ -202,13 +204,18 @@ abstract class Lens_ extends Jpeg_ {
                 }
 
                 Float smallest = null;
+                Float largest  = null;
                 for (Float val : apertures) {
                     if (smallest == null) {
                         smallest = val;
+                        largest  = val;
                         continue;
                     }
                     if (val < smallest) {
                         smallest = val;
+                    }
+                    if (val > largest) {
+                        largest = val;
                     }
                 }
                 if (smallest == null) {
@@ -218,8 +225,14 @@ abstract class Lens_ extends Jpeg_ {
                     return;
                 }
                 value = smallest;
+                valueString = "smallest: ";
 
-                formatter = new ParameterFormatter<Float>("smallest: ") {
+                if (GlobalSettings.FORCE_WORST_CONFIGURATION) {
+                    value = largest;
+                    valueString = "largest (WORST CONFIGURATION): ";
+                }
+
+                formatter = new ParameterFormatter<Float>(valueString) {
                     @NonNull
                     @Override
                     public String formatValue(@NonNull Float value) {
@@ -242,6 +255,7 @@ abstract class Lens_ extends Jpeg_ {
 
             String name;
             Float  value;
+            String valueString;
             String units;
 
             key   = CameraCharacteristics.LENS_INFO_AVAILABLE_FILTER_DENSITIES;/////////////////////
@@ -257,14 +271,19 @@ abstract class Lens_ extends Jpeg_ {
                     return;
                 }
 
-                Float biggest = null;
+                Float biggest  = null;
+                Float smallest = null;
                 for (Float val : densities) {
                     if (biggest == null) {
-                        biggest = val;
+                        biggest  = val;
+                        smallest = val;
                         continue;
                     }
                     if (val > biggest) {
                         biggest = val;
+                    }
+                    if (val < smallest) {
+                        smallest = val;
                     }
                 }
                 if (biggest == null) {
@@ -274,8 +293,14 @@ abstract class Lens_ extends Jpeg_ {
                     return;
                 }
                 value = biggest;
+                valueString = "biggest: ";
 
-                formatter = new ParameterFormatter<Float>("biggest: ") {
+                if (GlobalSettings.FORCE_WORST_CONFIGURATION) {
+                    value = smallest;
+                    valueString = "smallest (WORST CONFIGURATION): ";
+                }
+
+                formatter = new ParameterFormatter<Float>(valueString) {
                     @NonNull
                     @Override
                     public String formatValue(@NonNull Float value) {
@@ -298,6 +323,7 @@ abstract class Lens_ extends Jpeg_ {
 
             String name;
             Float  value;
+            String valueString;
             String units;
 
             key   = CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS;////////////////////////
@@ -313,14 +339,19 @@ abstract class Lens_ extends Jpeg_ {
                     return;
                 }
 
-                Float longest = null;
+                Float longest  = null;
+                Float shortest = null;
                 for (Float val : lengths) {
                     if (longest == null) {
-                        longest = val;
+                        longest  = val;
+                        shortest = val;
                         continue;
                     }
                     if (val > longest) {
                         longest = val;
+                    }
+                    if (val < shortest) {
+                        shortest = val;
                     }
                 }
                 if (longest == null) {
@@ -330,8 +361,14 @@ abstract class Lens_ extends Jpeg_ {
                     return;
                 }
                 value = longest;
+                valueString = "longest: ";
 
-                formatter = new ParameterFormatter<Float>("longest: ") {
+                if (GlobalSettings.FORCE_WORST_CONFIGURATION) {
+                    value = shortest;
+                    valueString = "shortest (WORST CONFIGURATION): ";
+                }
+
+                formatter = new ParameterFormatter<Float>(valueString) {
                     @NonNull
                     @Override
                     public String formatValue(@NonNull Float value) {
@@ -379,6 +416,11 @@ abstract class Lens_ extends Jpeg_ {
                 else {
                     value       =  ON;
                     valueString = "ON (FALLBACK)";
+                }
+
+                if (options.contains(ON) && GlobalSettings.FORCE_WORST_CONFIGURATION) {
+                    value       =  ON;
+                    valueString = "ON (WORST CONFIGURATION)";
                 }
 
                 formatter = new ParameterFormatter<Integer>(valueString) {

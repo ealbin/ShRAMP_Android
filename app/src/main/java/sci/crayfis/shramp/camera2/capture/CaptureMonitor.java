@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 29 April 2019
+ * @updated: 3 May 2019
  */
 
 package sci.crayfis.shramp.camera2.capture;
@@ -168,10 +168,10 @@ final class CaptureMonitor extends CameraCaptureSession.CaptureCallback {
         /**
          * @return a string representation of the last temperature recorded
          */
-        @Nullable
+        @NonNull
         String getLastString() {
             if (Last == null) {
-                return null;
+                return "UNKNOWN";
             }
             return NumToString.number(Last) + " [Celsius]";
         }
@@ -422,9 +422,6 @@ final class CaptureMonitor extends CameraCaptureSession.CaptureCallback {
         if (tempString == null) {
             tempString = "UNAVAILABLE";
         }
-        else {
-            tempString += " [Celsius]";
-        }
 
         Double power = BatteryController.getInstantaneousPower();
         String powerString;
@@ -625,10 +622,6 @@ final class CaptureMonitor extends CameraCaptureSession.CaptureCallback {
                 + " >> Frame Number: " + NumToString.number(frameNumber) + " <<\n ");
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    // Shutdown Conditions /////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
     // onCaptureFailed..............................................................................
     /**
      * This method is called instead of onCaptureCompleted(CameraCaptureSession, captureRequest,
@@ -657,9 +650,13 @@ final class CaptureMonitor extends CameraCaptureSession.CaptureCallback {
                 + "\t Image captured: " + Boolean.toString(failure.wasImageCaptured()) + "\n";
         Log.e(Thread.currentThread().getName(), errInfo);
 
-        // TODO: error
-        MasterController.quitSafely();
+        // TODO: failure isn't always terminal..
+        //MasterController.quitSafely();
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Shutdown Conditions /////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     // onCaptureSequenceAborted.....................................................................
     /**

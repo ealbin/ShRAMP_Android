@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 29 April 2019
+ * @updated: 3 May 2019
  */
 
 package sci.crayfis.shramp.camera2.capture;
@@ -311,9 +311,8 @@ final public class CaptureController extends CameraCaptureSession.StateCallback 
             if (state == State.OPEN || state == State.PAUSED) {
                 HeapMemory.logAvailableMiB();
                 if (!HeapMemory.isMemoryAmple()) {
-                    DataQueue.purge();
                     System.gc();
-                    if (!DataQueue.isEmpty() || AnalysisController.isBusy() || StorageMedia.isBusy()) {
+                    if (AnalysisController.isBusy() || StorageMedia.isBusy()) {
                         return false;
                     }
 

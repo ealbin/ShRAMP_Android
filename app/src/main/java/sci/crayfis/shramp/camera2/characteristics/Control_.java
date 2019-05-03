@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 29 April 2019
+ * @updated: 3 May 2019
  */
 
 package sci.crayfis.shramp.camera2.characteristics;
@@ -116,6 +116,11 @@ abstract class Control_ extends Color_ {
                 else {
                     value       = _60HZ;
                     valueString = "60HZ (LAST CHOICE)";
+                }
+
+                if (options.contains(AUTO) && GlobalSettings.FORCE_WORST_CONFIGURATION) {
+                    value       = AUTO;
+                    valueString = "AUTO (WORST CONFIGURATINO)";
                 }
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
@@ -229,6 +234,10 @@ abstract class Control_ extends Color_ {
                     }
                 }
 
+                if (keep.size() == 0) {
+                    keep = fpsRanges;
+                }
+
                 // TODO: figure out how to do toArray(new Range<Integer>[])
                 value = (Range<Integer>[]) keep.toArray(new Range[0]);
                 if (value == null) {
@@ -281,11 +290,19 @@ abstract class Control_ extends Color_ {
                 }
                 value = range.getUpper();
 
+                if (GlobalSettings.FORCE_WORST_CONFIGURATION) {
+                    value = range.getLower();
+                }
+
                 formatter = new ParameterFormatter<Integer>() {
                     @NonNull
                     @Override
                     public String formatValue(@NonNull Integer value) {
-                        return value.toString();
+                        String out = value.toString();
+                        if (GlobalSettings.FORCE_WORST_CONFIGURATION) {
+                            out += " (WORST CONFIGURATION)";
+                        }
+                        return out;
                     }
                 };
                 property = new Parameter<>(name, value, units, formatter);
@@ -356,12 +373,19 @@ abstract class Control_ extends Color_ {
                         return;
                     }
 
+                    if (value && GlobalSettings.FORCE_WORST_CONFIGURATION) {
+                        value = false;
+                    }
+
                     formatter = new ParameterFormatter<Boolean>() {
                         @NonNull
                         @Override
                         public String formatValue(@NonNull Boolean value) {
                             if (value) {
                                 return "YES (PREFERRED)";
+                            }
+                            if (GlobalSettings.FORCE_WORST_CONFIGURATION) {
+                                return "NO (WORST CONFIGURATION)";
                             }
                             return "NO (FALLBACK)";
                         }
@@ -612,15 +636,25 @@ abstract class Control_ extends Color_ {
             name = key.getName();
 
             if (keychain.contains(key)) {
-                //int[]  modes  = cameraCharacteristics.get(key);
-                // a$$ert modes != null;
-                //List<Integer> options = ArrayToList.convert(modes);
+                int[]  modes = cameraCharacteristics.get(key);
+                if (modes == null) {
+                    // TODO: error
+                    Log.e(Thread.currentThread().getName(), "Video stabilization modes cannot be null");
+                    MasterController.quitSafely();
+                    return;
+                }
+                List<Integer> options = ArrayToList.convert(modes);
 
                 Integer OFF = CameraMetadata.CONTROL_VIDEO_STABILIZATION_MODE_OFF;
-                //Integer ON  = CameraMetadata.CONTROL_VIDEO_STABILIZATION_MODE_ON;
+                Integer ON  = CameraMetadata.CONTROL_VIDEO_STABILIZATION_MODE_ON;
 
                 value       =  OFF;
                 valueString = "OFF (PREFERRED)";
+
+                if (GlobalSettings.FORCE_WORST_CONFIGURATION) {
+                    value       = ON;
+                    valueString = "ON (WORST CONFIGURATION)";
+                }
 
                 formatter = new ParameterFormatter<Integer>(valueString) {
                     @NonNull
@@ -716,12 +750,19 @@ abstract class Control_ extends Color_ {
                         return;
                     }
 
+                    if (GlobalSettings.FORCE_WORST_CONFIGURATION) {
+                        value = false;
+                    }
+
                     formatter = new ParameterFormatter<Boolean>() {
                         @NonNull
                         @Override
                         public String formatValue(@NonNull Boolean value) {
                             if (value) {
                                 return "YES (PREFERRED)";
+                            }
+                            if (GlobalSettings.FORCE_WORST_CONFIGURATION) {
+                                return "NO (WORST CONFIGURATION)";
                             }
                             return "NO (FALLBACK)";
                         }
@@ -876,11 +917,19 @@ abstract class Control_ extends Color_ {
                         value = range.getUpper();
                     }
 
+                    if (GlobalSettings.FORCE_WORST_CONFIGURATION) {
+                        value = range.getLower();
+                    }
+
                     formatter = new ParameterFormatter<Integer>() {
                         @NonNull
                         @Override
                         public String formatValue(@NonNull Integer value) {
-                            return value.toString() + " / 100";
+                            String out = value.toString() + " / 100";
+                            if (GlobalSettings.FORCE_WORST_CONFIGURATION) {
+                                out += " (WORST CONFIGURATION)";
+                            }
+                            return out;
                         }
                     };
                     property = new Parameter<>(name, value, units, formatter);

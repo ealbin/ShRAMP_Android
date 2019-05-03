@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 29 April 2019
+ * @updated: 3 May 2019
  */
 
 package sci.crayfis.shramp.analysis;
@@ -111,6 +111,14 @@ abstract class ImageProcessor {
     // mSignificance................................................................................
     // Significance of each pixel in an image as a RenderScript Allocation
     private static Allocation mSignificance;
+
+    // mSignifPosHist...............................................................................
+    // Significance of each mask=1 pixel in histogram form as a RenderScript Allocation
+    private static Allocation mSignifPosHist;
+
+    // mSignifNegHist...............................................................................
+    // Significance of each mask=0 pixel in histogram form as a RenderScript Allocation
+    private static Allocation mSignifNegHist;
 
     // mCountAboveThreshold.........................................................................
     // Number of pixels in a frame that were found to above threshold.

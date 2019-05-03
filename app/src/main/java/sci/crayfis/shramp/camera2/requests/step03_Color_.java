@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 29 April 2019
+ * @updated: 3 May 2019
  */
 
 package sci.crayfis.shramp.camera2.requests;
@@ -28,6 +28,7 @@ import android.util.Log;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import sci.crayfis.shramp.GlobalSettings;
 import sci.crayfis.shramp.MasterController;
 import sci.crayfis.shramp.camera2.CameraController;
 import sci.crayfis.shramp.camera2.util.Parameter;

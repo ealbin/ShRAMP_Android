@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 29 April 2019
+ * @updated: 3 May 2019
  */
 
 package sci.crayfis.shramp.camera2.capture;
@@ -38,7 +38,7 @@ public class CaptureConfiguration {
     private static final Long FPS_30 =  33333333L;
     private static final Long FPS_05 = 200000000L;
 
-    private static final Range<Double>  TEMPERATURE_BOUNDS = new Range<>(0., 50.);
+    private static final Range<Double>  TEMPERATURE_BOUNDS = new Range<>(0., 60.);
     private static final Range<Integer> FRAME_BOUNDS       = new Range<>(0, 2000);
     private static final Range<Integer> ATTEMPT_BOUNDS     = new Range<>(1, 1000);
 

@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 29 April 2019
+ * @updated: 3 May 2019
  */
 
 package sci.crayfis.shramp;
@@ -48,19 +48,55 @@ public final class FlightPlan {
      */
     public FlightPlan() {
 
-        // Calibrate if needed (if mean/stddev/mask files cannot be found)
-        if (AnalysisController.needsCalibration()) {
-            addCalibrationCycle();
+        // Example cycle - turn off by setting if(false)
+        if (true) {
+            // Calibrate if needed (if mean/stddev/mask files cannot be found)
+            if (AnalysisController.needsCalibration()) {
+                addCalibrationCycle();
+            }
+
+            // Optimize FPS if needed (part of the calibration cycle if it's run)
+            if (!CaptureController.isOptimalExposureSet()) {
+                mFlightPlan.add(CaptureConfiguration.newOptimizationSession(null));
+            }
+
+            // Take a data run (see sci.crayfis.shramp.camera2.capture.CaptureConfiguration for more)
+            mFlightPlan.add(CaptureConfiguration.newDataSession(1000,
+                    null, null, 1, true));
         }
 
-        // Optimize FPS if needed (part of the calibration cycle if it's run)
-        if (!CaptureController.isOptimalExposureSet()) {
-            mFlightPlan.add(CaptureConfiguration.newOptimizationSession(null));
-        }
+        // TESTING / WORK IN PROGRESS
+        //----------------------------
+        //mFlightPlan.add(CaptureConfiguration.newColdFastCalibration());
+        //mFlightPlan.add(CaptureConfiguration.newColdSlowCalibration());
 
-        // Take a data run (see sci.crayfis.shramp.camera2.capture.CaptureConfiguration for more)
-        mFlightPlan.add(CaptureConfiguration.newDataSession(1000,
-                        null, null, 1, true));
+        //mFlightPlan.add(CaptureConfiguration.newHotFastCalibration());
+        //mFlightPlan.add(CaptureConfiguration.newHotSlowCalibration());
+
+        /*
+        // Compute mask and import calibration
+        Runnable task = new Runnable() {
+            @Override
+            public void run() {
+                AnalysisController.makePixelMask();
+
+                // Wait for writing to finish
+                synchronized (this) {
+                    while (StorageMedia.isBusy()) {
+                        try {
+                            Log.e(Thread.currentThread().getName(), "Waiting for writing to finish..");
+                            this.wait(5 * GlobalSettings.DEFAULT_WAIT_MS);
+                        }
+                        catch (InterruptedException e) {
+                            // TODO: error
+                        }
+                    }
+                }
+                AnalysisController.importLatestCalibration();
+            }
+        };
+        mFlightPlan.add(CaptureConfiguration.newTaskSession(task));
+        */
     }
     //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     ////////////////////////////////////////////////////////////////////////////////////////////////

@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 29 April 2019
+ * @updated: 3 May 2019
  */
 
 package sci.crayfis.shramp.util;
@@ -82,13 +82,20 @@ abstract public class StorageMedia {
         private OutputWrapper mOutputWrapper;
 
         // Constructor
-        private DataSaver(String path, OutputWrapper wrapper) {
+        private DataSaver(@NonNull String path, @NonNull OutputWrapper wrapper) {
             mPath = path;
             mOutputWrapper = wrapper;
         }
 
         // Action
         public void run() {
+
+            if (mOutputWrapper.getByteBuffer() == null) {
+                Log.e(Thread.currentThread().getName(), " \n\n\t\t\t>> BYTE BUFFER IS NULL FOR: " + mPath
+                        + File.separator + mOutputWrapper.getFilename() + " <<\n ");
+                mBacklog.decrementAndGet();
+                return;
+            }
 
             if (GlobalSettings.DEBUG_DISABLE_ALL_SAVING) {
                 Log.e(Thread.currentThread().getName(), " \n\n\t\t\t>> WRITING DISABLED FOR: " + mPath
@@ -112,6 +119,10 @@ abstract public class StorageMedia {
                 MasterController.quitSafely();
                 return;
             }
+
+            // Make sure the full buffer is getting written
+            mOutputWrapper.getByteBuffer().position(0);
+            mOutputWrapper.getByteBuffer().limit(mOutputWrapper.getByteBuffer().capacity());
 
             FileOutputStream outputStream = null;
             try {

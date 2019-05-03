@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 29 April 2019
+ * @updated: 3 May 2019
  */
 
 package sci.crayfis.shramp.analysis;
@@ -19,6 +19,7 @@ package sci.crayfis.shramp.analysis;
 import android.annotation.TargetApi;
 import android.renderscript.Allocation;
 import android.util.Log;
+import android.util.Range;
 
 import sci.crayfis.shramp.GlobalSettings;
 
@@ -29,9 +30,13 @@ import sci.crayfis.shramp.util.NumToString;
 import sci.crayfis.shramp.util.StorageMedia;
 
 /**
- * Given calibration files, applies cuts to determine trustworthy pixels
+ * Given calibration files, applies cuts to determine trustworthy pixels.
+ * This could be performed in RenderScript for a substantial performance boost, but as doing so would
+ * be quite cumbersome and the app can afford to take a little time on this calculation without
+ * sacrificing data capture abilities, it's done in Java for simplicity / ease in changing.
  * TODO: fine tune cuts
- * TODO: make private methods return successful or fail
+ * TODO: make cut return successful or fail
+ * TODO: (PRIORITY) update InputWrapper/this code to process bytes from files instead of whole file
  */
 @TargetApi(21)
 abstract class ApplyCuts {
@@ -47,6 +52,13 @@ abstract class ApplyCuts {
     // TEMPERATURE..................................................................................
     // When generating estimates values for statistics, use this temperature [Celsius]
     private static final float TEMPERATURE = 35.f;
+
+    // HISTOGRAM_BOUNDS
+    // Low and high bound for histograms (pixel value)
+    private static final Range<Integer> HISTOGRAM_BOUNDS = new Range<Integer>(-100, 100);
+
+    // Private Class Fields
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // Allocations..................................................................................
     // For transferring the findings of this class over to ImageProcessor
@@ -71,6 +83,10 @@ abstract class ApplyCuts {
     // The total number of frames used across all "stddev" files
     private static Long mTotalStdDevFrames;
 
+    // mMaxPixelValue...............................................................................
+    // The maximum value a pixel can have (255 for 8-bit YUV, 1023 for 16-bit RAW)
+    private static int mMaxPixelValue;
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -87,12 +103,22 @@ abstract class ApplyCuts {
      */
     static void makePixelMask() {
 
+        // TODO: possibly a bug if settings change between writes / runs
+        if (OutputWrapper.mBitsPerPixel == 8) {
+            mMaxPixelValue = 255;
+        } else { // OutputWrapper.mBitsPerPixel == 16
+            mMaxPixelValue = 1023;
+        }
+
         // Apply cuts
-        // TODO: make these return a value so they don't fail silently
-        applyMeanCuts();
+        if (!applyMeanCuts()) {
+            return;
+        }
         System.gc();
 
-        applyStdDevCuts();
+        if (!applyStdDevCuts()) {
+            return;
+        }
         System.gc();
 
         HeapMemory.logAvailableMiB();
@@ -113,8 +139,9 @@ abstract class ApplyCuts {
 
     /**
      * Apply cuts based on "mean" files, e.g. Temperature and Exposure-based cuts
+     * @return True if cuts were applied, false if cuts could not be made
      */
-    private static void applyMeanCuts() {
+    private static boolean applyMeanCuts() {
 
         HeapMemory.logAvailableMiB();
 
@@ -143,7 +170,7 @@ abstract class ApplyCuts {
         }
 
         if (!allFilesPresent) {
-            return;
+            return false;
         }
 
         // Initialize mMask
@@ -155,11 +182,11 @@ abstract class ApplyCuts {
         }
 
         // Reading in 4 calibration files is going to take ~200 MB of heap memory
-        if (HeapMemory.getAvailableMiB() < 250) {
+        if (!HeapMemory.isMemoryAmple()) {
             // TODO: error
             Log.e(Thread.currentThread().getName(), "Not enough memory to apply cuts");
             HeapMemory.logAvailableMiB();
-            return;
+            return false;
         }
 
         // Please don't run out of memory, please don't run out of memory, please don't run out of..
@@ -182,15 +209,7 @@ abstract class ApplyCuts {
             hotFast = null;
             hotSlow = null;
             System.gc();
-            return;
-        }
-
-        // TODO: possibly a bug if settings change between writes / runs
-        int maxPixelValue = 0;
-        if (OutputWrapper.mBitsPerPixel == 8) {
-            maxPixelValue = 255;
-        } else { // OutputWrapper.mBitsPerPixel == 16
-            maxPixelValue = 1023;
+            return false;
         }
 
         // Checks
@@ -209,24 +228,24 @@ abstract class ApplyCuts {
             hotFast = null;
             hotSlow = null;
             System.gc();
-            return;
+            return false;
         }
 
         Long coldFastFrames = coldFast.getNframes();
         Long coldSlowFrames = coldSlow.getNframes();
-        Long hotFastFrames = hotFast.getNframes();
-        Long hotSlowFrames = hotSlow.getNframes();
+        Long hotFastFrames  = hotFast.getNframes();
+        Long hotSlowFrames  = hotSlow.getNframes();
 
         if (coldFastFrames == null || coldSlowFrames == null || hotFastFrames == null || hotSlowFrames == null) {
             // TODO: error
             Log.e(Thread.currentThread().getName(), "Missing number of frames, cannot continue");
-            return;
+            return false;
         }
 
         mTotalMeanFrames = coldFastFrames + coldSlowFrames + hotFastFrames + hotSlowFrames;
 
         mCutStatistic = new float[npixels];
-        Histogram histogram = new Histogram(-100, 100);
+        Histogram histogram = new Histogram(HISTOGRAM_BOUNDS);
         HeapMemory.logAvailableMiB();
 
         // Temperature-based cut
@@ -234,7 +253,7 @@ abstract class ApplyCuts {
         Log.e(Thread.currentThread().getName(), "Applying temperature-based cut..");
 
         for (int i = 0; i < npixels; i++) {
-            mCutStatistic[i] = maxPixelValue * ((hf[i] + hs[i]) - (cf[i] + cs[i])) / 2.f;
+            mCutStatistic[i] = mMaxPixelValue * ((hf[i] + hs[i]) - (cf[i] + cs[i])) / 2.f;
             histogram.add(mCutStatistic[i]);
         }
 
@@ -248,6 +267,10 @@ abstract class ApplyCuts {
                 + ", upper/lower limit: " + NumToString.decimal(upperLimit)
                 + "/" + NumToString.decimal(lowerLimit);
         Log.e(Thread.currentThread().getName(), status);
+
+        String filename = "hot-cold_" + Datestamp.getDate() + GlobalSettings.HISTOGRAM_FILE;
+        StorageMedia.writeCalibration(new OutputWrapper(filename, histogram,
+                                        new Range<Float>((float) lowerLimit, (float) upperLimit)));
 
         int kept = 0;
         for (int i = 0; i < npixels; i++) {
@@ -265,11 +288,11 @@ abstract class ApplyCuts {
 
         // Exposure-based cut
         ////////////////////////////////////////////////////////////////////////////////////////////
-        Log.e(Thread.currentThread().getName(), "Applying temperature-based cut..");
+        Log.e(Thread.currentThread().getName(), "Applying exposure-based cut..");
 
         histogram.reset();
         for (int i = 0; i < npixels; i++) {
-            mCutStatistic[i] = maxPixelValue * ((hs[i] + cs[i]) - (hf[i] + cf[i])) / 2.f;
+            mCutStatistic[i] = mMaxPixelValue * ((hs[i] + cs[i]) - (hf[i] + cf[i])) / 2.f;
             histogram.add(mCutStatistic[i]);
         }
 
@@ -283,6 +306,10 @@ abstract class ApplyCuts {
                 + ", upper/lower limit: " + NumToString.decimal(upperLimit)
                 + "/" + NumToString.decimal(lowerLimit);
         Log.e(Thread.currentThread().getName(), status);
+
+        filename = "slow-fast_" + Datestamp.getDate() + GlobalSettings.HISTOGRAM_FILE;
+        StorageMedia.writeCalibration(new OutputWrapper(filename, histogram,
+                                        new Range<Float>((float) lowerLimit, (float) upperLimit)));
 
         kept = 0;
         for (int i = 0; i < npixels; i++) {
@@ -321,7 +348,7 @@ abstract class ApplyCuts {
             hotFast = null;
             hotSlow = null;
             System.gc();
-            return;
+            return false;
         }
 
         float coldTemp = (coldFastTemp + coldSlowTemp) / 2.f;
@@ -353,12 +380,15 @@ abstract class ApplyCuts {
         // Store in allocation
         mMeanAlloc = AnalysisController.newFloatAllocation();
         mMeanAlloc.copyFrom(mCutStatistic);
+
+        return true;
     }
 
     /**
      * Apply cuts based on "stddev" files, e.g. Standard Deviation-based cuts
+     * @return True if cuts were applied, false if cuts could not be made
      */
-    private static void applyStdDevCuts() {
+    private static boolean applyStdDevCuts() {
 
         HeapMemory.logAvailableMiB();
 
@@ -387,7 +417,7 @@ abstract class ApplyCuts {
         }
 
         if (!allFilesPresent) {
-            return;
+            return false;
         }
 
         // Please don't run out of memory, please don't run out of memory, please don't run out of..
@@ -415,7 +445,7 @@ abstract class ApplyCuts {
             hotFast  = null;
             hotSlow  = null;
             System.gc();
-            return;
+            return false;
         }
 
         int npixels = ImageWrapper.getNpixels();
@@ -423,11 +453,13 @@ abstract class ApplyCuts {
         // Standard Deviation-based cut
         ////////////////////////////////////////////////////////////////////////////////////////////
 
-        Log.e(Thread.currentThread().getName(), "Applying temperature-based cut..");
+        Log.e(Thread.currentThread().getName(), "Applying standard deviation-based cut..");
+        Histogram histogram = new Histogram(HISTOGRAM_BOUNDS);
 
         int kept = 0;
         for (int i = 0; i < npixels; i++) {
             float val = (float) Math.sqrt(hs[i]*hs[i]+ hf[i]*hf[i] + cs[i]*cs[i] + cf[i]*cf[i]) / 4.f;
+            histogram.add(mMaxPixelValue * val);
             if (val > 0.03f) {
                 mMask[i] = 0;
             }
@@ -435,6 +467,10 @@ abstract class ApplyCuts {
                 kept++;
             }
         }
+
+        String filename = "stddev_" + Datestamp.getDate() + GlobalSettings.HISTOGRAM_FILE;
+        StorageMedia.writeCalibration(new OutputWrapper(filename, histogram,
+                                        new Range<Float>(0.f, 0.03f * mMaxPixelValue)));
 
         HeapMemory.logAvailableMiB();
         String efficiency = NumToString.number(100. * kept / (float) npixels);
@@ -481,7 +517,7 @@ abstract class ApplyCuts {
             hotFast  = null;
             hotSlow  = null;
             System.gc();
-            return;
+            return false;
         }
 
         float coldTemp  = (coldFastTemp + coldSlowTemp) / 2.f;
@@ -527,7 +563,7 @@ abstract class ApplyCuts {
         if (coldFastFrames == null || coldSlowFrames == null || hotFastFrames == null || hotSlowFrames == null) {
             // TODO: error
             Log.e(Thread.currentThread().getName(), "Missing number of frames, cannot continue");
-            return;
+            return false;
         }
 
         mTotalStdDevFrames = coldFastFrames + coldSlowFrames + hotFastFrames + hotSlowFrames;
@@ -544,6 +580,8 @@ abstract class ApplyCuts {
         // Store in allocation
         mStdErrAlloc = AnalysisController.newFloatAllocation();
         mStdErrAlloc.copyFrom(mCutStatistic);
+
+        return true;
     }
 
 }

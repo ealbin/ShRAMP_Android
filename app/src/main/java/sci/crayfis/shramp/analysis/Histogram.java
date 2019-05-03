@@ -11,12 +11,14 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 29 April 2019
+ * @updated: 3 May 2019
  */
 
 package sci.crayfis.shramp.analysis;
 
 import android.annotation.TargetApi;
+import android.support.annotation.NonNull;
+import android.util.Range;
 
 /**
  * Represents a histogram and related functions
@@ -80,6 +82,15 @@ public class Histogram {
 
         mUnderflow = 0;
         mOverflow  = 0;
+    }
+
+    // Histogram....................................................................................
+    /**
+     * Creates a new histogram from low to high in integer pixel steps
+     * @param range Low and high limit in pixel value units
+     */
+    public Histogram(@NonNull Range<Integer> range) {
+        this(range.getLower(), range.getUpper());
     }
 
     // Public Instance Methods
@@ -150,6 +161,24 @@ public class Histogram {
         }
         return mValues[bin];
     }
+
+    // getNbins.....................................................................................
+    /**
+     * @return The number of bins
+     */
+    public int getNbins() { return mNbins; }
+
+    // getUnderflow.................................................................................
+    /**
+     * @return The value of the underflow bin
+     */
+    public int getUnderflow() { return mUnderflow; }
+
+    // getOverflow..................................................................................
+    /**
+     * @return The value of the overflow bin
+     */
+    public int getOverflow() { return mOverflow; }
 
     // getMaxBin....................................................................................
     /**

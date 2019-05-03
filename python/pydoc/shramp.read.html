@@ -1,0 +1,207 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module shramp.read</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="shramp.html"><font color="#ffffff">shramp</font></a>.read</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/mnt/c/Users/EricK/AndroidStudioProjects/ShRAMP/python/shramp/read.py">/mnt/c/Users/EricK/AndroidStudioProjects/ShRAMP/python/shramp/read.py</a></font></td></tr></table>
+    <p><tt>Functions&nbsp;to&nbsp;read&nbsp;ShRAMP-generated&nbsp;data&nbsp;files</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="numpy.html">numpy</a><br>
+</td><td width="25%" valign=top><a href="struct.html">struct</a><br>
+</td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-histogram"><strong>histogram</strong></a>(filename, dictionary=False)</dt><dd><tt>Reads&nbsp;in&nbsp;a&nbsp;ShRAMP-generated&nbsp;file&nbsp;with&nbsp;extension&nbsp;.hist<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;filename&nbsp;:&nbsp;String<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;file&nbsp;path&nbsp;to&nbsp;the&nbsp;file&nbsp;you&nbsp;want&nbsp;to&nbsp;read&nbsp;in<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;dictionary&nbsp;:&nbsp;True&nbsp;or&nbsp;False<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;When&nbsp;False&nbsp;a&nbsp;tuple&nbsp;(described&nbsp;below)&nbsp;is&nbsp;returned.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;When&nbsp;True,&nbsp;a&nbsp;dictionary&nbsp;is&nbsp;returned.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;:&nbsp;N,&nbsp;U,&nbsp;O,&nbsp;L,&nbsp;H,&nbsp;C,&nbsp;V&nbsp;(applies&nbsp;if&nbsp;dictionary=False,&nbsp;default)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;tuple&nbsp;in&nbsp;this&nbsp;order:&nbsp;(N)&nbsp;Number&nbsp;of&nbsp;bins,&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(U)&nbsp;Underflow&nbsp;bin&nbsp;value,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(O)&nbsp;Overflow&nbsp;bin&nbsp;value,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(L)&nbsp;If&nbsp;cuts&nbsp;were&nbsp;applied,&nbsp;low&nbsp;bound&nbsp;for&nbsp;the&nbsp;cut&nbsp;(NaN&nbsp;otherwise)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(H)&nbsp;If&nbsp;cuts&nbsp;were&nbsp;applied,&nbsp;high&nbsp;bound&nbsp;for&nbsp;the&nbsp;cut&nbsp;(NaN&nbsp;otherwise)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(C)&nbsp;np.array()&nbsp;of&nbsp;length&nbsp;N&nbsp;of&nbsp;bin&nbsp;centers<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(V)&nbsp;np.array()&nbsp;of&nbsp;length&nbsp;N&nbsp;of&nbsp;bin&nbsp;values<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;:&nbsp;A&nbsp;dictionary&nbsp;(applies&nbsp;if&nbsp;dictionary=True)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Keys:&nbsp;'nbins',&nbsp;'underflow',&nbsp;'overflow',&nbsp;'cut_low',&nbsp;'cut_high',&nbsp;'centers',&nbsp;'values'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;See&nbsp;Also<br>
+&nbsp;--------<br>
+&nbsp;image&nbsp;:&nbsp;read&nbsp;in&nbsp;.frame&nbsp;files&nbsp;(images)<br>
+&nbsp;mask&nbsp;:&nbsp;read&nbsp;in&nbsp;.mask&nbsp;files&nbsp;(pixel&nbsp;mask)<br>
+&nbsp;statistic&nbsp;:&nbsp;read&nbsp;in&nbsp;.mean/.stddev/.stderr/.signif&nbsp;files&nbsp;(pixel&nbsp;statistics)<br>
+&nbsp;<br>
+&nbsp;Examples&nbsp;<br>
+&nbsp;--------<br>
+&nbsp;&gt;&gt;&gt;&nbsp;N,&nbsp;U,&nbsp;O,&nbsp;L,&nbsp;H,&nbsp;C,&nbsp;V&nbsp;=&nbsp;shramp.read.<a href="#-histogram">histogram</a>('foo/bar/filename.hist')&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;<br>
+&nbsp;&gt;&gt;&gt;&nbsp;dictionary&nbsp;=&nbsp;shramp.read.<a href="#-histogram">histogram</a>('foo/bar/filename.hist',&nbsp;dictionary=True)</tt></dd></dl>
+ <dl><dt><a name="-image"><strong>image</strong></a>(filename, reshape=False, dictionary=False)</dt><dd><tt>Reads&nbsp;in&nbsp;a&nbsp;ShRAMP-generated&nbsp;file&nbsp;with&nbsp;extension&nbsp;.frame<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;filename&nbsp;:&nbsp;String<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;file&nbsp;path&nbsp;to&nbsp;the&nbsp;file&nbsp;you&nbsp;want&nbsp;to&nbsp;read&nbsp;in<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;reshape&nbsp;:&nbsp;True&nbsp;or&nbsp;False<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;When&nbsp;False&nbsp;(default)&nbsp;return&nbsp;pixel&nbsp;values&nbsp;as&nbsp;a&nbsp;1-D&nbsp;array,&nbsp;npixels&nbsp;long.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;When&nbsp;True,&nbsp;return&nbsp;pixel&nbsp;values&nbsp;as&nbsp;a&nbsp;2-D&nbsp;array,&nbsp;shape&nbsp;=&nbsp;(rows&nbsp;x&nbsp;columns).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;In&nbsp;this&nbsp;latter&nbsp;case,&nbsp;(0,0)&nbsp;cooresponds&nbsp;to&nbsp;the&nbsp;upper&nbsp;left&nbsp;corner&nbsp;of&nbsp;the&nbsp;image.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;dictionary&nbsp;:&nbsp;True&nbsp;or&nbsp;False<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;When&nbsp;False&nbsp;a&nbsp;tuple&nbsp;(described&nbsp;below)&nbsp;is&nbsp;returned.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;When&nbsp;True,&nbsp;a&nbsp;dictionary&nbsp;is&nbsp;returned.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+Returns<br>
+-------<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;:&nbsp;B,&nbsp;R,&nbsp;C,&nbsp;E,&nbsp;T,&nbsp;V&nbsp;&nbsp;(applies&nbsp;if&nbsp;dictionary=False,&nbsp;default)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;tuple&nbsp;in&nbsp;this&nbsp;order:&nbsp;(B)&nbsp;bits-per-pixel&nbsp;(8&nbsp;=&nbsp;YUV,&nbsp;16&nbsp;=&nbsp;RAW),&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(R)&nbsp;number&nbsp;of&nbsp;pixel&nbsp;rows,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(C)&nbsp;number&nbsp;of&nbsp;pixel&nbsp;columns,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(E)&nbsp;sensor&nbsp;exposure&nbsp;in&nbsp;nanoseconds&nbsp;(if&nbsp;available,&nbsp;otherwise&nbsp;0)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(T)&nbsp;battery&nbsp;temperature&nbsp;when&nbsp;this&nbsp;was&nbsp;made&nbsp;in&nbsp;Celsius<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(V)&nbsp;np.array()&nbsp;of&nbsp;length&nbsp;n-pixels&nbsp;=&nbsp;(R)x(C)&nbsp;of&nbsp;pixel&nbsp;values<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;:&nbsp;A&nbsp;dictionary&nbsp;(applies&nbsp;if&nbsp;dictionary=True)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Keys:&nbsp;'bits',&nbsp;'rows',&nbsp;'cols',&nbsp;'exposure',&nbsp;'temperature',&nbsp;'values'<br>
+&nbsp;<br>
+&nbsp;See&nbsp;Also<br>
+&nbsp;--------<br>
+&nbsp;mask&nbsp;:&nbsp;read&nbsp;in&nbsp;.mask&nbsp;files&nbsp;(pixel&nbsp;mask)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;statistic&nbsp;:&nbsp;read&nbsp;in&nbsp;.mean/.stddev/.stderr/.signif&nbsp;files&nbsp;(pixel&nbsp;statistics)<br>
+&nbsp;histogram&nbsp;:&nbsp;read&nbsp;in&nbsp;.hist&nbsp;files&nbsp;(1-D&nbsp;histograms)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+Examples<br>
+--------<br>
+&gt;&gt;&gt;&nbsp;B,&nbsp;R,&nbsp;C,&nbsp;E,&nbsp;T,&nbsp;V&nbsp;=&nbsp;shramp.read.<a href="#-image">image</a>('foo/bar/filename.frame',&nbsp;reshape=True)<br>
+&nbsp;<br>
+&gt;&gt;&gt;&nbsp;dictionary&nbsp;=&nbsp;shramp.read.<a href="#-image">image</a>('foo/bar/filename.frame',&nbsp;dictionary=True)</tt></dd></dl>
+ <dl><dt><a name="-mask"><strong>mask</strong></a>(filename, reshape=False, dictionary=False)</dt><dd><tt>Reads&nbsp;in&nbsp;a&nbsp;ShRAMP-generated&nbsp;file&nbsp;with&nbsp;extension&nbsp;.mask<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;filename&nbsp;:&nbsp;&nbsp;String<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;file&nbsp;path&nbsp;to&nbsp;the&nbsp;file&nbsp;you&nbsp;want&nbsp;to&nbsp;read&nbsp;in<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;reshape&nbsp;:&nbsp;True&nbsp;or&nbsp;False<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;When&nbsp;False&nbsp;(default)&nbsp;return&nbsp;pixel&nbsp;values&nbsp;as&nbsp;a&nbsp;1-D&nbsp;array,&nbsp;npixels&nbsp;long.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;When&nbsp;True,&nbsp;return&nbsp;pixel&nbsp;values&nbsp;as&nbsp;a&nbsp;2-D&nbsp;array,&nbsp;shape&nbsp;=&nbsp;(rows&nbsp;x&nbsp;columns).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;In&nbsp;this&nbsp;latter&nbsp;case,&nbsp;(0,0)&nbsp;cooresponds&nbsp;to&nbsp;the&nbsp;upper&nbsp;left&nbsp;corner&nbsp;of&nbsp;the&nbsp;image.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;dictionary&nbsp;:&nbsp;True&nbsp;or&nbsp;False<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;When&nbsp;False&nbsp;a&nbsp;tuple&nbsp;(described&nbsp;below)&nbsp;is&nbsp;returned.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;When&nbsp;True,&nbsp;a&nbsp;dictionary&nbsp;is&nbsp;returned.<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;:&nbsp;B,&nbsp;R,&nbsp;C,&nbsp;M&nbsp;(applies&nbsp;if&nbsp;dictionary=False,&nbsp;default)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;tuple&nbsp;in&nbsp;this&nbsp;order:&nbsp;(B)&nbsp;bits-per-pixel&nbsp;(8&nbsp;=&nbsp;YUV,&nbsp;16&nbsp;=&nbsp;RAW),&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(R)&nbsp;number&nbsp;of&nbsp;pixel&nbsp;rows,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(C)&nbsp;number&nbsp;of&nbsp;pixel&nbsp;columns,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(M)&nbsp;np.array()&nbsp;of&nbsp;length&nbsp;n-pixels&nbsp;=&nbsp;(R)x(C)&nbsp;of&nbsp;mask&nbsp;values<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;:&nbsp;A&nbsp;dictionary&nbsp;(applies&nbsp;if&nbsp;dictionary=True)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Keys:&nbsp;'bits',&nbsp;'rows',&nbsp;'cols',&nbsp;'mask'<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;See&nbsp;Also<br>
+&nbsp;--------<br>
+&nbsp;image&nbsp;:&nbsp;read&nbsp;in&nbsp;.frame&nbsp;files&nbsp;(images)<br>
+&nbsp;statistic&nbsp;:&nbsp;read&nbsp;in&nbsp;.mean/.stddev/.stderr/.signif&nbsp;files&nbsp;(pixel&nbsp;statistics)<br>
+&nbsp;histogram&nbsp;:&nbsp;read&nbsp;in&nbsp;.hist&nbsp;files&nbsp;(1-D&nbsp;histograms)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;<br>
+&nbsp;Examples<br>
+&nbsp;--------<br>
+&nbsp;&gt;&gt;&gt;&nbsp;B,&nbsp;R,&nbsp;C,&nbsp;M&nbsp;=&nbsp;shramp.read.<a href="#-mask">mask</a>('foo/bar/filename.mask',&nbsp;reshape=True)<br>
+&nbsp;<br>
+&nbsp;&gt;&gt;&gt;&nbsp;dictionary&nbsp;=&nbsp;shramp.read.<a href="#-mask">mask</a>('foo/bar/filename.mask',&nbsp;dictionary=True)</tt></dd></dl>
+ <dl><dt><a name="-statistic"><strong>statistic</strong></a>(filename, reshape=False, dictionary=False)</dt><dd><tt>Reads&nbsp;in&nbsp;a&nbsp;ShRAMP-generated&nbsp;file&nbsp;with&nbsp;extension&nbsp;.mean,&nbsp;.stddev,&nbsp;.stderr&nbsp;or&nbsp;.signif<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;filename&nbsp;:&nbsp;String<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;file&nbsp;path&nbsp;to&nbsp;the&nbsp;file&nbsp;you&nbsp;want&nbsp;to&nbsp;read&nbsp;in<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;reshape&nbsp;:&nbsp;True&nbsp;or&nbsp;False<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;When&nbsp;False&nbsp;(default)&nbsp;return&nbsp;pixel&nbsp;values&nbsp;as&nbsp;a&nbsp;1-D&nbsp;array,&nbsp;npixels&nbsp;long.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;When&nbsp;True,&nbsp;return&nbsp;pixel&nbsp;values&nbsp;as&nbsp;a&nbsp;2-D&nbsp;array,&nbsp;shape&nbsp;=&nbsp;(rows&nbsp;x&nbsp;columns).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;In&nbsp;this&nbsp;latter&nbsp;case,&nbsp;(0,0)&nbsp;cooresponds&nbsp;to&nbsp;the&nbsp;upper&nbsp;left&nbsp;corner&nbsp;of&nbsp;the&nbsp;image.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;dictionary&nbsp;:&nbsp;True&nbsp;or&nbsp;False<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;When&nbsp;False&nbsp;a&nbsp;tuple&nbsp;(described&nbsp;below)&nbsp;is&nbsp;returned.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;When&nbsp;True,&nbsp;a&nbsp;dictionary&nbsp;is&nbsp;returned.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;:&nbsp;B,&nbsp;R,&nbsp;C,&nbsp;F,&nbsp;T,&nbsp;S&nbsp;(applies&nbsp;if&nbsp;dictionary=False,&nbsp;default)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;tuple&nbsp;in&nbsp;this&nbsp;order:&nbsp;(B)&nbsp;bits-per-pixel&nbsp;(8&nbsp;=&nbsp;YUV,&nbsp;16&nbsp;=&nbsp;RAW),&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(R)&nbsp;number&nbsp;of&nbsp;pixel&nbsp;rows,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(C)&nbsp;number&nbsp;of&nbsp;pixel&nbsp;columns,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(F)&nbsp;number&nbsp;of&nbsp;image&nbsp;frames&nbsp;that&nbsp;went&nbsp;into&nbsp;this&nbsp;statistic,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(T)&nbsp;battery&nbsp;temperature&nbsp;when&nbsp;this&nbsp;was&nbsp;made&nbsp;in&nbsp;Celsius<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(S)&nbsp;np.array()&nbsp;of&nbsp;length&nbsp;n-pixels&nbsp;=&nbsp;(R)x(C)&nbsp;of&nbsp;statistic&nbsp;values<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;out&nbsp;:&nbsp;A&nbsp;dictionary&nbsp;(applies&nbsp;if&nbsp;dictionary=True)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Keys:&nbsp;'bits',&nbsp;'rows',&nbsp;'cols',&nbsp;'frames',&nbsp;'temperature',&nbsp;'values'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;See&nbsp;Also<br>
+&nbsp;--------<br>
+&nbsp;image&nbsp;:&nbsp;read&nbsp;in&nbsp;.frame&nbsp;files&nbsp;(images)<br>
+&nbsp;mask&nbsp;:&nbsp;read&nbsp;in&nbsp;.mask&nbsp;files&nbsp;(pixel&nbsp;mask)<br>
+&nbsp;histogram&nbsp;:&nbsp;read&nbsp;in&nbsp;.hist&nbsp;files&nbsp;(1-D&nbsp;histograms)<br>
+&nbsp;<br>
+&nbsp;Examples<br>
+&nbsp;--------<br>
+&nbsp;&gt;&gt;&gt;&nbsp;B,&nbsp;R,&nbsp;C,&nbsp;F,&nbsp;T,&nbsp;S&nbsp;=&nbsp;shramp.read.<a href="#-statistic">statistic</a>('foo/bar/filename.stddev',&nbsp;reshape=True)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;<br>
+&nbsp;&gt;&gt;&gt;&nbsp;dictionary&nbsp;=&nbsp;shramp.read.<a href="#-statistic">statistic</a>('foo/bar/filename.stddev',&nbsp;dictionary=True)</tt></dd></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>__email__</strong> = 'Eric.K.Albin@gmail.com'<br>
+<strong>__updated__</strong> = '3 May 2019'</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#7799ee">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Author</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#7799ee"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%">Eric&nbsp;Albin</td></tr></table>
+</body></html>

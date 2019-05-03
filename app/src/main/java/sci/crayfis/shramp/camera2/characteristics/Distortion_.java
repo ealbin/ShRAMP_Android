@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 29 April 2019
+ * @updated: 3 May 2019
  */
 
 package sci.crayfis.shramp.camera2.characteristics;
@@ -26,6 +26,7 @@ import android.util.Log;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import sci.crayfis.shramp.GlobalSettings;
 import sci.crayfis.shramp.MasterController;
 import sci.crayfis.shramp.camera2.util.Parameter;
 import sci.crayfis.shramp.camera2.util.ParameterFormatter;
@@ -90,6 +91,11 @@ abstract class Distortion_ extends Depth_ {
                     else {
                         value       =  FAST;
                         valueString = "FAST (FALLBACK)";
+                    }
+
+                    if (GlobalSettings.FORCE_WORST_CONFIGURATION) {
+                        value       =  FAST;
+                        valueString = "FAST (WORST CONFIGURATION)";
                     }
 
                     formatter = new ParameterFormatter<Integer>(valueString) {

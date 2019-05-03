@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 29 April 2019
+ * @updated: 3 May 2019
  */
 
 package sci.crayfis.shramp.analysis;
@@ -21,6 +21,7 @@ import android.renderscript.Allocation;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.util.Range;
 
 import org.jetbrains.annotations.Contract;
 
@@ -29,8 +30,8 @@ import java.nio.ByteBuffer;
 import sci.crayfis.shramp.MasterController;
 
 /**
- * Encapsulates statistical, image data or mask data and packages it, along with metadata, into a
- * ByteBuffer ready to write to disk.
+ * Encapsulates statistical, image data, mask data or histograms and packages it, along with
+ * metadata, into a ByteBuffer ready to write to disk.
  * TODO: option for ascii text?  ..or should that just go to logger?
  */
 @TargetApi(21)
@@ -40,7 +41,7 @@ public class OutputWrapper {
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
     // What this OutputWrapper can contain
-    public enum Datatype { IMAGE, STATISTICS, MASK }
+    public enum Datatype { IMAGE, STATISTICS, MASK, HISTOGRAM }
 
     // String shortcuts
     private static final String ByteSize   = Integer.toString(Byte.SIZE    / 8);
@@ -92,6 +93,10 @@ public class OutputWrapper {
     // mMaskHeader..................................................................................
     // Description of byte-ordering for mask data
     private static String mMaskHeader;
+
+    // mHistogramHeader.............................................................................
+    // Description of byte-ordering for histogram data
+    private static String mHistogramHeader;
 
     // mFloatCache..................................................................................
     // Used in an intermediate step in converting a statistical RenderScript Allocation into bytes,
@@ -147,6 +152,8 @@ public class OutputWrapper {
             statistics.copyTo(mFloatCache);
             mByteBuffer.asFloatBuffer().put(mFloatCache);
         }
+        mByteBuffer.position(0);
+        mByteBuffer.limit(mByteBuffer.capacity());
         mDatatype = Datatype.STATISTICS;
     }
 
@@ -175,6 +182,8 @@ public class OutputWrapper {
         else {
             mByteBuffer.asShortBuffer().put(wrapper.get16bitData());
         }
+        mByteBuffer.position(0);
+        mByteBuffer.limit(mByteBuffer.capacity());
         mDatatype = Datatype.IMAGE;
     }
 
@@ -184,14 +193,59 @@ public class OutputWrapper {
      * @param filename Filename for data (no path, just filename)
      * @param mask Pixel mask data
      */
-    OutputWrapper(@NonNull String filename, byte[] mask) {
+    OutputWrapper(@NonNull String filename, @NonNull byte[] mask) {
         mFilename = filename;
         mByteBuffer = ByteBuffer.allocate(mMaskBytes);
         mByteBuffer.put(mBitsPerPixel);
         mByteBuffer.putInt(mRows);
         mByteBuffer.putInt(mColumns);
         mByteBuffer.put(mask);
+        mByteBuffer.position(0);
+        mByteBuffer.limit(mByteBuffer.capacity());
         mDatatype = Datatype.MASK;
+    }
+
+    // OutputWrapper................................................................................
+    /**
+     * Create an output wrapper for histogram data
+     * @param filename Filename for data (no path, just filename)
+     * @param histogram Histogram object
+     * @param cutBounds (Optional) Pixel value used for cuts (low and high)
+     */
+    OutputWrapper(@NonNull String filename, @NonNull Histogram histogram, @Nullable Range<Float> cutBounds) {
+        mFilename = filename;
+
+        int histogramBytes = 0;
+        histogramBytes += Integer.SIZE / 8; // N bins
+        histogramBytes += Integer.SIZE / 8; // underflow
+        histogramBytes += Integer.SIZE / 8; // overflow
+        histogramBytes += Float.SIZE   / 8; // optional cut low bound
+        histogramBytes += Float.SIZE   / 8; // optional cut high bound
+        histogramBytes += histogram.mNbins * Float.SIZE / 8;   // bin centers
+        histogramBytes += histogram.mNbins * Integer.SIZE / 8; // bin values
+
+        mByteBuffer = ByteBuffer.allocate(histogramBytes);
+        mByteBuffer.putInt(histogram.getNbins());
+        mByteBuffer.putInt(histogram.getUnderflow());
+        mByteBuffer.putInt(histogram.getOverflow());
+        if (cutBounds == null) {
+            mByteBuffer.putFloat(Float.NaN);
+            mByteBuffer.putFloat(Float.NaN);
+        }
+        else {
+            mByteBuffer.putFloat(cutBounds.getLower());
+            mByteBuffer.putFloat(cutBounds.getUpper());
+        }
+        int length = histogram.getNbins();
+        for (int i = 0; i < length; i++) {
+            mByteBuffer.putFloat( (float) histogram.getBinCenter(i) );
+        }
+        for (int i = 0; i < length; i++) {
+            mByteBuffer.putInt(histogram.getValue(i));
+        }
+        mByteBuffer.position(0);
+        mByteBuffer.limit(mByteBuffer.capacity());
+        mDatatype = Datatype.HISTOGRAM;
     }
 
     // Package-private Class Methods
@@ -263,6 +317,9 @@ public class OutputWrapper {
 
         mMaskHeader  = "Byte order (big endian): \t Bits-per-pixel \t Number of Rows \t Number of Columns \t Mask data\n";
         mMaskHeader += "Number of bytes: \t " + ByteSize + "\t" + IntSize + " \t " + IntSize + " \t " + ByteSize + "x" + Integer.toString(Npixels) + "\n";
+
+        mHistogramHeader  = "Byte order (big endian): \t Number of Bins \t Underflow Bin Value \t Overflow Bin Value \t Cut low bound (NaN if no cuts) \t Cut high bound (NaN if no cuts) \t Bin Centers \t Bin Values\n";
+        mHistogramHeader += "Number of bytes: \t" + IntSize + "\t" + IntSize + "\t" + IntSize + "\t" + FloatSize + "\t" + FloatSize + "\t" + FloatSize + "x{N bins}" + "\t" + IntSize + "x {N bins}\n";
     }
 
     // Public Instance Methods

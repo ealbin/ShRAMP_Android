@@ -11,7 +11,7 @@
 // @author: Eric Albin
 // @email:  Eric.K.Albin@gmail.com
 //
-// @updated: 29 April 2019
+// @updated: 3 May 2019
 //
 
 #pragma version(1)
@@ -139,6 +139,6 @@ float RS_KERNEL getStdErr(uint32_t x, uint32_t y) {
 // @param x row pixel coordinate
 // @param y column pixel coordinate
 // @return number of pixels that experianced an overflow in their running sums
-long RS_KERNEL getAnomalousStdDev(uint32_t x, uint32_t y) {
+ulong RS_KERNEL getAnomalousStdDev(uint32_t x, uint32_t y) {
     return rsGetElementAt_long(gAnomalousStdDev, 0, 0);
 }

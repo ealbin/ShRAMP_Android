@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 29 April 2019
+ * @updated: 3 May 2019
  */
 
 package sci.crayfis.shramp.camera2.requests;
@@ -31,6 +31,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 
+import sci.crayfis.shramp.GlobalSettings;
 import sci.crayfis.shramp.MasterController;
 import sci.crayfis.shramp.camera2.CameraController;
 import sci.crayfis.shramp.camera2.util.Parameter;
@@ -217,6 +218,7 @@ abstract class step13_Sensor_ extends step12_Scaler_ {
 
             String  name;
             Integer value;
+            String  valueString;
             String  units;
 
             rKey  = CaptureRequest.SENSOR_SENSITIVITY;//////////////////////////////////////////////
@@ -259,8 +261,14 @@ abstract class step13_Sensor_ extends step12_Scaler_ {
                         return;
                     }
                     value = range.getUpper();
+                    valueString = "maximum: ";
 
-                    formatter = new ParameterFormatter<Integer>("maximum: ") {
+                    if (GlobalSettings.FORCE_WORST_CONFIGURATION) {
+                        value = range.getLower();
+                        valueString = "minimum (WORST CONFIGURATION): ";
+                    }
+
+                    formatter = new ParameterFormatter<Integer>(valueString) {
                         @NonNull
                         @Override
                         public String formatValue(@NonNull Integer value) {

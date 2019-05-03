@@ -11,7 +11,7 @@
  * @author: Eric Albin
  * @email:  Eric.K.Albin@gmail.com
  *
- * @updated: 29 April 2019
+ * @updated: 3 May 2019
  */
 
 package sci.crayfis.shramp;
@@ -39,10 +39,19 @@ abstract public class GlobalSettings {
     // FYI, max effective fps for RAW_SENSOR is normally around 15 fps depending on the phone (hardware limited),
     //      max effective fps for YUV_420_888 is normal around 20 fps (buffering limited)
     //      also FYI, RenderScript runs around 15 fps or so for both
-    public static final Boolean DISABLE_RAW_OUTPUT      = false;
-    public static final Boolean FORCE_CONTROL_MODE_AUTO = false;
+    public static final Boolean DISABLE_RAW_OUTPUT        = false;
+    public static final Boolean FORCE_CONTROL_MODE_AUTO   = false;
 
-    // TODO: FORCE_WORST_CONFIGURATION
+    // Does not override above settings, however enables lens shading and other enhancement
+    // algorithms that would otherwise be disabled under normal conditions
+    public static final Boolean FORCE_WORST_CONFIGURATION = false;
+
+
+    // ShRAMP data folder
+    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+    // Erases everything at start if true
+    public static final boolean START_FROM_SCRATCH = false;
 
 
     // Useful Definitions
@@ -68,13 +77,6 @@ abstract public class GlobalSettings {
 
     // Threshold used in fps optimization
     public static final Double OPTIMAL_DUTY_THRESHOLD = 0.999;
-
-
-    // ShRAMP data folder
-    //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-    // Erases everything at start if true
-    public static final boolean START_FROM_SCRATCH = false;
 
 
     // Camera Preference
@@ -149,12 +151,13 @@ abstract public class GlobalSettings {
     // File extensions
     //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    public static final String MEAN_FILE   = ".mean";
-    public static final String STDDEV_FILE = ".stddev";
-    public static final String STDERR_FILE = ".stderr";
-    public static final String MASK_FILE   = ".mask";
-    public static final String SIGNIF_FILE = ".signif";
-    public static final String IMAGE_FILE  = ".frame";
+    public static final String MEAN_FILE      = ".mean";
+    public static final String STDDEV_FILE    = ".stddev";
+    public static final String STDERR_FILE    = ".stderr";
+    public static final String MASK_FILE      = ".mask";
+    public static final String HISTOGRAM_FILE = ".hist";
+    public static final String SIGNIF_FILE    = ".signif";
+    public static final String IMAGE_FILE     = ".frame";
 
 
     // Debugging
